@@ -65,7 +65,7 @@ BOOL CGameFrameApp::InitInstance()
 
 		//´´½¨¿ò¼Ü
 		m_pMainWnd=m_pGameFrameWnd;
-		m_pGameFrameWnd->Create(NULL,NULL,WS_VISIBLE|WS_CLIPCHILDREN|WS_OVERLAPPEDWINDOW,CRect(0,0,0,0));
+		m_pGameFrameWnd->Create(NULL,NULL,WS_VISIBLE|WS_CLIPCHILDREN|WS_CLIPSIBLINGS,CRect(0,0,0,0));
 
 		//ÉùÒôÒýÇæ
 		m_D3DSound.CreateD3DSound(m_pMainWnd->GetSafeHwnd());

@@ -229,6 +229,7 @@ copy /y ..\..\..\运行\Release\Ansi\$(TargetFileName) ..\..\..\发布组件\服
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AttemperEngineSink.cpp" />
+    <ClCompile Include="CollectDlg.cpp" />
     <ClCompile Include="CorrespondServer.cpp" />
     <ClCompile Include="CorrespondServerDlg.cpp" />
     <ClCompile Include="GlobalInfoManager.cpp" />
@@ -243,6 +244,7 @@ copy /y ..\..\..\运行\Release\Ansi\$(TargetFileName) ..\..\..\发布组件\服
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AttemperEngineSink.h" />
+    <ClInclude Include="CollectDlg.h" />
     <ClInclude Include="ControlPacket.h" />
     <ClInclude Include="CorrespondServer.h" />
     <ClInclude Include="CorrespondServerDlg.h" />

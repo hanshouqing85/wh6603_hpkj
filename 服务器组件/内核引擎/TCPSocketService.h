@@ -91,10 +91,6 @@ private:
 	WORD CrevasseBuffer(BYTE cbDataBuffer[], WORD wDataSize);
 	//加密数据
 	WORD EncryptBuffer(BYTE cbDataBuffer[], WORD wDataSize, WORD wBufferSize);
-	//解密数据
-	bool Common_unMappedBuffer(void* data, int nDataSize);
-	//加密数据
-	bool Common_MappedBuffer(void* data, int nDataSize);
 
 	//处理函数
 private:

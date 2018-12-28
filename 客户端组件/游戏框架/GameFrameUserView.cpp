@@ -51,30 +51,30 @@ CGameFrameUserView::~CGameFrameUserView()
 //设置广告
 VOID CGameFrameUserView::SetGameBillInfo(WORD wKindID, WORD wServerID)
 {
-	TCHAR szPlatformUrl[124] = L"";
-
-	//读取配置文件
-	//工作目录
-	TCHAR szDirectory[MAX_PATH]=TEXT("");
-	CWHService::GetWorkDirectory(szDirectory,CountArray(szDirectory));
-
-	//构造路径
-	TCHAR szFileName[MAX_PATH]=TEXT("");
-	_sntprintf(szFileName,CountArray(szFileName),TEXT("%s\\GamePlaza.ini"),szDirectory);
-
-	//读取配置
-	CWHIniData IniData;
-	IniData.SetIniFilePath(szFileName);
-
-	//读取配置
-	IniData.ReadEncryptString(TEXT("PlazaUrl"),TEXT("DownLoad0"),NULL,szPlatformUrl,CountArray(szPlatformUrl));
-
-	//构造地址
-	TCHAR szBillUrl[256]=TEXT("");
-	_sntprintf(szBillUrl,CountArray(szBillUrl),TEXT("%s/adv.html"),szPlatformUrl,wKindID,wServerID);
-
-	//打开地址
-	//m_GameFramePublicize.Navigate(szBillUrl);
+// 	TCHAR szPlatformUrl[124] = L"";
+// 
+// 	//读取配置文件
+// 	//工作目录
+// 	TCHAR szDirectory[MAX_PATH]=TEXT("");
+// 	CWHService::GetWorkDirectory(szDirectory,CountArray(szDirectory));
+// 
+// 	//构造路径
+// 	TCHAR szFileName[MAX_PATH]=TEXT("");
+// 	_sntprintf(szFileName,CountArray(szFileName),TEXT("%s\\GamePlaza.ini"),szDirectory);
+// 
+// 	//读取配置
+// 	CWHIniData IniData;
+// 	IniData.SetIniFilePath(szFileName);
+// 
+// 	//读取配置
+// 	IniData.ReadEncryptString(TEXT("PlazaUrl"),TEXT("DownLoad0"),NULL,szPlatformUrl,CountArray(szPlatformUrl));
+// 
+// 	//构造地址
+// 	TCHAR szBillUrl[256]=TEXT("");
+// 	_sntprintf(szBillUrl,CountArray(szBillUrl),TEXT("%s/adv.html"),szPlatformUrl,wKindID,wServerID);
+// 
+// 	//打开地址
+// 	//m_GameFramePublicize.Navigate(szBillUrl);
 
 	return;
 }

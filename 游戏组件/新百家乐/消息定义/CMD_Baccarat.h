@@ -13,8 +13,8 @@
 	#define VERSION_SERVER				PROCESS_VERSION(6,0,3)				//程序版本
 	#define VERSION_CLIENT				PROCESS_VERSION(6,0,3)				//程序版本
 #else
-	#define VERSION_SERVER				PROCESS_VERSION(12,0,3)				//程序版本
-	#define VERSION_CLIENT				PROCESS_VERSION(12,0,3)				//程序版本
+	#define VERSION_SERVER				PROCESS_VERSION(6,0,3)				//程序版本
+	#define VERSION_CLIENT				PROCESS_VERSION(8,0,3)				//程序版本
 #endif
 //状态定义
 #define GAME_SCENE_FREE				GAME_STATUS_FREE					//等待开始
@@ -112,6 +112,7 @@ struct CMD_S_CancelBanker
 struct CMD_S_ChangeBanker
 {
 	WORD							wBankerUser;						//当庄玩家
+	TCHAR							szBankerNickName[32];				//	庄家昵称
 	LONGLONG						lBankerScore;						//庄家分数
 	WORD							wFaceID;
 };
@@ -127,6 +128,7 @@ struct CMD_S_StatusFree
 
 	//庄家信息
 	WORD							wBankerUser;						//当前庄家
+	TCHAR							szBankerNickName[32];				//	庄家昵称
 	LONGLONG						lBankerScore;						//庄家分数
 	LONGLONG						lBankerWinScore;					//庄家赢分
 	WORD							wBankerTime;						//庄家局数
@@ -165,6 +167,7 @@ struct CMD_S_StatusPlay
 
 	//庄家信息
 	WORD							wBankerUser;						//当前庄家
+	TCHAR							szBankerNickName[32];				//	庄家昵称
 	LONGLONG						lBankerScore;						//庄家分数
 	LONGLONG						lBankerWinScore;					//庄家赢分
 	WORD							wBankerTime;						//庄家局数
@@ -211,7 +214,7 @@ struct CMD_S_PlaceBet
 {
 	WORD							wChairID;							//用户位置
 	BYTE							cbBetArea;							//筹码区域
-	LONGLONG						lBetScore;							//加注数目
+	LONGLONG						lBetScore;							//下注数目
 	BYTE							cbAndroidUser;						//机器标识
 };
 

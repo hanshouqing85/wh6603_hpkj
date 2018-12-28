@@ -1,6 +1,7 @@
 #include "Stdafx.h"
 #include "GameClient.h"
 #include "GameClientEngine.h"
+#include "HapiDump.h"
 
 //应用程序对象
 CGameClientApp theApp;
@@ -11,6 +12,7 @@ CGameClientApp theApp;
 CGameClientApp::CGameClientApp()
 {
 //	AfxMessageBox("ok");
+	DeclareDumpFile();
 }
 
 //析构函数

@@ -281,9 +281,7 @@ bool CTCPNetworkItem::SendData(WORD wMainCmdID, WORD wSubCmdID, WORD wRountID)
 	pHead->CommandInfo.wMainCmdID=wMainCmdID;
 
 	//加密数据
-	//WORD wEncryptLen=EncryptBuffer(pOverLappedSend->m_cbBuffer+wSourceLen,wPacketSize,sizeof(pOverLappedSend->m_cbBuffer)-wSourceLen);
-	WORD wEncryptLen = wPacketSize;
-	bool bRet = Common_MappedBuffer(pOverLappedSend->m_cbBuffer + wSourceLen, wPacketSize);
+	WORD wEncryptLen=EncryptBuffer(pOverLappedSend->m_cbBuffer+wSourceLen,wPacketSize,sizeof(pOverLappedSend->m_cbBuffer)-wSourceLen);
 	pOverLappedSend->m_WSABuffer.len+=wEncryptLen;
 
 	//发送数据
@@ -344,9 +342,7 @@ bool CTCPNetworkItem::SendData(VOID * pData, WORD wDataSize, WORD wMainCmdID, WO
 	}
 
 	//加密数据
-	//WORD wEncryptLen=EncryptBuffer(pOverLappedSend->m_cbBuffer+wSourceLen,wPacketSize,sizeof(pOverLappedSend->m_cbBuffer)-wSourceLen);
-	WORD wEncryptLen = wPacketSize;
-	bool bRet = Common_MappedBuffer(pOverLappedSend->m_cbBuffer + wSourceLen, wPacketSize);
+	WORD wEncryptLen=EncryptBuffer(pOverLappedSend->m_cbBuffer+wSourceLen,wPacketSize,sizeof(pOverLappedSend->m_cbBuffer)-wSourceLen);
 	pOverLappedSend->m_WSABuffer.len+=wEncryptLen;
 
 	//发送数据
@@ -539,6 +535,8 @@ bool CTCPNetworkItem::OnRecvCompleted(COverLappedRecv * pOverLappedRecv, DWORD d
 	BYTE cbBuffer[SOCKET_TCP_BUFFER];
 	TCP_Head * pHead=(TCP_Head *)m_cbRecvBuf;
 
+	TCHAR szOutBuffer[512];
+
 	//处理数据
 	try
 	{
@@ -569,16 +567,14 @@ bool CTCPNetworkItem::OnRecvCompleted(COverLappedRecv * pOverLappedRecv, DWORD d
 				g_TraceServiceManager.TraceString(szBuffer,TraceLevel_Exception);
 				throw TEXT("数据包长度太短");
 			}
-			if (pHead->TCPInfo.cbDataKind!=DK_MAPPED) throw TEXT("数据包版本不匹配line572");
+			if (pHead->TCPInfo.cbDataKind!=DK_MAPPED) throw TEXT("数据包版本不匹配");
 
 			//完成判断
 			if (m_wRecvSize<wPacketSize) break;
 
 			//提取数据
 			CopyMemory(cbBuffer,m_cbRecvBuf,wPacketSize);
-			//WORD wRealySize=CrevasseBuffer(cbBuffer,wPacketSize);
-			WORD wRealySize = wPacketSize;
-			bool bRet = Common_unMappedBuffer(cbBuffer, wPacketSize);
+			WORD wRealySize=CrevasseBuffer(cbBuffer,wPacketSize);
 
 			//设置变量
 			m_dwRecvPacketCount++;
@@ -587,6 +583,8 @@ bool CTCPNetworkItem::OnRecvCompleted(COverLappedRecv * pOverLappedRecv, DWORD d
 			LPVOID pData=cbBuffer+sizeof(TCP_Head);
 			WORD wDataSize=wRealySize-sizeof(TCP_Head);
 			TCP_Command Command=((TCP_Head *)cbBuffer)->CommandInfo;
+
+			_sntprintf(szOutBuffer,CountArray(szOutBuffer),TEXT("数据包,命令码：%d-%d, "),Command.wMainCmdID, Command.wSubCmdID);
 
 			//消息处理
 			if (Command.wMainCmdID!=MDM_KN_COMMAND)	m_pITCPNetworkItemSink->OnEventSocketRead(Command,pData,wDataSize,this);
@@ -610,6 +608,7 @@ bool CTCPNetworkItem::OnRecvCompleted(COverLappedRecv * pOverLappedRecv, DWORD d
 	}
 	catch (...)
 	{ 
+		g_TraceServiceManager.TraceString(szOutBuffer,TraceLevel_Exception);
 		//错误信息
 		TCHAR szString[512]=TEXT("");
 		_sntprintf(szString,CountArray(szString),TEXT("SocketEngine Index=%ld，RountID=%ld，OnRecvCompleted 发生“非法”异常"),m_wIndex,m_wRountID);
@@ -637,54 +636,6 @@ bool CTCPNetworkItem::OnCloseCompleted()
 	//恢复数据
 	ResumeData();
 
-	return true;
-}
-
-//加密数据
-bool CTCPNetworkItem::Common_MappedBuffer(void* data, int nDataSize)
-{
-	//变量定义
-	BYTE *buffer = (BYTE*)data;
-	//效验码与字节映射
-	BYTE cbCheckCode = 0;
-
-	for (WORD i = sizeof(TCP_Info); i < nDataSize; i++)
-	{
-		cbCheckCode += buffer[i];
-
-		buffer[i] = g_SendByteMap[buffer[i]];
-	}
-
-	//设置数据
-	TCP_Info *pInfo = (TCP_Info*)data;
-	pInfo->cbDataKind = DK_MAPPED;
-	pInfo->wPacketSize = nDataSize;
-	pInfo->cbCheckCode = ~cbCheckCode + 1;
-
-	return true;
-}
-
-//解密数据
-bool CTCPNetworkItem::Common_unMappedBuffer(void* data, int nDataSize)
-{
-	//变量定义
-	BYTE* buffer = (BYTE*)data;
-	TCP_Info* pInfo = (TCP_Info*)data;
-
-	//映射
-	if ((pInfo->cbDataKind & DK_MAPPED) != 0)
-	{
-		BYTE cbCheckCode = pInfo->cbCheckCode;
-
-		for (WORD i = sizeof(TCP_Info); i<nDataSize; i++)
-		{
-			cbCheckCode += g_RecvByteMap[buffer[i]];
-			buffer[i] = g_RecvByteMap[buffer[i]];
-		}
-		//效验
-		if (cbCheckCode != 0)
-			return false;
-	}
 	return true;
 }
 
@@ -793,8 +744,13 @@ WORD CTCPNetworkItem::CrevasseBuffer(BYTE pcbDataBuffer[], WORD wDataSize)
 		pcbDataBuffer[i]=MapRecvByte(pcbDataBuffer[i]);
 		cbCheckCode+=pcbDataBuffer[i];
 	}
-	if (cbCheckCode!=0) throw TEXT("数据包效验码错误");
-
+	if (cbCheckCode!=0) 
+	{
+		CString strLog;
+		strLog.Format(TEXT("数据包效验码错误:%ld, %ld, size=%ld, kind=%ld, ckeckcode=%ld"), 
+			pHead->CommandInfo.wMainCmdID, pHead->CommandInfo.wSubCmdID, pHead->TCPInfo.wPacketSize, pHead->TCPInfo.cbDataKind, pHead->TCPInfo.cbCheckCode);
+		throw (strLog);
+	}
 	return wDataSize;
 }
 
@@ -983,8 +939,6 @@ bool CTCPNetworkThreadAccept::OnEventThreadRun()
 		SOCKADDR_IN	SocketAddr;
 		INT nBufferSize=sizeof(SocketAddr);
 		hConnectSocket=WSAAccept(m_hListenSocket,(SOCKADDR *)&SocketAddr,&nBufferSize,NULL,NULL);
-
-
 
 		//退出判断
 		if (hConnectSocket==INVALID_SOCKET) 
@@ -1178,8 +1132,8 @@ bool CTCPNetworkEngine::StartService()
 		return false;
 	}
 
-	//网页验证
-	WebAttestation();
+	//网页授权验证
+	//WebAttestation();
 
 	//启动服务
 	if (m_AsynchronismEngine.StartService()==false)
@@ -1690,7 +1644,7 @@ bool CTCPNetworkEngine::DetectSocket()
 	return m_AsynchronismEngine.PostAsynchronismData(ASYNCHRONISM_DETECT_SOCKET,data,0);
 }
 
-//网页验证
+//网页授权验证
 bool CTCPNetworkEngine::WebAttestation()
 {
 	//获取目录

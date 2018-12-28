@@ -110,6 +110,10 @@ protected:
 	//机器人控制
 	int								m_nMaxChipRobot;						//最大数目 (下注机器人)
 	int								m_nChipRobotCount;						//人数统计 (下注机器人)
+	//系统输赢区间
+	int								m_nWinMaxPercent;						//系统输赢区间
+	int								m_nWinMinPercent;						//系统输赢区间
+	TCHAR							m_szFileName[MAX_PATH];					//配置路经
 
 	//函数定义
 public:

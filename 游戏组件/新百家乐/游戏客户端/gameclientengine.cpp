@@ -3,13 +3,14 @@
 #include "GameClientEngine.h"
 #include "GameOption.h"
 
+
 //////////////////////////////////////////////////////////////////////////
 
 //时间标识
 #define IDI_FREE					99									//空闲时间
 #define IDI_PLACE_JETTON			100									//下注时间
 #define IDI_DISPATCH_CARD			301									//发牌时间
-#define IDI_PLACE_JETTON_BUFFER		302									//发牌时间
+#define IDI_PLACE_JETTON_BUFFER		302									//清除筹码								
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -260,6 +261,7 @@ bool CGameClientEngine::OnEventGameMessage(WORD wSubCmdID, VOID * pData, WORD wD
 		}
 	case SUB_S_GAME_END:		//游戏结束
 		{
+			//清空加注
 			while( m_PlaceBetArray.GetCount() > 0 )
 			{
 				CMD_S_PlaceBet &PlaceBet = m_PlaceBetArray[0];
@@ -267,7 +269,7 @@ bool CGameClientEngine::OnEventGameMessage(WORD wSubCmdID, VOID * pData, WORD wD
 				OnSubPlaceBet(&PlaceBet,sizeof(PlaceBet));
 				m_PlaceBetArray.RemoveAt(0);
 			}
-			KillTimer(IDI_PLACE_JETTON_BUFFER);
+			//KillTimer(IDI_PLACE_JETTON_BUFFER);
 			return OnSubGameEnd(pData,wDataSize);
 		}
 	case SUB_S_SEND_RECORD:		//游戏记录
@@ -458,6 +460,7 @@ bool CGameClientEngine::OnEventSceneMessage(BYTE cbGameStatus, bool bLookonOther
 			// 设置界面
 			if ( pStatusPlay->cbGameStatus == GAME_SCENE_END )
 			{
+				
 				//设置扑克
 				m_GameClientView.m_CardControl[INDEX_PLAYER].SetCardData(pStatusPlay->cbTableCardArray[INDEX_PLAYER], pStatusPlay->cbCardCount[INDEX_PLAYER]);
 				m_GameClientView.m_CardControl[INDEX_BANKER].SetCardData(pStatusPlay->cbTableCardArray[INDEX_BANKER], pStatusPlay->cbCardCount[INDEX_BANKER]);
@@ -630,6 +633,7 @@ bool CGameClientEngine::OnSubPlaceBet(const void * pBuffer, WORD wDataSize)
 	}
 
 
+
 	if (GetMeChairID() != pPlaceBet->wChairID || IsLookonMode())
 	{
 
@@ -679,6 +683,9 @@ bool CGameClientEngine::OnSubGameEnd(const void * pBuffer, WORD wDataSize)
 
 	//设置时间
 	SetGameClock(GetMeChairID(),IDI_DISPATCH_CARD, pGameEnd->cbTimeLeave);
+
+	//清理时间
+	KillTimer(IDI_PLACE_JETTON_BUFFER);
 
 	//扑克信息
 	m_GameClientView.SetCardInfo(pGameEnd->cbCardCount,pGameEnd->cbTableCardArray);

@@ -138,8 +138,6 @@
 
 #define DBR_GP_HYXX_LOG			93									//查询会员信息数量
 #define DBO_GP_HYXX_LOG_RET		94									//查询会员记录数量返回
-#define DBR_GP_HYXX_LOG_BY_ID	95									//查询会员信息
-#define DBR_GP_HYXX_LOG_BY_ACT	96									//查询会员信息
 
 #define DBR_GP_XGHY_FANDIAN			97									//修改会员返点
 #define DBO_GP_XGHY_FANDIAN_RET		98									//修改会员返点返回
@@ -155,6 +153,9 @@
 
 #define DBR_GP_HYXX_SET_XJPEIE			342									//设置下级配额
 #define DBO_GP_HYXX_SET_XJPEIE_RET		343									//设置下级配额返回
+
+#define DBR_GP_GET_PARENT				350								//获取上级
+#define DBO_GR_GET_PARENT_RET			351								//返回
 
 #define DBR_GP_GET_KEFU_URL				344
 #define DBO_GP_GET_KEFU_URL_RET			345							//获取客服链接
@@ -180,8 +181,6 @@
 
 #define DBR_GP_XJTZH_LOG			205									//查询下级投注记录
 #define DBO_GP_XJTZH_LOG_RET		206									//查询下级投注返回
-#define DBR_GP_XJTZH_LOG_BY_ID			207									//查询下级投注记录通过ID
-#define DBR_GP_XJTZH_LOG_BY_ACT			208									//查询下级投注记录通过账户
 
 #define DBR_GP_CHKXJTZH_LOG_COUNT			209									//查询下级投注记录数量
 #define DBO_GP_CHKXJTZH_LOG_COUNT_RET		210									//查询下级投注数量返回
@@ -198,31 +197,24 @@
 
 #define DBR_GP_GET_XJYK_LOG			219									//获取下家盈亏
 #define DBR_GP_GET_XJYK_LOG_RET		220									//获取下家盈亏返回
-#define DBR_GP_XJYK_LOG_BY_ID			221									//查询下级投注记录通过ID
-#define DBR_GP_XJYK_LOG_BY_ACT			222								//查询下级投注记录通过账户
 
 #define DBR_GP_XJYK_TJ_COUNT			223									//查询下级盈亏统计数量
 #define DBO_GP_XJYK_TJ_COUNT_RET		224									//查询下级盈亏统计数量返回
 
 #define DBR_GP_GET_XJYK_TJ			225								//获取下家盈亏
 #define DBR_GP_GET_XJYK_TJ_RET		226									//获取下家盈亏返回
-#define DBR_GP_XJYK_TJ_BY_ID			227									//查询下级投注记录通过ID
-#define DBR_GP_XJYK_TJ_BY_ACT			228								//查询下级投注记录通过账户
 
 #define DBR_GP_XJCHZH_LOG_COUNT			229									//查询下级充值数量
 #define DBO_GP_XJCHZH_LOG_COUNT_RET		230									//查询下级充值数量返回
 
 #define DBR_GP_GET_XJCHZH_LOG			231									//获取下家充值
 #define DBR_GP_GET_XJCHZH_LOG_RET		232									//获取下家充值返回
-#define DBR_GP_XJCHZH_LOG_BY_ID			233									//查询下级充值记录通过ID
-#define DBR_GP_XJCHZH_LOG_BY_ACT			234								//查询下级充值通过账户
 
 #define DBR_GP_XJTX_LOG_COUNT			235									//查询下级提现数量
 #define DBO_GP_XJTX_LOG_COUNT_RET		236									//查询下级提现数量返回
 
 #define DBR_GP_GET_XJTX_LOG			237									//获取下家提现
 #define DBR_GP_GET_XJTX_LOG_RET		238									//获取下家提现返回
-#define DBR_GP_XJTX_LOG_BY_ID			239									//查询下级提现记录通过ID
 #define DBR_GP_XJTX_LOG_BY_ACT			240								//查询下级提现通过账户
 
 #define DBR_GP_GET_CHONGZHI_TYPE			241									//获取充值信息
@@ -231,14 +223,18 @@
 #define DBR_GP_GET_QUKUAN_INFO				243									//获取取款信息
 #define DBO_GP_GET_QUKUAN_INFO_RET			244									//获取取款信息返回
 
-#define DBR_GP_DO_QUKUAN				245									//取款信息
-#define DBO_GP_DO_QUKUAN_RET			246									//取款信息返回
+#define DBR_GP_DO_QUKUAN					245									//取款信息
+#define DBO_GP_DO_QUKUAN_RET				246									//取款信息返回
 
-#define DBR_GP_GET_YUE_INFO				247									//获取余额信息
-#define DBO_GP_GET_YUE_INFO_RET			248									//获取余额信息返回
+#define DBR_GP_GET_QUKUAN_LIMIT				346									//取款限制
+#define DBO_GP_GET_QUKUAN_LIMIT_RET			347									//取款限制返回
+#define DBR_GP_GET_QIHAOCHA					348									//获取期号差
+#define DBR_GP_GET_QIHAOCHA_RET				349									//获取期号差
+#define DBR_GP_GET_YUE_INFO					247									//获取余额信息
+#define DBO_GP_GET_YUE_INFO_RET				248									//获取余额信息返回
 
-#define DBR_GP_QUIT_GAME				288									//退出游戏
-#define DBO_GP_QUIT_GAME_RET			289									//退出游戏返回
+#define DBR_GP_QUIT_GAME					288									//退出游戏
+#define DBO_GP_QUIT_GAME_RET				289									//退出游戏返回
 
 #define DBR_GP_GET_CP_USER_INFO				249									//获取玩家信息
 #define DBO_GP_GET_CP_USER_INFO_RET			250									//获取玩家信息返回
@@ -290,6 +286,63 @@
 #define DBR_GP_GET_SYS_TIME				281									//获取系统时间
 #define DBO_GP_GET_SYS_TIME_RET			282									//获取系统时间返回
 
+#define DBR_GP_GET_CANADA_QIHAO				352									//获取加拿大期号
+#define DBO_GP_GET_CANADA_QIHAO_RET			353									//获取加拿大期号返回
+
+#define DBR_GP_GET_NOTICE					354									//获取平台公告
+#define DBO_GP_GET_NOTICE_RET			355									//获取平台公告返回
+
+#define DBR_GP_GET_ZNX_COUNT					356									//获取站内信数量
+#define DBO_GP_GET_ZNX_COUNT_RET			357									//获取站内信数量返回
+
+#define DBR_GP_GET_ZNX_INBOX					358									//获取站内信
+#define DBO_GP_GET_ZNX_INBOX_RET			359									//获取站内信返回
+#define DBR_GP_CHK_ZNX_INBOX					360									//查看站内信
+
+#define DBR_GP_GET_ZNX_ALLCOUNT					361									//获取所有站内信数量
+#define DBO_GP_GET_ZNX_ALLCOUNT_RET			362									//获取所有站内信数量返回
+
+#define DBR_GP_GET_ALL_USER_INFO					363									//获取上下级信息
+#define DBO_GP_GET_ALL_USER_INFO_RET			364									//获取上下级信息返回
+
+#define DBR_GP_SEND_MESSAGE					365									//发送信息
+#define DBO_GP_SEND_MESSAGE_RET			366									//发送信息返回
+#define DBR_GP_DEL_MESSAGE					367									//删除信息
+#define DBO_GP_DEL_MESSAGE_RET			368									//删除信息返回
+
+//开奖查询
+#define DBR_GP_QUERY_MOBILE_RESULT			373									//开奖查询
+#define DBO_GP_QUERY_MOBILE_RESULT			374									//开奖查询
+
+//绑定手机号
+#define DBR_GP_BIND_PHONE							377									//绑定手机号
+#define DBO_GP_BIND_PHONE_RESULT			378									//绑定手机号返回
+
+//绑定手机号
+#define DBR_GP_SEND_YANGZHENGMA 		383									//发验证码到数据库
+
+#define DBO_GP_SEND_CHECK_YZM				384									//发送验证码到数据库验证
+#define DBO_GP_SEND_CHECK_YZM_RET		385									//发送验证码到数据库验证返回
+
+#define DBO_GP_GETTANSFERVERIFY				386									//获取是否有转账短信验证
+#define DBO_GP_GETTANSFERVERIFY_RET	387									//获取是否有转账短信验证返回
+//绑定手机号
+#define DBR_GP_SEND_YANGZHENGMA_TRANS 		388									//发验证码到数据库
+#define DBO_GP_SEND_CHECK_YZM_TRANS				389									//发送验证码到数据库验证
+#define DBO_GP_SEND_CHECK_YZM_TRANS_RET		390									//发送验证码到数据库验证返回
+
+#define DBO_GP_GET_QIPAIKIND									391
+#define DBO_GP_GET_QIPAIKIND_RET						392
+//设置验证
+#define DBR_GP_SET_PHONE_VERIFY				379									//设置验证
+#define DBO_GP_SET_PHONE_VERIFY_RESULT			380									//设置验证返回
+//解除绑定
+#define DBR_GP_UNBIND_PHONE							381									//解除绑定
+#define DBO_GP_UNBIND_PHONE_RESULT			382									//解除绑定返回
+
+#define DBR_GP_QUERY_STATUS_LOTTERY				375								//查询彩种状态 （针对跨年停售）
+#define DBO_GP_QUERY_STATUS_LOTTERY_RET 		376								//查询彩种状态 （针对跨年停售）
+
 #define DBR_GP_XJYX_TJ_COUNT			306									//查询下级盈亏统计数量
 #define DBO_GP_XJYX_TJ_COUNT_RET		307									//查询下级盈亏统计数量返回
 
@@ -317,6 +370,10 @@ struct DBO_GetLhcQihaoRet
 {
 	int								n_t_qihao;					//3.0总配额
 	SYSTEMTIME						n_t_fdshijian;							//系统时间
+};
+struct DBO_GP_GetQihaoCha
+{
+	int								n_t_qishu;
 };
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -585,13 +642,13 @@ struct DBR_GP_TouZhuCQSSC_Dan
 struct DBR_GP_TouZhuCQSSC_Zhuihao
 {
 	DWORD							dwUserID;							//用户ID
-	char							strQishu[50][20];						//期数
+	char							strQishu[100][20];						//期数
 	int								nGameType;							//游戏类别
 	int								nGameKind;							//玩法种类
-	char							strHaoma[14336];					//下注号码
+	char							strHaoma[12336];					//下注号码
 	int								nHaoMaLen;							//号码长度
 	int								nZhushu;							//注数
-	int								nBeitou[50];							//倍数
+	int								nBeitou[100];							//倍数
 	int								nMoshi;								//模式  元角分
 	int								nSign;								//投注标志
 	int								nEnd;								//是否发送结束
@@ -646,6 +703,8 @@ struct DBR_GP_GetTouzhuLogCount
 {
 	DWORD							dwUserID;							//用户ID
 	bool							bTime;								//通过时间查询
+	int									nCaiZhong;						//彩种
+	int									nStatus;								//中奖状态
 	TCHAR							szTimeStart[30];					//起始时间
 	TCHAR							szTimeEnd[30];						//结束时间
 };
@@ -696,11 +755,14 @@ struct DBR_GP_GetYingkuiMxCount
 //棋牌盈亏数
 struct DBR_GP_GetQiPaiYingkuiMxCount
 {
-	DWORD							dwUserID;							//用户ID
+	int								n_t_userid;						//查询ID 
+	int								n_t_xjid;						//查询ID 
+	TCHAR							s_t_account[30];					//查询账户
 	int								nTypeID;					
 	int								nByTime;					
 	TCHAR							szTimeStart[30];					//起始时间
 	TCHAR							szTimeEnd[30];						//结束时间
+	int									nKindID;
 };
 
 //查询投注日志数
@@ -717,14 +779,16 @@ struct DBR_GP_GetXJTZHLogCount
 //查询投注日志数
 struct DBR_GP_CHKXJTZHLogCount
 {
-	DWORD							dwUserID;							//用户ID
-	int								n_t_type;							//查询状态 0 :查所有人   1 :根据ID 查询   2 根据账户查询0
-	int								n_t_user_id;						//查询ID 
-	TCHAR							s_t_account[30];					//查询账户
-	int								n_xj_id;							//下级ID 
-	bool							bTime;								//通过时间查询
-	TCHAR							szTimeStart[30];					//起始时间
-	TCHAR							szTimeEnd[30];						//结束时间
+	DWORD							dwUserID;						//用户ID
+	int									n_t_type;							//查询状态 0 :查所有人   1 :根据ID 查询   2 根据账户查询0
+	int									n_t_user_id;						//查询ID 
+	TCHAR							s_t_account[30];			//查询账户
+	int									n_xj_id;								//下级ID 
+	int									n_t_caizhong;					//彩种
+	int									n_t_status;						//状态
+	bool								bTime;								//通过时间查询
+	TCHAR							szTimeStart[30];			//起始时间
+	TCHAR							szTimeEnd[30];				//结束时间
 };
 //返回
 struct DBO_GR_GetXJTZHLogCountRet
@@ -839,9 +903,11 @@ struct DBR_GP_GetChongzhiType
 struct DBO_GP_GetChongzhiTypeRet
 {
 	TCHAR							s_t_yinhang[60];				//银行
-	TCHAR							s_t_kaihuren[60];				//开户人
-	TCHAR							s_t_zhanghao[60];				//账号
-	TCHAR							s_t_web[60];					//网页
+	TCHAR							s_t_kaihuren[30];				//开户人
+	TCHAR							s_t_zhanghao[30];				//账号
+	TCHAR							s_t_web[120];					//网页
+	TCHAR							s_t_remark[124];					//网页
+	DWORD							n_t_typeid;						//typeid,tid
 };
 struct DBR_GP_GetQukuanInfo				//获取取款信息
 {
@@ -870,6 +936,17 @@ struct DBR_GP_GetLastYue			//余额信息
 struct DBR_GP_GetMoreRecord
 {
 	int							n_t_type;					//类型   1 转金币   2 转彩金
+};
+struct DBO_GP_QueryStatusLottery
+{
+	int								n_t_kindid;
+};
+struct DBR_GP_QueryStatusLotteryRet
+{
+	int								n_t_kindid;												//彩种ID
+	TCHAR						s_t_expect[30];		//标准期号
+	SYSTEMTIME						n_t_shijian;		//标准时间
+	BYTE							c_t_ifts;													//是否停售
 };
 
 struct DBO_GP_GetMoreRecordRet
@@ -918,6 +995,48 @@ struct DBO_GP_QuitGameRet
 	int								nResult;
 	int								nUserID;
 };
+struct DBO_GP_GetNotic 
+{
+	int								n_t_type;
+};
+struct DBR_GP_GetNoticRet
+{
+	int								n_t_id;
+	TCHAR						s_t_content[1024];
+	SYSTEMTIME				n_t_time;
+	INT								n_t_type;
+	TCHAR						s_t_title[33];
+};
+struct DBR_GP_GetZnxCount 
+{
+	int								n_t_userid;
+};
+struct DBO_GP_GetZnxCountRet
+{
+	int								n_t_userid;
+	int								n_t_count;
+};
+struct DBR_GP_SendMessage 
+{
+	TCHAR						s_t_title[126];
+	TCHAR						s_t_content[1024];
+	int								n_t_type;
+	int								n_t_userid;
+	int								n_t_revid;
+	int								n_t_sign;
+};
+
+struct DBO_GP_SendMessageRet
+{
+	int								n_t_retid;
+	int								n_t_sign;
+};
+
+struct DBO_GP_GetAllZnxCountRet
+{
+	int								n_t_userid;
+	int								n_t_count;
+};
 
 struct DBR_GP_UserQiandao
 {
@@ -953,6 +1072,27 @@ struct DBO_GP_GetLingJiangRet
 	int							n_t_got;
 	DOUBLE							f_t_jine;						//余额
 };
+struct DBR_GP_GetQukuanLimit
+{
+	int								n_t_userid;
+};
+struct DBO_GP_GetQukuanLimitRet 
+{
+	DOUBLE							f_t_nowxiaofei;				//当前消费			14
+	DOUBLE							f_t_xiaofei;				//所需消费额		13
+	DOUBLE							f_t_lowjine;				//最低金额			1
+	DOUBLE							f_t_highjine;				//最高金额			7
+	int								n_t_sxfpercent;				//手续费百分比		5
+	DOUBLE							f_t_lowsxf;					//最低手续费		9
+	DOUBLE							f_t_highsxf;				//最高手续费		10
+	int								n_t_limitcount;				//免费次数				8
+	int								n_t_lastcount;				//剩余提款次数			11
+	int								n_t_freelastcount;			//剩余免费次数			12
+	int								n_t_allcount;				//提款总次数			2
+	TCHAR							s_t_remark[256];			//取款说明				6
+	int							t_starttime;				//起始时间				3
+	int							t_endtime;					//终止时间				4
+};
 
 
 struct DBR_GP_DoQukuan				//取款
@@ -964,6 +1104,7 @@ struct DBR_GP_DoQukuan				//取款
 
 struct DBO_GP_DoQukuanRet
 {
+	int								nUserID;
 	int								nResult;						//返回值
 	TCHAR							szDesc[126];					//取款提示
 };
@@ -1033,8 +1174,17 @@ struct	DBR_GP_GetXJYKLog
 	int								nPage;								//页
 	int								nSize;								//页的大小
 	bool							bByTime;							//通过时间
-	TCHAR							szTimeStart[30];					//起始时间
-	TCHAR							szTimeEnd[30];						//结束时间
+	TCHAR							szTimeStart[40];					//起始时间
+	TCHAR							szTimeEnd[40];						//结束时间
+};
+struct DBR_GP_GetQipaiKind 
+{
+	int									n_t_typeid;
+};
+struct DBO_GR_GetQipaiKindRet 
+{
+	int									n_t_kindid;
+	TCHAR							s_t_Name[33];
 };
 
 struct DBO_GR_GetXJYKLogRet
@@ -1143,7 +1293,8 @@ struct DBO_GR_GetXJYKTjRet
 {
 	int								n_t_id;
 	TCHAR							s_t_account[30];
-	int								n_t_type;
+	WORD							n_t_type;
+	WORD							n_t_permillage; //充值费用千分点
 	DOUBLE							f_t_chongzhi_ze;
 	DOUBLE							f_t_qukuan_ze;
 	DOUBLE							f_t_touzhu_ze;
@@ -1152,7 +1303,8 @@ struct DBO_GR_GetXJYKTjRet
 	DOUBLE							f_t_xjfandian_ze;
 	DOUBLE							f_t_huodong_ze;
 	DOUBLE							f_t_tuandui_ye;
-//	DOUBLE							f_t_qipai_ze;
+	DOUBLE							f_t_qipai_yk;
+	DOUBLE							f_t_qipai_fd;
 };
 struct DBO_GR_GetXJYXTjRet
 {
@@ -1172,8 +1324,68 @@ struct	DBR_GP_GetTouzhuLog
 	int								nPage;								//页
 	int								nSize;								//页的大小
 	bool							bByTime;							//通过时间
+	int									nCaiZhong;						//彩种
+	int									nStatus;								//中奖状态
 	TCHAR							szTimeStart[30];					//起始时间
 	TCHAR							szTimeEnd[30];						//结束时间
+};
+struct DBR_GP_ChkInboxMessage 
+{
+	int								n_t_id;
+	int								n_t_userid;
+};
+struct DBR_GP_DelMessage 
+{
+	int								n_t_type;
+	int								n_t_id;
+};
+
+struct DBO_GP_DelMessageRet
+{
+	int								n_t_retid;
+};
+
+struct DBR_GP_GetInboxMessage 
+{
+	int								n_t_userid;
+	int								n_t_typeid;
+	int								n_t_page;
+	int								n_t_size;
+};
+
+struct DBR_GP_GetAllUserInfo 
+{
+	int								n_t_typeid;
+	TCHAR						s_t_search[33];
+	int								n_t_edittype;
+	int								n_t_size;
+	int								n_t_userid;
+	int								n_t_count;
+
+};
+
+struct DBO_GP_GetAllUserInfoRet
+{
+	int								n_t_userid;
+	TCHAR						s_t_name[33];
+	int								n_t_type;
+	int								n_t_count;
+};
+
+struct DBO_GP_GetInboxMessageRet
+{
+	int								n_t_id;
+	TCHAR						s_t_title[126];
+	TCHAR						s_t_content[1024];
+	SYSTEMTIME				n_t_time;
+	int								n_send_userid;
+	int								n_rcv_userid;
+	int								n_t_sitetype;
+	TCHAR						s_t_username[33];
+	BYTE							c_t_ifread;
+	int								n_t_rownum;
+	int								n_t_count;
+	int								n_t_ifSj;
 };
 
 struct	DBR_GP_GetXJTZHLog
@@ -1191,12 +1403,14 @@ struct	DBR_GP_GetXJTZHLog
 struct	DBR_GP_CHKXJTZHLog
 {
 	DWORD							dwUserID;							//用户ID
-	int								n_t_type;							//查询状态 0 :查所有人   1 :根据ID 查询   2 根据账户查询0
-	int								n_t_user_id;						//查询ID 
+	int									n_t_type;							//查询状态 0 :查所有人   1 :根据ID 查询   2 根据账户查询0
+	int									n_t_user_id;						//查询ID 
 	TCHAR							s_t_account[30];					//查询账户
-	int								nPage;								//页
-	int								nSize;								//页的大小
-	bool							bByTime;							//通过时间
+	int									nPage;								//页
+	int									nSize;								//页的大小
+	int									n_t_caizhong;					//彩种
+	int									n_t_status;							//状态
+	bool								bByTime;							//通过时间
 	TCHAR							szTimeStart[30];					//起始时间
 	TCHAR							szTimeEnd[30];						//结束时间
 };
@@ -1278,7 +1492,8 @@ struct	DBR_GP_GetHyShj //获取会员数据
 struct DBO_GR_GetHyShjRet
 {
 	int								n_t_xjrs;						//下级人数
-	int								n_t_xjzx;						//下级在线
+	WORD							n_t_xjzx;						//下级在线
+	WORD							n_t_qianfenlv;						//充值费用千分率
 	DOUBLE							f_t_hyye;						//会员余额
 	DOUBLE							f_t_jrfd;						//今日返点
 	DOUBLE							f_t_jrchz;						//今日充值
@@ -1296,6 +1511,8 @@ struct DBO_GR_GetHyShjRet
 	DOUBLE							f_my_qp_fandian;				//我的棋牌返点
 	DOUBLE							f_touzhuyongjin;				//投注佣金
 	DOUBLE							f_kuisunyongjin;				//亏损佣金
+	int									n_t_newchongzhi;			//当日注册并充值的人数
+	DOUBLE							f_t_userfandian;				//团队返点
 };
 
 struct	DBR_GP_CHKXJTZHLogByAct
@@ -1372,12 +1589,41 @@ struct DBR_GetXjPeie
 struct DBO_GetXjPeieRet
 {
 	int								n_t_peie_1;					//3.0总配额
-	int								n_t_peie_2;					//2.8总配额
-	int								n_t_peie_3;					//2.7总配额
+	int								n_t_peie_2;					//2.9总配额
+	int								n_t_peie_3;					//2.8总配额
+	int								n_t_peie_4;					//2.7总配额
+	int								n_t_peie_5;					//2.6总配额
 	int								n_t_peie_s_1;				//3.0已用配额
-	int								n_t_peie_s_2;				//2.8已用配额
-	int								n_t_peie_s_3;				//2.7已用配额
+	int								n_t_peie_s_2;				//2.9已用配额
+	int								n_t_peie_s_3;				//2.8已用配额
+	int								n_t_peie_s_4;				//2.7已用配额
+	int								n_t_peie_s_5;				//2.6已用配额
 };
+
+struct DBR_GP_GetPhoneTransferFenhong 
+{
+	int										n_t_userid;
+	int										n_t_type;									
+};
+struct DBO_GR_GetPhoneTransferFenhongRet
+{
+	int									n_t_state;
+	TCHAR							sPhoneNum[200];
+};
+
+
+struct DBO_GetParent
+{
+	int								n_t_userid;						//ID
+	int								n_t_xj_id;						//下级ID
+};
+struct DBR_GetParentRet
+{
+	int								n_t_result;					//返回
+	int								n_t_userid[10];
+	TCHAR							s_t_desc[10][126];				//描述
+};
+
 struct DBR_SetXjPeie
 {
 	int								n_t_userid;						//ID
@@ -1385,6 +1631,8 @@ struct DBR_SetXjPeie
 	int								n_t_peie1;
 	int								n_t_peie2;
 	int								n_t_peie3;
+	int								n_t_peie4;
+	int								n_t_peie5;
 };
 struct DBO_SetXjPeieRet
 {
@@ -1396,12 +1644,14 @@ struct	DBR_GP_HYXX_ZhuanZhang
 {
 	int								n_t_user_id;							//自己ID
 	int								n_t_target_id;							//目标ID
+	int								n_t_type;								//转账类型
 	DOUBLE 							f_t_jine;								//金额
 	TCHAR							s_t_password[126];							//密码
 };
 struct DBO_GP_HYXX_ZhuanZhang_RET
 {
-	int							lResult;
+	int								lResult;
+	TCHAR							s_t_desc[126];				//描述
 };
 
 
@@ -1462,12 +1712,15 @@ struct	DBR_GP_GetYingkuiMx
 //盈亏明细
 struct	DBR_GP_GetQiPaiYingkui
 {
-	DWORD							dwUserID;							//用户ID
+	int									n_t_userid;							//用户ID
+	int									n_t_xjid;								//下级ID
+	TCHAR							s_t_account[30];					//查询账户
 	int								nPage;								//页
 	int								nSize;								//页的大小
 	bool							bByTime;							//通过时间
 	TCHAR							szTimeStart[30];					//起始时间
 	TCHAR							szTimeEnd[30];						//结束时间
+	int									nKindID;
 };
 struct DBR_GetUrlFandian
 {
@@ -1487,12 +1740,16 @@ struct DBR_GetPeie
 };
 struct DBR_GetPeieRet
 {
-	int								n_t_peie_1;
-	int								n_t_peie_2;
-	int								n_t_peie_3;
-	int								n_t_peie_s_1;
-	int								n_t_peie_s_2;
-	int								n_t_peie_s_3;
+	int								n_t_peie_1;					//3.0总配额
+	int								n_t_peie_2;					//2.9总配额
+	int								n_t_peie_3;					//2.8总配额
+	int								n_t_peie_4;					//2.7总配额
+	int								n_t_peie_5;					//2.6总配额
+	int								n_t_peie_s_1;				//3.0已用配额
+	int								n_t_peie_s_2;				//2.9已用配额
+	int								n_t_peie_s_3;				//2.8已用配额
+	int								n_t_peie_s_4;				//2.7已用配额
+	int								n_t_peie_s_5;				//2.6已用配额
 };
 
 struct DBR_GP_AddHuiYuan
@@ -1555,8 +1812,13 @@ struct DBR_GP_GetNews
 
 struct DBO_GP_GetNewsRet
 {
-	TCHAR						s_t_news[512];				//新闻
-	SYSTEMTIME					s_t_time;					//更新时间
+// 	TCHAR						s_t_news[512];				//新闻
+// 	SYSTEMTIME					s_t_time;					//更新时间
+		TCHAR						s_t_account[33];
+		TCHAR						s_t_TypeName[33];
+		DOUBLE						f_t_yingkui;
+		TCHAR						s_t_qihao[126];
+
 };
 
 //转换
@@ -1616,6 +1878,55 @@ struct DBO_GR_XG_Qukuanpass_RET
 {
 	int							lResult;
 };
+struct	DBR_GP_BindPhone
+{
+	int							nUserID;							//用户ID
+	TCHAR					sPhoneNum[20];									//手机号
+	BYTE						cType;								//1前台，2后台
+};
+struct DBO_GR_BindPhone_RET
+{
+	int							lResult;
+};
+struct	DBR_GP_SetBindPhoneInfo
+{
+	int							nUserID;							//用户ID
+	BYTE						cLoginverify;					//登录验证
+	BYTE						cTranferAccount;			//转账验证
+	BYTE						cfenhong;					//分红验证
+	BYTE						cType;							//类型  1、查询 ，2、编辑
+};
+struct DBO_GR_BindPhoneInfo_RET
+{
+	int							nResult;
+	int							nUserID;							//用户ID
+	BYTE						cLoginverify;					//登录验证
+	BYTE						cTranferAccount;			//转账验证
+	BYTE						cfenhong;					//分红验证
+	TCHAR					sPhoneNum[20];			//手机号码
+};
+struct	DBR_GP_UnBindPhone
+{
+	int							nUserID;							//用户ID
+};
+struct DBO_GR_UnBindPhone_RET
+{
+	int							nResult;
+	TCHAR					sDesc[128];
+};
+struct DBR_SendYanZhengma
+{
+	int								n_t_userid;					//返回
+	TCHAR						s_t_code[12];				//验证码
+	BYTE							c_t_type;
+	BYTE							c_t_stype;
+};
+struct DBO_GR_SendYanZhengmaRet
+{
+	int									n_t_userid;
+	int									nResult;
+	TCHAR							sDesc[200];
+};
 
 struct	DBR_GP_LockMachine
 {
@@ -1654,7 +1965,7 @@ struct	DBR_GP_SetQukuanZhanghao
 	DWORD							dwUserID;							//用户ID
 	TCHAR							szKaihuYinghang[33];						//密码
 	TCHAR							szKaihuRen[33];						//问题
-	TCHAR							szYinhangZhanghu[33];						//答案
+	TCHAR							szYinhangZhanghu[39];						//答案
 	TCHAR							szQukuanPass[33];						//答案
 };
 
@@ -1667,7 +1978,8 @@ struct DBR_GR_QueryMyYinHang_RET
 	int							lResult;
 	TCHAR						szKaihuYinghang[33];
 	TCHAR						szKaihuRen[33];
-	TCHAR						szYinhangZhanghu[33];				
+	TCHAR						szYinhangZhanghu[33];			
+	BYTE						n_t_lock;
 };
 
 struct DBO_GR_SetQukuanZhanghao_RET
@@ -1750,11 +2062,19 @@ struct DBO_GR_GetHYXXLogRet
 	int								n_t_type;
 	DOUBLE							f_t_fandian;
 	DOUBLE							f_t_yue;
+	SYSTEMTIME						n_t_lasttime;
+	TCHAR							s_t_online[33];
 	int								n_t_online;
 	TCHAR							s_t_qq[11];
-
+	BYTE								cb_ifxj;
 };
 
+struct DBO_GR_GetCanadaQihaoRet
+{
+	TCHAR						s_t_qihao[30];
+	SYSTEMTIME				n_t_open_time;
+	SYSTEMTIME				n_t_add_time;
+};
 
 struct DBO_GR_GetTouzhuLogRet
 {
@@ -1881,7 +2201,9 @@ struct DBO_GP_LogonSuccess
 	DWORD							dwExperience;						//经验数值
 	TCHAR							szPassword[LEN_MD5];				//登录密码
 	TCHAR							szAccounts[LEN_ACCOUNTS];			//登录帐号
-	TCHAR							szNickName[LEN_NICKNAME];			//用户昵称
+	//TCHAR							szNickName[LEN_NICKNAME];			//用户昵称
+	BYTE								cIsYanZheng;
+	TCHAR							szPhoneNum[31];
 
 	//用户成绩
 	SCORE							lScore;								//用户积分
@@ -1903,6 +2225,7 @@ struct DBO_GP_LogonSuccess
 	DOUBLE							f_fandian;
 	DOUBLE							f_dongjie;
 	DOUBLE							f_yue;
+	WORD							wServerID;
 	//描述信息
 	TCHAR							szDescribeString[128];				//描述消息
 

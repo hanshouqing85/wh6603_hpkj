@@ -239,10 +239,6 @@ private:
 	WORD EncryptBuffer(BYTE pcbDataBuffer[], WORD wDataSize, WORD wBufferSize);
 	//解密数据
 	WORD CrevasseBuffer(BYTE pcbDataBuffer[], WORD wDataSize);
-	//解密数据
-	bool Common_unMappedBuffer(void* data, int nDataSize);
-	//加密数据
-	bool Common_MappedBuffer(void* data, int nDataSize);
 
 	//内联函数
 private:

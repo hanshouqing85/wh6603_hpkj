@@ -647,15 +647,15 @@ VOID CHuiYuanTxLogDlg::SendToServer(int nSendType)
 		if(m_bGetXjTxLogByID)
 		{
 			m_bGetXjTxLogByID = false;
-			CMD_GP_GetXJTxLogByID GetXJTxLog;
-			ZeroMemory(&GetXJTxLog,sizeof(GetXJTxLog));
+			//CMD_GP_GetXJTxLogByID GetXJTxLog;
+			//ZeroMemory(&GetXJTxLog,sizeof(GetXJTxLog));
 
-			GetXJTxLog.dwUserID = theAccount.user_id;
-			int xj_id = _ttoi(m_strID);
-			GetXJTxLog.nXiaJiID = xj_id;
+			//GetXJTxLog.dwUserID = theAccount.user_id;
+			//int xj_id = _ttoi(m_strID);
+			//GetXJTxLog.nXiaJiID = xj_id;
 
-			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_XJTX_LOG_BY_ID,&GetXJTxLog,sizeof(GetXJTxLog));
+			//CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
+			//pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_XJTX_LOG_BY_ID,&GetXJTxLog,sizeof(GetXJTxLog));
 			return;
 
 		}
@@ -668,13 +668,13 @@ VOID CHuiYuanTxLogDlg::SendToServer(int nSendType)
 		if(m_bGetXjTxLogByAct)
 		{
 			m_bGetXjTxLogByAct=false;
-			CMD_GP_GetXJTxLogByAct Tj;
-			ZeroMemory(&Tj,sizeof(Tj));
+			//CMD_GP_GetXJTxLogByAct Tj;
+			//ZeroMemory(&Tj,sizeof(Tj));
 
-			Tj.dwUserID = theAccount.user_id;
-			lstrcpyn(Tj.szAccount,m_strAct.GetBuffer(),sizeof(Tj.szAccount));
-			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_XJTX_LOG_BY_ACT,&Tj,sizeof(Tj));
+			//Tj.dwUserID = theAccount.user_id;
+			//lstrcpyn(Tj.szAccount,m_strAct.GetBuffer(),sizeof(Tj.szAccount));
+			//CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
+			//pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_XJTX_LOG_BY_ACT,&Tj,sizeof(Tj));
 			return;
 		}
 	}

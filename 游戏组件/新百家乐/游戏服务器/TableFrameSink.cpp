@@ -11,7 +11,7 @@
 #define INDEX_PLAYER				0									//闲家索引
 #define INDEX_BANKER				1									//庄家索引
 
-//下注时间
+//空闲时间
 #define IDI_FREE					1									//空闲时间
 #define TIME_FREE					10									//空闲时间
 
@@ -81,6 +81,10 @@ CTableFrameSink::CTableFrameSink()
 	m_lBankerScoreAdd = 0l;
 	m_lPlayerBankerMAX = 0l;
 	m_bExchangeBanker = true;
+
+	//系统输赢区间
+	m_nWinMaxPercent=80;
+	m_nWinMinPercent=20;
 
 	//时间控制
 	m_cbFreeTime = TIME_FREE;
@@ -216,7 +220,7 @@ bool CTableFrameSink::OnEventGameStart()
 	IServerUserItem* pIBankerServerUserItem = NULL;
 	if ( m_wCurrentBanker == INVALID_CHAIR )
 	{
-		m_lBankerScore = 1000000000;
+		m_lBankerScore = 10000;
 		m_GameRecord.AppendFormat(TEXT("系统庄,%I64d#"),m_lBankerScore);
 	}
 	else
@@ -325,7 +329,69 @@ bool CTableFrameSink::OnEventGameConclude(WORD wChairID, IServerUserItem * pISer
 
 			TCHAR szTemp[255]=TEXT("");
 			swprintf(szTemp, sizeof(szTemp),TEXT("游戏结束,当前库存：%I64d"),m_StorageStart);
-		//m_DebugWindow.WriteString(szTemp);
+			//m_DebugWindow.WriteString(szTemp);
+
+			////////////////////////////////////////////////////////////
+
+			//设置文件名
+			//获取目录
+			TCHAR szPath[MAX_PATH]=TEXT("");
+			GetCurrentDirectory(CountArray(szPath),szPath);
+			//读取配置
+			_sntprintf(m_szFileName,CountArray(m_szFileName),TEXT("%s\\BaccaratNewConfig.ini"),szPath);
+
+			//TCHAR szPath[MAX_PATH] = TEXT("");
+			//TCHAR szConfigFileName[MAX_PATH] = TEXT("");
+			//TCHAR OutBuf[255] = TEXT("");
+			//GetCurrentDirectory(sizeof(szPath), szPath);
+			//_sntprintf(szConfigFileName, CountArray(szConfigFileName), TEXT("%s\\%s"), szPath, szFileName);
+
+	
+
+			//判断是否存在真实玩家
+			bool bUser = false;
+			for (WORD i=0;i<GAME_PLAYER;i++)
+			{
+				IServerUserItem * pIServerUserItemTemp=m_pITableFrame->GetTableUserItem(i);
+				if (pIServerUserItemTemp==NULL) continue;
+				if (!pIServerUserItemTemp->IsAndroidUser()){
+					//存在真实用户
+					bUser = true;
+					//跳出FOR
+					break;
+
+				}
+			}
+			if (bUser)
+			{
+
+				//CString strLog;
+				//strLog.Format(TEXT("桌号：%d,当前库存：%0.2f,系统得分：%0.2f,税收：%0.2f,剩余库存：%0.2f,库存衰减：%0.2f"),m_pITableFrame->GetTableID()+1,lCurrentStorgeNum,lSystemScore,RevenueScore,m_lStockScore,lStorageDeduct);
+				//CTraceService::TraceString(strLog,TraceLevel_Info);  //输出信息
+
+
+				
+				//m_lStockLimit+=lSystemScore;m_StorageStart
+
+				CString szlStorageStart;
+				szlStorageStart.Format(TEXT("%d"),m_StorageStart);
+				//记录总输赢记录
+				WritePrivateProfileString(m_pGameServiceOption->szServerName,TEXT("StorageStart"),szlStorageStart,m_szFileName);
+
+
+				///////////////////////////////////
+
+
+				////如果存在控制用户的话//发送游戏信息给控制号
+				//for(int i=0; i<GAME_PLAYER; i++)
+				//{
+				//	IServerUserItem* pUserItem=m_pITableFrame->GetTableUserItem(i); //获取用户帐号
+				//	if(pUserItem==NULL) continue;	//如果用户不存在
+				//	if(pUserItem->IsAndroidUser()) continue;  //如果是机器人
+				//	if((CUserRight::IsGameCheatUser(pUserItem->GetUserRight()))==false) continue;  //判断用户控制权限
+				//	m_pITableFrame->SendGameMessage(pUserItem,strLog,SMT_EJECT);					   //发送消息窗口
+				//}
+			}
 
 			CTraceService::TraceString(szTemp,TraceLevel_Info);
 
@@ -499,6 +565,73 @@ bool CTableFrameSink::OnEventGameConclude(WORD wChairID, IServerUserItem * pISer
 			//切换庄家
 			ChangeBanker(true);
 
+			TCHAR szTemp[255]=TEXT("");
+			swprintf(szTemp, sizeof(szTemp),TEXT("游戏结束,当前库存：%I64d"),m_StorageStart);
+			//m_DebugWindow.WriteString(szTemp);
+
+			////////////////////////////////////////////////////////////
+
+			//设置文件名
+			//获取目录
+			TCHAR szPath[MAX_PATH]=TEXT("");
+			GetCurrentDirectory(CountArray(szPath),szPath);
+			//读取配置
+			_sntprintf(m_szFileName,CountArray(m_szFileName),TEXT("%s\\BaccaratNewConfig.ini"),szPath);
+
+			//TCHAR szPath[MAX_PATH] = TEXT("");
+			//TCHAR szConfigFileName[MAX_PATH] = TEXT("");
+			//TCHAR OutBuf[255] = TEXT("");
+			//GetCurrentDirectory(sizeof(szPath), szPath);
+			//_sntprintf(szConfigFileName, CountArray(szConfigFileName), TEXT("%s\\%s"), szPath, szFileName);
+
+
+
+			//判断是否存在真实玩家
+			bool bUser = false;
+			for (WORD i=0;i<GAME_PLAYER;i++)
+			{
+				IServerUserItem * pIServerUserItemTemp=m_pITableFrame->GetTableUserItem(i);
+				if (pIServerUserItemTemp==NULL) continue;
+				if (!pIServerUserItemTemp->IsAndroidUser()){
+					//存在真实用户
+					bUser = true;
+					//跳出FOR
+					break;
+
+				}
+			}
+			if (bUser)
+			{
+
+				//CString strLog;
+				//strLog.Format(TEXT("桌号：%d,当前库存：%0.2f,系统得分：%0.2f,税收：%0.2f,剩余库存：%0.2f,库存衰减：%0.2f"),m_pITableFrame->GetTableID()+1,lCurrentStorgeNum,lSystemScore,RevenueScore,m_lStockScore,lStorageDeduct);
+				//CTraceService::TraceString(strLog,TraceLevel_Info);  //输出信息
+
+
+
+				//m_lStockLimit+=lSystemScore;m_StorageStart
+
+				CString szlStorageStart;
+				szlStorageStart.Format(TEXT("%d"),m_StorageStart);
+				//记录总输赢记录
+				WritePrivateProfileString(m_pGameServiceOption->szServerName,TEXT("StorageStart"),szlStorageStart,m_szFileName);
+
+
+				///////////////////////////////////
+
+
+				////如果存在控制用户的话//发送游戏信息给控制号
+				//for(int i=0; i<GAME_PLAYER; i++)
+				//{
+				//	IServerUserItem* pUserItem=m_pITableFrame->GetTableUserItem(i); //获取用户帐号
+				//	if(pUserItem==NULL) continue;	//如果用户不存在
+				//	if(pUserItem->IsAndroidUser()) continue;  //如果是机器人
+				//	if((CUserRight::IsGameCheatUser(pUserItem->GetUserRight()))==false) continue;  //判断用户控制权限
+				//	m_pITableFrame->SendGameMessage(pUserItem,strLog,SMT_EJECT);					   //发送消息窗口
+				//}
+			}
+
+
 			return true;
 		}
 	}
@@ -522,7 +655,7 @@ bool CTableFrameSink::OnEventSendGameScene(WORD wChiarID, IServerUserItem * pISe
 
 			//全局信息
 			DWORD dwPassTime = (DWORD)time(NULL)-m_dwBetTime;
-			StatusFree.cbTimeLeave = (BYTE)(m_cbFreeTime - __min(dwPassTime, m_cbFreeTime));
+			StatusFree.cbTimeLeave = (BYTE)(m_cbFreeTime - __min(dwPassTime, (DWORD)m_cbFreeTime));
 
 			//玩家信息
 			StatusFree.lPlayFreeSocre = (LONGLONG)pIServerUserItem->GetUserScore();
@@ -532,6 +665,12 @@ bool CTableFrameSink::OnEventSendGameScene(WORD wChiarID, IServerUserItem * pISe
 			StatusFree.lBankerWinScore = m_lBankerWinScore;
 			StatusFree.lBankerScore = m_lBankerScore;
 			StatusFree.wFaceID = m_wFaceID;
+			if (m_wCurrentBanker!=INVALID_CHAIR)
+			{
+				IServerUserItem *pIServerUserItem=m_pITableFrame->GetTableUserItem(m_wCurrentBanker);
+				wcscpy(StatusFree.szBankerNickName,pIServerUserItem->GetNickName());
+			}
+
 
 			//是否系统坐庄
 			StatusFree.bEnableSysBanker=m_bEnableSysBanker;
@@ -558,7 +697,7 @@ bool CTableFrameSink::OnEventSendGameScene(WORD wChiarID, IServerUserItem * pISe
 						
 			//发送申请者
 			SendApplyUser(pIServerUserItem);
-
+ 
 			return bSuccess;
 		}
 	case GAME_SCENE_BET:		//游戏状态
@@ -597,6 +736,12 @@ bool CTableFrameSink::OnEventSendGameScene(WORD wChiarID, IServerUserItem * pISe
 			StatusPlay.lBankerWinScore = m_lBankerWinScore;	
 			StatusPlay.lBankerScore = m_lBankerScore;
 			StatusPlay.wFaceID = m_wFaceID;
+
+			if (m_wCurrentBanker!=INVALID_CHAIR)
+			{
+				IServerUserItem *pIServerUserItem=m_pITableFrame->GetTableUserItem(m_wCurrentBanker);
+				wcscpy(StatusPlay.szBankerNickName,pIServerUserItem->GetNickName());
+			}
 
 			//是否系统坐庄
 			StatusPlay.bEnableSysBanker = m_bEnableSysBanker;
@@ -734,7 +879,8 @@ bool  CTableFrameSink::OnTimerMessage(DWORD dwTimerID, WPARAM dwBindParameter)
 			m_pITableFrame->WriteTableScore(ScoreInfoArray,CountArray(ScoreInfoArray));
 
 			//结束游戏
-			m_pITableFrame->ConcludeGame(GAME_SCENE_FREE,m_GameRecord,608);
+			//m_pITableFrame->ConcludeGame(GAME_SCENE_FREE,m_GameRecord,608);
+			m_pITableFrame->ConcludeGame(GAME_SCENE_FREE,NULL,608);
 
 			//读取配置
 			if (m_bRefreshCfg)
@@ -766,7 +912,7 @@ bool  CTableFrameSink::OnGameMessage(WORD wSubCmdID, VOID * pData, WORD wDataSiz
 {
 	switch (wSubCmdID)
 	{
-	case SUB_C_PLACE_JETTON:		//用户加注
+	case SUB_C_PLACE_JETTON:		//用户下注
 		{
 			//效验数据
 			ASSERT(wDataSize == sizeof(CMD_C_PlaceBet));
@@ -790,7 +936,6 @@ bool  CTableFrameSink::OnGameMessage(WORD wSubCmdID, VOID * pData, WORD wDataSiz
 		{
 			//用户效验
 			if ( pIServerUserItem->GetUserStatus() == US_LOOKON ) return true;
-
 			return OnUserCancelBanker(pIServerUserItem);	
 		}
 	case SUB_C_AMDIN_COMMAND:
@@ -1002,7 +1147,7 @@ bool CTableFrameSink::OnActionUserStandUp(WORD wChairID, IServerUserItem * pISer
 	return true;
 }
 
-//取消加注
+//取消下注
 bool CTableFrameSink::OnUserCancelBet(WORD wChairID)
 {
 	//效验状态
@@ -1033,7 +1178,7 @@ bool CTableFrameSink::OnUserCancelBet(WORD wChairID)
 	return true;
 }
 
-//加注事件
+//下注事件
 bool CTableFrameSink::OnUserPlayBet(WORD wChairID, BYTE cbBetArea, LONGLONG lBetScore)
 {
 	//效验参数
@@ -1291,7 +1436,7 @@ bool CTableFrameSink::OnUserApplyBanker(IServerUserItem *pIApplyServerUserItem)
 bool CTableFrameSink::OnUserCancelBanker(IServerUserItem *pICancelServerUserItem)
 {
 	//当前庄家
-	if (pICancelServerUserItem->GetChairID() == m_wCurrentBanker && m_pITableFrame->GetGameStatus()!=GAME_SCENE_FREE)
+ 	if (pICancelServerUserItem->GetChairID() == m_wCurrentBanker && m_pITableFrame->GetGameStatus()!=GAME_SCENE_FREE)
 	{
 		//发送消息
 		CMD_S_TipInfo TipInfo;
@@ -1500,6 +1645,7 @@ bool CTableFrameSink::ChangeBanker(bool bCancelCurrentBanker)
 		{
 			IServerUserItem *pIServerUserItem = m_pITableFrame->GetTableUserItem(m_wCurrentBanker);
 			stChangeBanker.lBankerScore = (LONGLONG)pIServerUserItem->GetUserScore();
+			wcscpy(stChangeBanker.szBankerNickName,pIServerUserItem->GetNickName());
 		}
 		else
 		{
@@ -1918,6 +2064,8 @@ bool CTableFrameSink::CalculateScore( OUT LONGLONG& lBankerWinScore, OUT tagServ
 		return true; 
 	}
 
+
+
 	//系统分值计算
 	if ((lSystemScore + m_StorageStart) < 0l)
 	{
@@ -1925,6 +2073,12 @@ bool CTableFrameSink::CalculateScore( OUT LONGLONG& lBankerWinScore, OUT tagServ
 	}
 	else
 	{
+
+		//系统输赢区间
+		if (lSystemScore + m_StorageStart<m_StorageStart*m_nWinMinPercent/100&&lSystemScore + m_StorageStart>m_StorageStart*m_nWinMaxPercent/100)
+		{
+			return false;
+		}
 		m_StorageStart += lSystemScore;
 		m_StorageStart = m_StorageStart - (m_StorageStart * m_StorageDeduct / 1000);
 		return true;
@@ -2109,6 +2263,8 @@ void CTableFrameSink::ReadConfigInformation(bool bReadFresh)
 	m_bEnableSysBanker = (pCustomConfig->nEnableSysBanker == TRUE);
 
 	m_StorageStart = pCustomConfig->StorageStart;
+
+	
 	m_StorageDeduct = pCustomConfig->StorageDeduct;
 
 	m_lBankerMAX = pCustomConfig->lBankerMAX;
@@ -2117,6 +2273,8 @@ void CTableFrameSink::ReadConfigInformation(bool bReadFresh)
 	m_lBankerScoreAdd = pCustomConfig->lBankerScoreAdd;
 
 	m_nMaxChipRobot = GetPrivateProfileInt(m_szGameRoomName, TEXT("RobotBetCount"), 10, m_szConfigFileName);
+	m_nWinMaxPercent = GetPrivateProfileInt(m_szGameRoomName, TEXT("WinMaxPercent"), 80, m_szConfigFileName);
+	m_nWinMinPercent = GetPrivateProfileInt(m_szGameRoomName, TEXT("WinMinPercent"), 20, m_szConfigFileName);
 	if (m_nMaxChipRobot < 0)	m_nMaxChipRobot = 10;
 
 	if ( m_lBankerScoreMAX <= m_lApplyBankerCondition)
@@ -2263,7 +2421,7 @@ CString CTableFrameSink::TransformCardInfo( BYTE cbCardData )
 	return str;
 }
 
-	//区域文字
+//区域文字
 CString CTableFrameSink::TransformAreaInfo( BYTE cbArea )
 {
 	CString str = TEXT("");

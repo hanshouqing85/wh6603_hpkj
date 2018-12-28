@@ -10,7 +10,7 @@ byte pDestBuffer[102400];
 int nTouZhuSign = 0;
 int nZongZhu1 = 0;
 static const int  timer_get_sql_time = 1;				//获取数据库时间
-
+map<int,tagHaoma*> mapHaoma;
 //彩票种类
 typedef enum {
 	CZChongQingSSC=1,		//重庆时时彩
@@ -33,6 +33,12 @@ typedef enum {
 	CZXingYun28,
 	CZ_HGYDWFC=20,
 	CZ_TianJinSSC = 23,	//天津时时彩
+	CZ_BJ5FC=24,
+	CZ_JiaNaDaSSC = 25,	//天津时时彩
+	CZ_ErFenCai,					//吉利二分彩
+	CZ_CaiZhangdie,			//猜涨跌
+	CZ_TXfenfencai,			//腾讯分分彩
+	CZ_QQfenfencai,			//QQ分分彩
 	CZCount
 	
 }CaiZhong;
@@ -126,7 +132,7 @@ typedef enum
 	QW_SiJiFaCai,				//趣味：四季发财，4个一样的数字才中奖
 	NiuNiu_Num,					//牛牛：5个数字之和是10的倍数；牛1--牛10（牛牛） 1:10（无牛通吃）
 	NiuNiu_None,				//牛牛：无牛 1:2
-	NiuNiu_DxDs,				//牛牛：大小单双 1:2.5
+	Zhongsanzusandan,				//牛牛：大小单双 1:2.5
 	DaXiaoDanShuang_dw,			//大小单双定位
 	Zonghe_DXDSLh=56,			//总和大小单双：总和值大於等於23為大，小於等於22為小。
 	SSC_LongHu,					//龙虎：头大于尾为龙，尾大于头为虎；和 ？
@@ -144,6 +150,14 @@ typedef enum
 	Ren2Zuxuan_Fushi,			//任2组选 复式	0
 	Ren2Zuxuan_Danshi,			//任2组选 单式	0
 	BuDingWei_ZhongSan,
+	QSZuXuan24=72,				//前四组选24
+	QSZuXuan12,					//前四组选12
+	QSZuXuan6,					//前四组选6
+	QSZuXuan4,					//前四组选4
+	HSZuXuan24,					//后四组选24
+	HSZuXuan12,					//后四组选12
+	HSZuXuan6,					//后四组选6
+	HSZuXuan4,					//后四组选4
 
 	WanFaCount
 }SSCWanFaKind;
@@ -195,7 +209,15 @@ typedef enum
 	QianSan_ZhiXuan,							//前三直选选号
 	QianSan_ZuXuan,						//前三组选选号
 
+	Ren2_Dantuo,
+	Ren3_Dantuo,
+	Ren4_Dantuo,
+	Ren5_Dantuo,
+	Ren6_Dantuo,
+	Ren7_Dantuo,
+	Ren8_Dantuo,
 
+	IIRenXuan1,
 	IIWanFaCount
 }IIXuan5GameKind;
 
@@ -472,124 +494,95 @@ bool CDataBaseEngineSink::OnDataBaseEngineRequest(WORD wRequestID, DWORD dwConte
 	{
 	case DBR_GP_LOGON_ACCOUNTS:			//帐号登录
 		{
-			strLogFile.Format(L"DBR_GP_LOGON_ACCOUNTS");
-			LogFile::instance().LogText(strLogFile);
 			return OnRequestLogonAccounts(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_REGISTER_ACCOUNTS:		//注册帐号
 		{
-			strLogFile.Format(L"DBR_GP_REGISTER_ACCOUNTS");
-			LogFile::instance().LogText(strLogFile);
 			return OnRequestRegisterAccounts(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_MODIFY_MACHINE:			//修改机器
 		{
-			strLogFile.Format(L"DBR_GP_MODIFY_MACHINE");
-			LogFile::instance().LogText(strLogFile);
-
 			return OnRequestModifyMachine(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_MODIFY_LOGON_PASS:		//修改密码
 		{
-			strLogFile.Format(L"DBR_GP_MODIFY_LOGON_PASS");
-			LogFile::instance().LogText(strLogFile);
 			return OnRequestModifyLogonPass(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_MODIFY_INSURE_PASS:		//修改密码
 		{
-			strLogFile.Format(L"DBR_GP_MODIFY_INSURE_PASS");
-			LogFile::instance().LogText(strLogFile);
 			return OnRequestModifyInsurePass(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_MODIFY_SYSTEM_FACE:		//修改头像
 		{
-			strLogFile.Format(L"DBR_GP_MODIFY_SYSTEM_FACE");
-			LogFile::instance().LogText(strLogFile);
 			return OnRequestModifySystemFace(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_MODIFY_INDIVIDUAL:		//修改资料
 		{
-			strLogFile.Format(L"DBR_GP_MODIFY_INDIVIDUAL");
-			LogFile::instance().LogText(strLogFile);
 			return OnRequestModifyIndividual(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_USER_SAVE_SCORE:		//存入金币
 		{
-			strLogFile.Format(L"DBR_GP_USER_SAVE_SCORE");
-			LogFile::instance().LogText(strLogFile);
 			return OnRequestUserSaveScore(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_USER_TAKE_SCORE:		//提取金币
 		{
-			strLogFile.Format(L"DBR_GP_USER_TAKE_SCORE");
-			LogFile::instance().LogText(strLogFile);
 			return OnRequestUserTakeScore(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_USER_TRANS_SCORE:       //转账金币
 		{
-			strLogFile.Format(L"DBR_GP_USER_TRANS_SCORE");
-			LogFile::instance().LogText(strLogFile);
 			return OnRequestUserTransScore(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_LHC_QIHAO:       //转账金币
 		{
-			strLogFile.Format(L"DBR_GP_GET_LHC_QIHAO");
-			LogFile::instance().LogText(strLogFile);
 			return OnRequestLhcQihao(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_QUERY_INDIVIDUAL:		//查询资料
 		{
-			strLogFile.Format(L"DBR_GP_QUERY_INDIVIDUAL");
-			LogFile::instance().LogText(strLogFile);
 			return OnRequestQueryIndividual(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_QUERY_INSURE_INFO:		//查询银行
 		{
-			strLogFile.Format(L"DBR_GP_QUERY_INSURE_INFO");
-			LogFile::instance().LogText(strLogFile);
 			return OnRequestQueryInsureInfo(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_LOAD_GAME_LIST:			//加载列表
 		{
-			strLogFile.Format(L"DBR_GP_LOAD_GAME_LIST");
-			LogFile::instance().LogText(strLogFile);
 			return OnRequestLoadGameList(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_ONLINE_COUNT_INFO:		//在线信息
 		{
-			strLogFile.Format(L"DBR_GP_ONLINE_COUNT_INFO");
-			LogFile::instance().LogText(strLogFile);
 			return OnRequestOnLineCountInfo(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_LOAD_VIRTUAL_COUNT:     //虚拟人数
 		{
-			strLogFile.Format(L"DBR_GP_LOAD_VIRTUAL_COUNT");
-			LogFile::instance().LogText(strLogFile);
 			return OnRequestVirtualUserCount(dwContextID,pData,wDataSize);
 		}
 	case DBR_MB_LOGON_ACCOUNTS:			//帐号登录
 		{
-			strLogFile.Format(L"DBR_MB_LOGON_ACCOUNTS");
-			LogFile::instance().LogText(strLogFile);
 			return OnMobileLogonAccounts(dwContextID,pData,wDataSize);
 		}
 	case DBR_MB_REGISTER_ACCOUNTS:		//注册帐号
 		{
-			strLogFile.Format(L"DBR_MB_REGISTER_ACCOUNTS");
-			LogFile::instance().LogText(strLogFile);
 			return OnMobileRegisterAccounts(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_QUERY_RESULT:			//游戏开奖查询
 		{
-			strLogFile.Format(L"DBR_GP_QUERY_RESULT");
-			LogFile::instance().LogText(strLogFile);
 			return OnQueryGameResult(dwContextID,pData,wDataSize);
+		}
+	case DBR_GP_QUERY_MOBILE_RESULT:			//游戏开奖查询
+		{
+			return OnQueryMobileGameResult(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_SYS_TIME:			//系统时间
 		{
-			strLogFile.Format(L"DBR_GP_GET_SYS_TIME");
-			LogFile::instance().LogText(strLogFile);
 			return OnQuerySystemTime(dwContextID,pData,wDataSize);
+		}
+	case DBR_GP_GET_CANADA_QIHAO:
+		{
+			return OnQueryCanandaQihao(dwContextID,pData,wDataSize);
+		}
+	case DBR_GP_QUERY_STATUS_LOTTERY:
+		{
+			return OnQueryStatusLottery(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_WIN_USER:
 		{
@@ -597,158 +590,106 @@ bool CDataBaseEngineSink::OnDataBaseEngineRequest(WORD wRequestID, DWORD dwConte
 		}
 	case DBR_GP_GET_MAP_BONUS:			//获取MAPBONUS
 		{
-			strLogFile.Format(L"DBR_GP_GET_MAP_BONUS");
-			LogFile::instance().LogText(strLogFile);
 			return OnQueryMapBonus(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_CP_USER_INFO:			//游戏开奖查询
 		{
-			strLogFile.Format(L"DBR_GP_GET_CP_USER_INFO");
-			LogFile::instance().LogText(strLogFile);
 			return OnQueryCpUserInfo(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_MY_MAP_BONUS:
 		{
-			strLogFile.Format(L"DBR_GP_GET_MY_MAP_BONUS");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetMyMapBonus(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_USER_FANDIAN:			//游戏开奖查询
 		{
-			strLogFile.Format(L"DBR_GP_GET_USER_FANDIAN");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetUserFandian(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_SET_USER_BONUS:			//游戏开奖查询
 		{
-			strLogFile.Format(L"DBR_GP_SET_USER_BONUS");
-			LogFile::instance().LogText(strLogFile);
 			return OnSetUserBonus(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_TOUZHU_CQSSC:
 		{
-			strLogFile.Format(L"DBR_GP_TOUZHU_CQSSC");
-			LogFile::instance().LogText(strLogFile);
 			return OnTouzhuCQSSC(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_KEFU_URL:
 		{
-			strLogFile.Format(L"DBR_GP_TOUZHU_CQSSC");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetKefuUrl(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_TOUZHU_CQSSC_DAN:
 		{
-			strLogFile.Format(L"DBR_GP_TOUZHU_CQSSC_DAN");
-			LogFile::instance().LogText(strLogFile);
 			return OnTouzhuCQSSCDan(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_TOUZHU_CQSSC_ZHUIHAO:
 		{
-			strLogFile.Format(L"DBR_GP_TOUZHU_CQSSC_ZHUIHAO");
-			LogFile::instance().LogText(strLogFile);
 			return OnTouzhuCQSSCZhuihao(dwContextID,pData,wDataSize);
 		}
 	case DBR_MB_TOUZHU_CQSSC_ZHUIHAO:
 		{
-			strLogFile.Format(L"DBR_MB_TOUZHU_CQSSC_ZHUIHAO");
-			LogFile::instance().LogText(strLogFile);
 			return OnMBTouzhuCQSSCZhuihao(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_TOUZHU_LOG_COUNT:
 		{
-			strLogFile.Format(L"DBR_GP_TOUZHU_LOG_COUNT");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetTouzhuLogCount(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_TIXIAN_LOG_COUNT:
 		{
-			strLogFile.Format(L"DBR_GP_TIXIAN_LOG_COUNT");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetTixianLogCount(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_CHONGZHI_LOG_COUNT:
 		{
-			strLogFile.Format(L"DBR_GP_CHONGZHI_LOG_COUNT");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetChongzhiLogCount(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_HYXX_LOG_COUNT:
 		{
-			strLogFile.Format(L"DBR_GP_HYXX_LOG_COUNT");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetHYXXLogCount(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_YINGKUI_LOG_COUNT:
 		{
-			strLogFile.Format(L"DBR_GP_YINGKUI_LOG_COUNT");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetYingkuiLogCount(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_YINGKUI_MX_COUNT:
 		{
-			strLogFile.Format(L"DBR_GP_YINGKUI_MX_COUNT");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetYingkuiMxCount(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_QP_YINGKUI_COUNT:
 		{
-			strLogFile.Format(L"DBR_GP_QP_YINGKUI_COUNT");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetQiPaiYingkuiCount(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_XJTZH_LOG_COUNT:
 		{
-			strLogFile.Format(L"DBR_GP_XJTZH_LOG_COUNT");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetXJTZHLogCount(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_CHKXJTZH_LOG_COUNT:
 		{
-			strLogFile.Format(L"DBR_GP_CHKXJTZH_LOG_COUNT");
-			LogFile::instance().LogText(strLogFile);
 			return OnCHKXJTZHLogCount(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_XJYK_LOG_COUNT:
 		{
-			strLogFile.Format(L"DBR_GP_XJYK_LOG_COUNT");
-			LogFile::instance().LogText(strLogFile);
 			return OnXJYKLogCount(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_XJYK_TJ_COUNT:
 		{
-			strLogFile.Format(L"DBR_GP_XJYK_TJ_COUNT");
-			LogFile::instance().LogText(strLogFile);
 			return OnXJYKTjCount(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_XJYX_TJ_COUNT: //游戏盈亏日志数
 		{
-			strLogFile.Format(L"DBR_GP_XJYX_TJ_COUNT");
-			LogFile::instance().LogText(strLogFile);
 			return OnXJYXTjCount(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_XJCHZH_LOG_COUNT:
 		{
-			strLogFile.Format(L"DBR_GP_XJCHZH_LOG_COUNT");
-			LogFile::instance().LogText(strLogFile);
 			return OnXJCHZHLogCount(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_XJTX_LOG_COUNT:
 		{
-			strLogFile.Format(L"DBR_GP_XJTX_LOG_COUNT");
-			LogFile::instance().LogText(strLogFile);
 			return OnXJTxLogCount(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_CHONGZHI_TYPE:
 		{
-			strLogFile.Format(L"DBR_GP_GET_CHONGZHI_TYPE");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetChongzhiXinxi(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_QUKUAN_INFO:
 		{
-			strLogFile.Format(L"DBR_GP_GET_QUKUAN_INFO");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetQukuanInfo(dwContextID,pData,wDataSize);
 		}
 // 	case DBR_GP_QUERY_YINHANG:
@@ -757,440 +698,315 @@ bool CDataBaseEngineSink::OnDataBaseEngineRequest(WORD wRequestID, DWORD dwConte
 // 		}
 	case DBR_GP_GET_YUE_INFO:
 		{
-			strLogFile.Format(L"DBR_GP_GET_YUE_INFO");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetYueInfo(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_MORE_RECORD:
 		{
-			strLogFile.Format(L"DBR_GP_GET_MORE_RECORD");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetMoreRecord(dwContextID,pData,wDataSize);
+		}
+	case DBR_GP_GET_QIHAOCHA:
+		{
+			return OnGetQihaocha(dwContextID,pData,wDataSize);
+
 		}
 	case DBR_GP_GET_DAILI_HUIKUI:
 		{
-			strLogFile.Format(L"DBR_GP_GET_DAILI_HUIKUI");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetDailiHuikui(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_DAILI_LJ:
 		{
-			strLogFile.Format(L"DBR_GP_DAILI_LJ");
-			LogFile::instance().LogText(strLogFile);
 			return OnDailiLingjiang(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_QUIT_GAME:
 		{
-			strLogFile.Format(L"DBR_GP_QUIT_GAME");
-			LogFile::instance().LogText(strLogFile);
 			return OnQuitGame(dwContextID,pData,wDataSize);
+		}
+	case DBR_GP_GET_NOTICE:
+		{
+			return OnGetNotic(dwContextID,pData,wDataSize);
+		}
+	case DBR_GP_GET_ZNX_COUNT:
+		{
+			return OnGetZnxCount(dwContextID,pData,wDataSize);
+		}
+	case DBR_GP_DEL_MESSAGE:
+		{
+			return OnDelMessage(dwContextID,pData,wDataSize);
+		}
+	case DBR_GP_GET_ALL_USER_INFO:
+		{
+			return OnGetAllUserInfo(dwContextID,pData,wDataSize);
+		}
+	case DBR_GP_SEND_MESSAGE:
+		{
+			return OnSendMessage(dwContextID,pData,wDataSize);
+		}
+	case DBR_GP_GET_ZNX_ALLCOUNT:
+		{
+			return OnGetZnxAllCount(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_USER_QIANDAO:
 		{
-			strLogFile.Format(L"DBR_GP_USER_QIANDAO");
-			LogFile::instance().LogText(strLogFile);
 			return OnUserQiandao(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_USER_HUANLE_SONG:
 		{
-			strLogFile.Format(L"DBR_GP_USER_HUANLE_SONG");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetUserHuanlesong(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_USER_LING_JIANG:
 		{
-			strLogFile.Format(L"DBR_GP_USER_LING_JIANG");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetUserLingJiang(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_DO_QUKUAN:
 		{
-			strLogFile.Format(L"DBR_GP_DO_QUKUAN");
-			LogFile::instance().LogText(strLogFile);
 			return OnDoQukuan(dwContextID,pData,wDataSize);
+		}
+	case DBR_GP_GET_QUKUAN_LIMIT:
+		{
+			return OnGetQukuanLimit(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_TOUZHU_LOG:
 		{
-			strLogFile.Format(L"DBR_GP_TOUZHU_LOG");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetTouzhuLog(dwContextID,pData,wDataSize);
+		}
+	case DBR_GP_GET_ZNX_INBOX:
+		{
+			return OnGetZnxInboxLog(dwContextID,pData,wDataSize);
+		}
+	case DBR_GP_CHK_ZNX_INBOX:
+		{
+			return OnChkZnxInboxLog(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_XJCHZH_LOG: //下级充值日志
 		{
-			strLogFile.Format(L"DBR_GP_GET_XJCHZH_LOG");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetXJCHZHLog(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_XJTX_LOG: //下级提现日志
 		{
-			strLogFile.Format(L"DBR_GP_GET_XJTX_LOG");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetXJTxLog(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_XJYK_LOG:
 		{
-			strLogFile.Format(L"DBR_GP_GET_XJYK_LOG");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetXJYKLog(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_XJYK_TJ:
 		{
-			strLogFile.Format(L"DBR_GP_GET_XJYK_TJ");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetXJYKTj(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_XJYX_TJ:
 		{
-			strLogFile.Format(L"DBR_GP_GET_XJYX_TJ");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetXJYXTj(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_DA_LI_BAO:
 		{
-			strLogFile.Format(L"DBR_GP_GET_DA_LI_BAO");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetDaLiBao(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_ZA_JIN_DAN:
 		{
-			strLogFile.Format(L"DBR_GP_GET_ZA_JIN_DAN");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetZaJinDan(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_LUCKY_ZHUAN:
 		{
-			strLogFile.Format(L"DBR_GP_GET_LUCKY_ZHUAN");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetLuckyZhuan(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_CAN_DA_LI_BAO:
 		{
-			strLogFile.Format(L"DBR_GP_CAN_DA_LI_BAO");
-			LogFile::instance().LogText(strLogFile);
 			return OnCanDaLiBao(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_CAN_ZA_JIN_DAN:
 		{
-			strLogFile.Format(L"DBR_GP_CAN_ZA_JIN_DAN");
-			LogFile::instance().LogText(strLogFile);
 			return OnCanZaJinDan(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_CAN_LUCKY_ZHUAN:
 		{
-			strLogFile.Format(L"DBR_GP_CAN_LUCKY_ZHUAN");
-			LogFile::instance().LogText(strLogFile);
 			return OnCanLuckyZhuan(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_XJTZH_LOG:
 		{
-			strLogFile.Format(L"DBR_GP_XJTZH_LOG");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetXJTZHLog(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_CHKXJTZH_LOG:
 		{
-			strLogFile.Format(L"DBR_GP_CHKXJTZH_LOG");
-			LogFile::instance().LogText(strLogFile);
 			return OnCHKXJTZHLog(dwContextID,pData,wDataSize);
 		}
-	case DBR_GP_XJTZH_LOG_BY_ACT:
+	case DBO_GP_GET_QIPAIKIND:
 		{
-			strLogFile.Format(L"DBR_GP_XJTZH_LOG_BY_ACT");
-			LogFile::instance().LogText(strLogFile);
-			return OnGetXJTZHLogByAct(dwContextID,pData,wDataSize);
-		}
-	case DBR_GP_XJTX_LOG_BY_ACT:
-		{
-			strLogFile.Format(L"DBR_GP_XJTX_LOG_BY_ACT");
-			LogFile::instance().LogText(strLogFile);
-			return OnGetXJTxLogByAct(dwContextID,pData,wDataSize);
-		}
-	case DBR_GP_XJTZH_LOG_BY_ID:
-		{
-			strLogFile.Format(L"DBR_GP_XJTZH_LOG_BY_ID");
-			LogFile::instance().LogText(strLogFile);
-			return OnGetXJTZHLogByID(dwContextID,pData,wDataSize);
-		}
-	case DBR_GP_XJTX_LOG_BY_ID:
-		{
-			strLogFile.Format(L"DBR_GP_XJTX_LOG_BY_ID");
-			LogFile::instance().LogText(strLogFile);
-			return OnGetXJTXLogByID(dwContextID,pData,wDataSize);
-		}
-	case DBR_GP_CHKXJTZH_LOG_BY_ACT:
-		{
-			strLogFile.Format(L"DBR_GP_CHKXJTZH_LOG_BY_ACT");
-			LogFile::instance().LogText(strLogFile);
-			return OnCHKXJTZHLogByAct(dwContextID,pData,wDataSize);
-		}
-	case DBR_GP_XJYK_LOG_BY_ID:
-		{
-			strLogFile.Format(L"DBR_GP_XJYK_LOG_BY_ID");
-			LogFile::instance().LogText(strLogFile);
-			return OnGetXJYKLogByID(dwContextID,pData,wDataSize);
-		}
-	case DBR_GP_XJYK_LOG_BY_ACT:
-		{
-			strLogFile.Format(L"DBR_GP_XJYK_LOG_BY_ACT");
-			LogFile::instance().LogText(strLogFile);
-			return OnGetXJYKLogByAct(dwContextID,pData,wDataSize);
-		}
-	case DBR_GP_XJCHZH_LOG_BY_ID:   //通过ID查询下级充值日志
-		{
-			strLogFile.Format(L"DBR_GP_XJCHZH_LOG_BY_ID");
-			LogFile::instance().LogText(strLogFile);
-			return OnGetXJCHZHLogByID(dwContextID,pData,wDataSize);
-		}
-	case DBR_GP_XJCHZH_LOG_BY_ACT:
-		{
-			strLogFile.Format(L"DBR_GP_XJCHZH_LOG_BY_ACT");
-			LogFile::instance().LogText(strLogFile);
-			return OnGetXJCHZHLogByAct(dwContextID,pData,wDataSize);
-		}
-	case DBR_GP_XJYK_TJ_BY_ID:
-		{
-			strLogFile.Format(L"DBR_GP_XJYK_TJ_BY_ID");
-			LogFile::instance().LogText(strLogFile);
-			return OnGetXJYKTjByID(dwContextID,pData,wDataSize);
-		}
-	case DBR_GP_XJYK_TJ_BY_ACT:
-		{
-			strLogFile.Format(L"DBR_GP_XJYK_TJ_BY_ACT");
-			LogFile::instance().LogText(strLogFile);
-			return OnGetXJYKTjByAct(dwContextID,pData,wDataSize);
-		}
-	case DBR_GP_CHKXJTZH_LOG_BY_ID:
-		{
-			strLogFile.Format(L"DBR_GP_CHKXJTZH_LOG_BY_ID");
-			LogFile::instance().LogText(strLogFile);
-			return OnCHKXJTZHLogByID(dwContextID,pData,wDataSize);
+			return OnGetQipaiKind(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_HYSHJ:
 		{
-			strLogFile.Format(L"DBR_GP_GET_HYSHJ");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetHyShj(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_TIXIAN_LOG:
 		{
-			strLogFile.Format(L"DBR_GP_TIXIAN_LOG");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetTixianLog(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_HYXX_LOG:
 		{
-			strLogFile.Format(L"DBR_GP_HYXX_LOG");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetHYXXLog(dwContextID,pData,wDataSize);
-		}
-	case DBR_GP_HYXX_LIST: //查询会员信息
-		{
-			strLogFile.Format(L"DBR_GP_HYXX_LIST");
-			LogFile::instance().LogText(strLogFile);
-			return OnGetHYXXList(dwContextID,pData,wDataSize);
-		}
-	case DBR_GP_HYXX_LOG_BY_ID:
-		{
-			strLogFile.Format(L"DBR_GP_HYXX_LOG_BY_ID");
-			LogFile::instance().LogText(strLogFile);
-			return OnGetHYXXLogByID(dwContextID,pData,wDataSize);
-		}
-	case DBR_GP_HYXX_LOG_BY_ACT:
-		{
-			strLogFile.Format(L"DBR_GP_HYXX_LOG_BY_ACT");
-			LogFile::instance().LogText(strLogFile);
-			return OnGetHYXXLogByAct(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_XGHY_FANDIAN:
 		{
-			strLogFile.Format(L"DBR_GP_XGHY_FANDIAN");
-			LogFile::instance().LogText(strLogFile);
 			return OnXGHYFandian(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_SW_DAILI:
 		{
-			strLogFile.Format(L"DBR_GP_SW_DAILI");
-			LogFile::instance().LogText(strLogFile);
 			return OnSWDaili(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_HYXX_ZHUANZHANG:		//会员信息转账
 		{
-			strLogFile.Format(L"DBR_GP_HYXX_ZHUANZHANG");
-			LogFile::instance().LogText(strLogFile);
 			return OnHYXXZhuanZhang(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_HYXX_GET_XJPEIE:		//获取下级配额
 		{
-			strLogFile.Format(L"DBR_GP_HYXX_GET_XJPEIE");
-			LogFile::instance().LogText(strLogFile);
 			return OnHYXXXiaJiPeie(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_HYXX_SET_XJPEIE:		//获取下级配额
 		{
-			strLogFile.Format(L"DBR_GP_HYXX_SET_XJPEIE");
-			LogFile::instance().LogText(strLogFile);
 			return OnHYXXSetXiaJiPeie(dwContextID,pData,wDataSize);
+		}
+	case DBR_GP_GET_PARENT:		//获取下级配额
+		{
+			return OnHYXXGetParent(dwContextID,pData,wDataSize);
+		}
+	case DBO_GP_GETTANSFERVERIFY:		//获取是否有转账短信验证
+		{
+			return OnGetTansferVerify(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_CHONGZHI_LOG:
 		{
-			strLogFile.Format(L"DBR_GP_CHONGZHI_LOG");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetChongzhiLog(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_YINGKUI_LOG:
 		{
-			strLogFile.Format(L"DBR_GP_YINGKUI_LOG");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetYingkuiLog(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_YINGKUI_MX:
 		{
-			strLogFile.Format(L"DBR_GP_YINGKUI_MX");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetYingkuiMx(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_QP_YINGKUI:
 		{
-			strLogFile.Format(L"DBR_GP_QP_YINGKUI");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetQiPaiYingkui(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_REG_URL:
 		{
-			strLogFile.Format(L"DBR_GP_GET_REG_URL");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetRegUrl(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_Peie:
 		{
-			strLogFile.Format(L"DBR_GP_GET_Peie");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetPeie(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_CANCEL_TOUZHU:
 		{
-			strLogFile.Format(L"DBR_GP_CANCEL_TOUZHU");
-			LogFile::instance().LogText(strLogFile);
 			return OnCancelTouzhu(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_ADD_HY:
 		{
-			strLogFile.Format(L"DBR_GP_ADD_HY");
-			LogFile::instance().LogText(strLogFile);
 			return OnAddHuiyuan(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_SET_WEB_FANDIAN:
 		{
-			strLogFile.Format(L"DBR_GP_SET_WEB_FANDIAN");
-			LogFile::instance().LogText(strLogFile);
 			return OnSetWebFandian(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_CHONGZHI_TISHI:
 		{
-			strLogFile.Format(L"DBR_GP_CHONGZHI_TISHI");
-			LogFile::instance().LogText(strLogFile);
 			return OnChongzhiTishi(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_TIXIAN_TISHI:
 		{
-			strLogFile.Format(L"DBR_GP_TIXIAN_TISHI");
-			LogFile::instance().LogText(strLogFile);
 			return OnTixianTishi(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_TOUZHU_TISHI:
 		{
-			strLogFile.Format(L"DBR_GP_TOUZHU_TISHI");
-			LogFile::instance().LogText(strLogFile);
 			return OnTouzhuTishi(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_USER_INFO:
 		{
-			strLogFile.Format(L"DBR_GP_GET_USER_INFO");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetUserInfo(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_NEWS:
 		{
-			strLogFile.Format(L"DBR_GP_GET_NEWS");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetNewsInfo(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_ZHUAN_HUAN:
 		{
-			strLogFile.Format(L"DBR_GP_ZHUAN_HUAN");
-			LogFile::instance().LogText(strLogFile);
 			return OnZhuanhuan(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_XG_QQ:
 		{
-			strLogFile.Format(L"DBR_GP_XG_QQ");
-			LogFile::instance().LogText(strLogFile);
 			return OnXGqq(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_ALTER_GENDER:
 		{
-			strLogFile.Format(L"DBR_GP_ALTER_GENDER");
-			LogFile::instance().LogText(strLogFile);
 			return OnXGGender(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_XG_LOGIN_PASS:
 		{
-			strLogFile.Format(L"DBR_GP_XG_LOGIN_PASS");
-			LogFile::instance().LogText(strLogFile);
 			return OnXGLoginPass(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_XG_QUKUAN_PASS:
 		{
-			strLogFile.Format(L"DBR_GP_XG_QUKUAN_PASS");
-			LogFile::instance().LogText(strLogFile);
 			return OnXGQukuanPass(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_LOCK_MACHINE:
 		{
-			strLogFile.Format(L"DBR_GP_LOCK_MACHINE");
-			LogFile::instance().LogText(strLogFile);
 			return OnLockMachine(dwContextID,pData,wDataSize);
+		}
+	case DBR_GP_BIND_PHONE:
+		{
+			return OnBindPhoneNum(dwContextID,pData,wDataSize);
+		}
+	case DBR_GP_SET_PHONE_VERIFY:
+		{
+			return OnSetPhoneVerify(dwContextID,pData,wDataSize);
+		}
+	case DBR_GP_UNBIND_PHONE:
+		{
+			return OnUnBindPhone(dwContextID,pData,wDataSize);
+		}
+	case DBR_GP_SEND_YANGZHENGMA:
+		{
+			return OnSendYzm(dwContextID,pData,wDataSize);
+		}
+	case DBR_GP_SEND_YANGZHENGMA_TRANS:
+		{
+			return OnSendYzmTrans(dwContextID,pData,wDataSize);
+		}
+	case DBO_GP_SEND_CHECK_YZM:
+		{
+			return OnSendCheckYzm(dwContextID,pData,wDataSize);
+		}
+	case DBO_GP_SEND_CHECK_YZM_TRANS:
+		{
+			return OnSendCheckYzmTrans(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_SET_QUKUAN_PROTECT:
 		{
-			strLogFile.Format(L"DBR_GP_SET_QUKUAN_PROTECT");
-			LogFile::instance().LogText(strLogFile);
 			return OnSetQukuanProtectPass(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_SET_QUKUAN_ZHANGHAO:
 		{
-			strLogFile.Format(L"DBR_GP_SET_QUKUAN_ZHANGHAO");
-			LogFile::instance().LogText(strLogFile);
 			return OnSetQukuanZhanghuPass(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_QUERY_MY_YINHANG:
 		{
-			strLogFile.Format(L"DBR_GP_QUERY_MY_YINHANG");
-			LogFile::instance().LogText(strLogFile);
 			return OnQueryMyYinHang(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_QUERY_MY_PROTECT:
 		{
-			strLogFile.Format(L"DBR_GP_QUERY_MY_PROTECT");
-			LogFile::instance().LogText(strLogFile);
 			return OnQueryMyProtect(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_QUERY_YINHANG:
 		{
-			strLogFile.Format(L"DBR_GP_QUERY_YINHANG");
-			LogFile::instance().LogText(strLogFile);
 			return OnQueryYinhang(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_TOUZHU_XX:
 		{
-			strLogFile.Format(L"DBR_GP_GET_TOUZHU_XX");
-			LogFile::instance().LogText(strLogFile);
 			return OnGetTouzhuXX(dwContextID,pData,wDataSize);
 		}
 	case DBR_MB_GET_TOUZHU_XX:
 		{
-			strLogFile.Format(L"DBR_GP_GET_TOUZHU_XX");
-			LogFile::instance().LogText(strLogFile);
 			return OnMBGetTouzhuXX(dwContextID,pData,wDataSize);
 		}
 	}
@@ -1214,13 +1030,8 @@ bool CDataBaseEngineSink::OnRequestLogonAccounts(DWORD dwContextID, VOID * pData
 		
 		//执行判断
 		tagBindParameter * pBindParameter=(tagBindParameter *)pLogonAccounts->pBindParameter;
-		strLog.Format(L"执行判断 [%s] pBindParameter->dwSocketID:%d,dwContextID:%d",pLogonAccounts->szAccounts,pBindParameter->dwSocketID,dwContextID);
-		LogFile::instance().LogText(strLog);
 		if (pBindParameter->dwSocketID!=dwContextID)
 		{
-			strLog.Format(L"[%s] 判断错误 SocketID不同",pLogonAccounts->szAccounts);
-			LogFile::instance().LogText(strLog);
-
 			return true;
 		}
 
@@ -1228,13 +1039,9 @@ bool CDataBaseEngineSink::OnRequestLogonAccounts(DWORD dwContextID, VOID * pData
 		BYTE * pClientAddr=(BYTE *)&pLogonAccounts->dwClientAddr;
 		_sntprintf(szClientAddr,CountArray(szClientAddr),TEXT("%d.%d.%d.%d"),pClientAddr[0],pClientAddr[1],pClientAddr[2],pClientAddr[3]);
 
-		strLog.Format(L"LoginIP:%s",szClientAddr);
-		CTraceService::TraceString(strLog,TraceLevel_Exception);
 		//转换地址
 		DWORD dwClientAddr= (DWORD)(((0xffff&pClientAddr[0])<<24)|((0xffff&pClientAddr[1])<<16)|((0xffff&pClientAddr[2])<<8)|(0xffff&pClientAddr[3]));
 
-		strLog.Format(L"[%s] 执行存过之前 ",pLogonAccounts->szAccounts);
-		LogFile::instance().LogText(strLog);
 
 		//构造参数
 		m_AccountsDBAide.ResetParameter();
@@ -1252,15 +1059,6 @@ bool CDataBaseEngineSink::OnRequestLogonAccounts(DWORD dwContextID, VOID * pData
 		//执行查询
 		LONG lResultCode=m_AccountsDBAide.ExecuteProcess(TEXT("GSP_GP_EfficacyAccounts"),true);
 
-		strLog.Format(L"[%s]执行存过[GSP_GP_EfficacyAccounts]之后 lResultCode：%d",pLogonAccounts->szAccounts,lResultCode);
-		LogFile::instance().LogText(strLog);
-
-		if(lResultCode != DB_SUCCESS)
-		{
-			CString strErrLog;
-			strErrLog.Format(L"[%s]使用密码[%s]登录失败，IP为[%s]",pLogonAccounts->szAccounts,pLogonAccounts->szPassword,szClientAddr);
-			LogFile::instance().LogText(strErrLog);
-		}
 		//结果处理
 		CDBVarValue DBVarValue;
 		m_AccountsDBModule->GetParameter(TEXT("@strErrorDescribe"),DBVarValue);
@@ -1289,11 +1087,6 @@ bool CDataBaseEngineSink::OnRequestLogonAccounts(DWORD dwContextID, VOID * pData
 		TCHAR szClientAddr[16]=TEXT("");
 		BYTE * pClientAddr=(BYTE *)&pLogonAccounts->dwClientAddr;
 		_sntprintf(szClientAddr,CountArray(szClientAddr),TEXT("%d.%d.%d.%d"),pClientAddr[0],pClientAddr[1],pClientAddr[2],pClientAddr[3]);
-
-		CString strErrLog;
-		strErrLog.Format(L"Exception [%s]使用密码[%s]登录失败，IP为[%s]",pLogonAccounts->szAccounts,pLogonAccounts->szPassword,szClientAddr);
-		LogFile::instance().LogText(strErrLog);
-
 
 		return false;
 	}
@@ -1536,9 +1329,6 @@ bool CDataBaseEngineSink::OnCancelTouzhu(DWORD dwContextID, VOID * pData, WORD w
 		else
 			CancelTouzhuRet.nResult = lResultCode;
 		CancelTouzhuRet.n_t_userid = pCancelTouzhu->n_t_userid;
-		CString strLog;
-		strLog.Format(L"【%d】撤单",pCancelTouzhu->n_t_userid);
-		LogFile::instance().LogText(strLog);
 
 		m_GameSSCDBModule->CloseRecordset();
 		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_CANCEL_TOUZHU_RET,dwContextID,&CancelTouzhuRet,sizeof(CancelTouzhuRet));
@@ -1622,17 +1412,17 @@ bool CDataBaseEngineSink::OnAddHuiyuan(DWORD dwContextID, VOID * pData, WORD wDa
 		DBO_GR_AddHuiYuanRet AddHYRet;
 		ZeroMemory(&AddHYRet,sizeof(AddHYRet));
 
-		if(m_GameSSCDBModule->IsRecordsetEnd() == FALSE)
+	//	if(m_GameSSCDBModule->IsRecordsetEnd() == FALSE)
 		{
 			AddHYRet.n_t_res = m_GameSSCDBAide.GetValue_INT(TEXT("res"));
 			m_GameSSCDBAide.GetValue_String(TEXT("DESCRIBE"),AddHYRet.s_t_Desc,sizeof(AddHYRet.s_t_Desc));
 
 		}
-		else
-		{
-			AddHYRet.n_t_res = lResultCode;
-
-		}
+// 		else
+// 		{
+// 			AddHYRet.n_t_res = lResultCode;
+// 
+// 		}
 		m_GameSSCDBModule->CloseRecordset();
 		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_ADD_HY_RET,dwContextID,&AddHYRet,sizeof(AddHYRet));
 
@@ -1662,13 +1452,13 @@ bool CDataBaseEngineSink::OnSetWebFandian(DWORD dwContextID, VOID * pData, WORD 
 
 		DBR_GP_SetWebFandian* pSetWebFandian = (DBR_GP_SetWebFandian*)pData;
 
-		if(pSetWebFandian->f_t_fandian>0.0250001)
+		if(pSetWebFandian->f_t_fandian>0.040001)
 		{
 			DBO_GR_SetWebFandianRet SetWebFandian;
 			ZeroMemory(&SetWebFandian,sizeof(SetWebFandian));
 
 			SetWebFandian.n_t_res = 2;
-			SetWebFandian.f_t_fandian = 2.5;
+			SetWebFandian.f_t_fandian = 4;
 			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_SET_WEB_FANDIAN_RESULT,dwContextID,&SetWebFandian,sizeof(SetWebFandian));
 
 		}
@@ -1684,7 +1474,7 @@ bool CDataBaseEngineSink::OnSetWebFandian(DWORD dwContextID, VOID * pData, WORD 
 		ZeroMemory(&SetWebFandian,sizeof(SetWebFandian));
 
 		SetWebFandian.n_t_res = lResultCode;
-		SetWebFandian.f_t_fandian = 2.5;
+		SetWebFandian.f_t_fandian = 4;
 		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_SET_WEB_FANDIAN_RESULT,dwContextID,&SetWebFandian,sizeof(SetWebFandian));
 
 	}
@@ -1941,19 +1731,20 @@ bool CDataBaseEngineSink::OnHYXXZhuanZhang(DWORD dwContextID, VOID * pData, WORD
 		DBR_GP_HYXX_ZhuanZhang* pUserInfo = (DBR_GP_HYXX_ZhuanZhang*)pData;
 
 		m_GameSSCDBAide.ResetParameter();
-		m_GameSSCDBAide.AddParameter(TEXT("@userid"),pUserInfo->n_t_user_id);
-		m_GameSSCDBAide.AddParameter(TEXT("@targetID"),pUserInfo->n_t_target_id);
-		m_GameSSCDBAide.AddParameter(TEXT("@jine"),pUserInfo->f_t_jine);
-		m_GameSSCDBAide.AddParameter(TEXT("@password"),pUserInfo->s_t_password);
+		m_GameSSCDBAide.AddParameter(TEXT("@UserID"),pUserInfo->n_t_user_id);
+		m_GameSSCDBAide.AddParameter(TEXT("@xjUserID"),pUserInfo->n_t_target_id);
+		m_GameSSCDBAide.AddParameter(TEXT("@sType"),pUserInfo->n_t_type);
+		m_GameSSCDBAide.AddParameter(TEXT("@sMoney"),pUserInfo->f_t_jine);
+		m_GameSSCDBAide.AddParameter(TEXT("@quKuanPwd"),pUserInfo->s_t_password);
 
-		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_hyxx_zhuanzhang"),false);
+		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_set_tranferforxj"),true);
 
 
 		DBO_GP_HYXX_ZhuanZhang_RET ZhuanZhang;
 		ZeroMemory(&ZhuanZhang,sizeof(ZhuanZhang));
 
 		ZhuanZhang.lResult = lResultCode;
-
+		m_GameSSCDBAide.GetValue_String(TEXT("msg"),ZhuanZhang.s_t_desc,sizeof(ZhuanZhang.s_t_desc));
 		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_HYXX_ZHUANZHANG_RET,dwContextID,&ZhuanZhang,sizeof(ZhuanZhang));
 
 	}
@@ -1962,7 +1753,7 @@ bool CDataBaseEngineSink::OnHYXXZhuanZhang(DWORD dwContextID, VOID * pData, WORD
 		//错误信息
 		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
 		CString strLogFile;
-		strLogFile.Format(L"Exception p_hyxx_zhuanzhang");
+		strLogFile.Format(L"Exception p_set_tranferforxj");
 		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
 		ReconnectSql();
 
@@ -2043,6 +1834,374 @@ bool CDataBaseEngineSink::OnLockMachine(DWORD dwContextID, VOID * pData, WORD wD
 		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
 		CString strLogFile;
 		strLogFile.Format(L"Exception p_lock_machine");
+		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
+		ReconnectSql();
+
+		return false;
+	}
+
+}
+//绑定手机号
+bool CDataBaseEngineSink::OnBindPhoneNum(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	try
+	{
+		//效验参数
+		ASSERT(wDataSize==sizeof(DBR_GP_BindPhone));
+		if (wDataSize!=sizeof(DBR_GP_BindPhone)) return false;
+		DBR_GP_BindPhone* pPhone = (DBR_GP_BindPhone*)pData;
+
+		m_GameSSCDBAide.ResetParameter();
+		m_GameSSCDBAide.AddParameter(TEXT("@userid"),pPhone->nUserID);
+		m_GameSSCDBAide.AddParameter(TEXT("@phoneNum"),pPhone->sPhoneNum);
+		m_GameSSCDBAide.AddParameter(TEXT("@t_type"),pPhone->cType);
+
+		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_set_BindPhoneNum"),false);
+
+		DBO_GR_BindPhone_RET BindPhone;
+		ZeroMemory(&BindPhone,sizeof(BindPhone));
+
+		BindPhone.lResult = lResultCode;
+		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_BIND_PHONE_RESULT,dwContextID,&BindPhone,sizeof(BindPhone));
+
+
+	}
+	catch (IDataBaseException * pIException)
+	{
+		//错误信息
+		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
+		CString strLogFile;
+		strLogFile.Format(L"Exception p_set_BindPhoneNum");
+		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
+		ReconnectSql();
+
+		return false;
+	}
+
+}
+//设置验证
+bool CDataBaseEngineSink::OnSetPhoneVerify(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	try
+	{
+		//效验参数
+		ASSERT(wDataSize==sizeof(DBR_GP_SetBindPhoneInfo));
+		if (wDataSize!=sizeof(DBR_GP_SetBindPhoneInfo)) return false;
+		DBR_GP_SetBindPhoneInfo* pPhone = (DBR_GP_SetBindPhoneInfo*)pData;
+
+		m_GameSSCDBAide.ResetParameter();
+		m_GameSSCDBAide.AddParameter(TEXT("@UserID"),pPhone->nUserID);
+		m_GameSSCDBAide.AddParameter(TEXT("@loginverify"),pPhone->cLoginverify);
+		m_GameSSCDBAide.AddParameter(TEXT("@TranferAccount"),pPhone->cTranferAccount);
+		m_GameSSCDBAide.AddParameter(TEXT("@fenhong"),pPhone->cfenhong);
+		m_GameSSCDBAide.AddParameter(TEXT("@type"),pPhone->cType);
+
+		LONG lResultCode=0;
+		if(pPhone->cType == 2)
+			lResultCode = m_GameSSCDBAide.ExecuteProcess(TEXT("p_set_UserPhoneVerify"),false);
+		else
+			lResultCode = m_GameSSCDBAide.ExecuteProcess(TEXT("p_set_UserPhoneVerify"),true);
+
+		DBO_GR_BindPhoneInfo_RET BindPhone;
+		ZeroMemory(&BindPhone,sizeof(BindPhone));
+		BindPhone.nUserID = pPhone->nUserID;
+		BindPhone.nResult = lResultCode;
+		if(pPhone->cType != 2&&m_GameSSCDBModule->IsRecordsetEnd() == FALSE)
+		{
+			BindPhone.cLoginverify = m_GameSSCDBAide.GetValue_BYTE(L"t_loginverify");
+			BindPhone.cTranferAccount = m_GameSSCDBAide.GetValue_BYTE(L"T_TranferAccount");
+			BindPhone.cfenhong = m_GameSSCDBAide.GetValue_BYTE(L"t_fenhong");
+			m_GameSSCDBAide.GetValue_String(L"t_phoneNum",BindPhone.sPhoneNum,CountArray(BindPhone.sPhoneNum));
+
+
+			m_GameSSCDBModule->CloseRecordset();
+		}
+		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_SET_PHONE_VERIFY_RESULT,dwContextID,&BindPhone,sizeof(BindPhone));
+
+
+	}
+	catch (IDataBaseException * pIException)
+	{
+		//错误信息
+		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
+		CString strLogFile;
+		strLogFile.Format(L"Exception p_set_UserPhoneVerify");
+		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
+		ReconnectSql();
+
+		return false;
+	}
+
+}
+//解除绑定
+bool CDataBaseEngineSink::OnUnBindPhone(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	try
+	{
+		//效验参数
+		ASSERT(wDataSize==sizeof(DBR_GP_UnBindPhone));
+		if (wDataSize!=sizeof(DBR_GP_UnBindPhone)) return false;
+		DBR_GP_UnBindPhone* pPhone = (DBR_GP_UnBindPhone*)pData;
+
+		m_GameSSCDBAide.ResetParameter();
+		m_GameSSCDBAide.AddParameter(TEXT("@userID"),pPhone->nUserID);
+
+		m_GameSSCDBAide.ExecuteProcess(TEXT("p_set_UnBindPhone"),true);
+
+		DBO_GR_UnBindPhone_RET UnBindPhone;
+		ZeroMemory(&UnBindPhone,sizeof(UnBindPhone));
+		//nBindPhone.nResult = lResultCode;
+
+		if(!m_GameSSCDBModule->IsRecordsetEnd())
+		{
+			m_GameSSCDBAide.GetValue_String(TEXT("result"),UnBindPhone.sDesc,CountArray(UnBindPhone.sDesc));
+		}
+		m_GameSSCDBModule->CloseRecordset();
+
+		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_UNBIND_PHONE_RESULT,dwContextID,&UnBindPhone,sizeof(UnBindPhone));
+
+
+	}
+	catch (IDataBaseException * pIException)
+	{
+		//错误信息
+		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
+		CString strLogFile;
+		strLogFile.Format(L"Exception p_set_UnBindPhone");
+		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
+		ReconnectSql();
+
+		return false;
+	}
+
+}
+//发送验证码
+bool CDataBaseEngineSink::OnSendYzm(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	try
+	{
+
+		//效验参数
+		ASSERT(wDataSize==sizeof(DBR_SendYanZhengma));
+		if (wDataSize!=sizeof(DBR_SendYanZhengma)) return false;
+		DBR_SendYanZhengma* pSendYanZhengma = (DBR_SendYanZhengma*)pData;
+
+		m_GameSSCDBAide.ResetParameter();
+		m_GameSSCDBAide.AddParameter(TEXT("@userid"),pSendYanZhengma->n_t_userid);
+		m_GameSSCDBAide.AddParameter(TEXT("@code"),pSendYanZhengma->s_t_code);
+		m_GameSSCDBAide.AddParameter(TEXT("@type"),pSendYanZhengma->c_t_type);
+		m_GameSSCDBAide.AddParameter(TEXT("@stype"),pSendYanZhengma->c_t_stype);
+
+		//输出参数
+		TCHAR szDescribeString[128]=TEXT("");
+		m_GameSSCDBAide.AddParameterOutput(TEXT("@str"),szDescribeString,sizeof(szDescribeString),adParamOutput);
+
+		m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_AdminPhoneOrCode"),true);
+
+// 		DBO_GR_UnBindPhone_RET UnBindPhone;
+// 		ZeroMemory(&UnBindPhone,sizeof(UnBindPhone));
+// 		//nBindPhone.nResult = lResultCode;
+// 
+// 		if(!m_GameSSCDBModule->IsRecordsetEnd())
+// 		{
+// 			m_GameSSCDBAide.GetValue_String(TEXT("result"),UnBindPhone.sDesc,CountArray(UnBindPhone.sDesc));
+// 		}
+// 		m_GameSSCDBModule->CloseRecordset();
+// 
+// 		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_UNBIND_PHONE_RESULT,dwContextID,&UnBindPhone,sizeof(UnBindPhone));
+
+
+	}
+	catch (IDataBaseException * pIException)
+	{
+		//错误信息
+		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
+		CString strLogFile;
+		strLogFile.Format(L"Exception p_get_AdminPhoneOrCode");
+		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
+		ReconnectSql();
+
+		return false;
+	}
+	return true;
+}
+//发送验证码
+bool CDataBaseEngineSink::OnSendYzmTrans(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	try
+	{
+
+		//效验参数
+		ASSERT(wDataSize==sizeof(DBR_SendYanZhengma));
+		if (wDataSize!=sizeof(DBR_SendYanZhengma)) return false;
+		DBR_SendYanZhengma* pSendYanZhengma = (DBR_SendYanZhengma*)pData;
+
+		m_GameSSCDBAide.ResetParameter();
+		m_GameSSCDBAide.AddParameter(TEXT("@userid"),pSendYanZhengma->n_t_userid);
+		m_GameSSCDBAide.AddParameter(TEXT("@code"),pSendYanZhengma->s_t_code);
+		m_GameSSCDBAide.AddParameter(TEXT("@stype"),pSendYanZhengma->c_t_stype);
+		m_GameSSCDBAide.AddParameter(TEXT("@type"),pSendYanZhengma->c_t_type);
+
+		//输出参数
+		TCHAR szDescribeString[128]=TEXT("");
+		m_GameSSCDBAide.AddParameterOutput(TEXT("@str"),szDescribeString,sizeof(szDescribeString),adParamOutput);
+
+		m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_PhoneCode_tranf_fenghong"),true);
+
+// 		DBO_GR_UnBindPhone_RET UnBindPhone;
+// 		ZeroMemory(&UnBindPhone,sizeof(UnBindPhone));
+// 		//nBindPhone.nResult = lResultCode;
+// 
+// 		if(!m_GameSSCDBModule->IsRecordsetEnd())
+// 		{
+// 			m_GameSSCDBAide.GetValue_String(TEXT("result"),UnBindPhone.sDesc,CountArray(UnBindPhone.sDesc));
+// 		}
+// 		m_GameSSCDBModule->CloseRecordset();
+// 
+// 		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_UNBIND_PHONE_RESULT,dwContextID,&UnBindPhone,sizeof(UnBindPhone));
+
+
+	}
+	catch (IDataBaseException * pIException)
+	{
+		//错误信息
+		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
+		CString strLogFile;
+		strLogFile.Format(L"Exception p_get_AdminPhoneOrCode");
+		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
+		ReconnectSql();
+
+		return false;
+	}
+	return true;
+}
+//发送对比验证码
+bool CDataBaseEngineSink::OnSendCheckYzm(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	try
+	{
+
+		//效验参数
+		ASSERT(wDataSize==sizeof(DBR_SendYanZhengma));
+		if (wDataSize!=sizeof(DBR_SendYanZhengma)) return false;
+		DBR_SendYanZhengma* pSendYanZhengma = (DBR_SendYanZhengma*)pData;
+
+		m_GameSSCDBAide.ResetParameter();
+		m_GameSSCDBAide.AddParameter(TEXT("@userid"),pSendYanZhengma->n_t_userid);
+		m_GameSSCDBAide.AddParameter(TEXT("@code"),pSendYanZhengma->s_t_code);
+		m_GameSSCDBAide.AddParameter(TEXT("@type"),pSendYanZhengma->c_t_type);
+		m_GameSSCDBAide.AddParameter(TEXT("@stype"),pSendYanZhengma->c_t_stype);
+		//输出参数
+		TCHAR szDescribeString[128]=TEXT("");
+		m_GameSSCDBAide.AddParameterOutput(TEXT("@str"),szDescribeString,sizeof(szDescribeString),adParamOutput);
+
+		LONG lResult = m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_AdminPhoneOrCode"),true);
+
+ 		DBO_GR_SendYanZhengmaRet SendYanZhengmaRet;
+ 		ZeroMemory(&SendYanZhengmaRet,sizeof(SendYanZhengmaRet));
+ 		//SendYanZhengmaRet.nResult = lResult;
+
+		SendYanZhengmaRet.n_t_userid = pSendYanZhengma->n_t_userid;
+		CDBVarValue DBVarValue;
+		m_GameSSCDBModule->GetParameter(TEXT("@str"),DBVarValue);
+		lstrcpyn(szDescribeString,CW2CT(DBVarValue.bstrVal),CountArray(szDescribeString));
+
+	//	lstrcpyn(SendYanZhengmaRet.sDesc,szDescribeString,CountArray(SendYanZhengmaRet.sDesc));
+		CString strCheck;
+		strCheck.Format(L"%s",szDescribeString);
+
+		int nFind = strCheck.Find(L"|");
+		CString strTemp = strCheck.Left(nFind);
+		CString strTemp1 = strCheck.Right(strCheck.GetLength()-nFind-1);
+		int nYear,nMonth,nDay,nHour,nMinute,nSecond,nMiSecond;
+
+		char szStr[256] = {0};
+
+		wcstombs(szStr, strTemp1, strTemp1.GetLength());
+		const char * pStr = szStr;
+		sscanf(pStr,"%d-%d-%d %d:%d:%d.%d",&nYear,&nMonth,&nDay,&nHour,&nMinute,&nSecond,&nMiSecond);
+		CTime tTime(nYear,nMonth,nDay,nHour,nMinute,nSecond,nMiSecond);
+
+		CTime tNow = CTime::GetCurrentTime();
+		CTimeSpan timespan= tNow-tTime;
+		if(timespan.GetTotalSeconds()>120)
+		{
+			SendYanZhengmaRet.nResult = 1;
+			_sntprintf(SendYanZhengmaRet.sDesc,CountArray(SendYanZhengmaRet.sDesc),TEXT("验证码超时，请重新获取！"));
+		}
+		else 
+		{
+			CString strYan;
+			strYan.Format(L"%s",pSendYanZhengma->s_t_code);
+			if(strYan == strTemp)
+			{
+				SendYanZhengmaRet.nResult = 0;
+				_sntprintf(SendYanZhengmaRet.sDesc,CountArray(SendYanZhengmaRet.sDesc),TEXT("验证码成功！"));
+			}
+			else
+			{
+				SendYanZhengmaRet.nResult = 2;
+				_sntprintf(SendYanZhengmaRet.sDesc,CountArray(SendYanZhengmaRet.sDesc),TEXT("验证码错误！"));
+
+			}
+		}
+
+ 		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_SEND_CHECK_YZM_RET,dwContextID,&SendYanZhengmaRet,sizeof(SendYanZhengmaRet));
+	}
+	catch (IDataBaseException * pIException)
+	{
+		//错误信息
+		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
+		CString strLogFile;
+		strLogFile.Format(L"Exception p_get_AdminPhoneOrCode");
+		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
+		ReconnectSql();
+
+		return false;
+	}
+
+}
+//发送对比验证码
+bool CDataBaseEngineSink::OnSendCheckYzmTrans(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	try
+	{
+
+		//效验参数
+		ASSERT(wDataSize==sizeof(DBR_SendYanZhengma));
+		if (wDataSize!=sizeof(DBR_SendYanZhengma)) return false;
+		DBR_SendYanZhengma* pSendYanZhengma = (DBR_SendYanZhengma*)pData;
+
+		m_GameSSCDBAide.ResetParameter();
+		m_GameSSCDBAide.AddParameter(TEXT("@userid"),pSendYanZhengma->n_t_userid);
+		m_GameSSCDBAide.AddParameter(TEXT("@code"),pSendYanZhengma->s_t_code);
+		m_GameSSCDBAide.AddParameter(TEXT("@stype"),pSendYanZhengma->c_t_stype);
+		m_GameSSCDBAide.AddParameter(TEXT("@type"),pSendYanZhengma->c_t_type);
+		//输出参数
+		TCHAR szDescribeString[128]=TEXT("");
+		m_GameSSCDBAide.AddParameterOutput(TEXT("@str"),szDescribeString,sizeof(szDescribeString),adParamOutput);
+
+		LONG lResult = m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_PhoneCode_tranf_fenghong"),true);
+
+ 		DBO_GR_SendYanZhengmaRet SendYanZhengmaRet;
+ 		ZeroMemory(&SendYanZhengmaRet,sizeof(SendYanZhengmaRet));
+ 		SendYanZhengmaRet.nResult = lResult;
+
+		SendYanZhengmaRet.n_t_userid = pSendYanZhengma->n_t_userid;
+		CDBVarValue DBVarValue;
+		m_GameSSCDBModule->GetParameter(TEXT("@str"),DBVarValue);
+		lstrcpyn(szDescribeString,CW2CT(DBVarValue.bstrVal),CountArray(szDescribeString));
+
+		lstrcpyn(SendYanZhengmaRet.sDesc,szDescribeString,CountArray(SendYanZhengmaRet.sDesc));
+
+ 		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_SEND_CHECK_YZM_TRANS_RET,dwContextID,&SendYanZhengmaRet,sizeof(SendYanZhengmaRet));
+	}
+	catch (IDataBaseException * pIException)
+	{
+		//错误信息
+		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
+		CString strLogFile;
+		strLogFile.Format(L"Exception p_get_AdminPhoneOrCode");
 		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
 		ReconnectSql();
 
@@ -2203,6 +2362,11 @@ bool CDataBaseEngineSink::OnQueryMyYinHang(DWORD dwContextID, VOID * pData, WORD
 			m_GameSSCDBAide.GetValue_String(_T("yinhang"),QueryMyYinHang_RET.szKaihuYinghang,sizeof(QueryMyYinHang_RET.szKaihuYinghang));
 			m_GameSSCDBAide.GetValue_String(_T("kaihuren"),QueryMyYinHang_RET.szKaihuRen,sizeof(QueryMyYinHang_RET.szKaihuRen));
 			m_GameSSCDBAide.GetValue_String(_T("yinhangzhanghu"),QueryMyYinHang_RET.szYinhangZhanghu,sizeof(QueryMyYinHang_RET.szYinhangZhanghu));
+			QueryMyYinHang_RET.n_t_lock = m_GameSSCDBAide.GetValue_INT(_T("lock"));
+
+			CString strLog;
+			strLog.Format(L"[%d] yh:%s,khr:%s,lock:%d",pQueryMyYinHang->dwUserID,QueryMyYinHang_RET.szKaihuYinghang,QueryMyYinHang_RET.szKaihuRen,QueryMyYinHang_RET.n_t_lock);
+			CTraceService::TraceString(strLog,TraceLevel_Exception);
 		}
 
 		m_GameSSCDBModule->CloseRecordset();
@@ -2280,9 +2444,6 @@ bool CDataBaseEngineSink::OnMBGetTouzhuXX(DWORD dwContextID, VOID * pData, WORD 
 
 		DBR_MB_GetTouzhu* pUserInfo = (DBR_MB_GetTouzhu*)pData;
 
-		CString strLogFile;
-		strLogFile.Format(L"ExecuteProcess before %d",pUserInfo->n_t_id);
-		LogFile::instance().LogText(strLogFile);
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@t_id"),pUserInfo->n_t_id);
@@ -2314,9 +2475,6 @@ bool CDataBaseEngineSink::OnMBGetTouzhuXX(DWORD dwContextID, VOID * pData, WORD 
 			GetTouzhuRet.f_t_danzhujine = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("t_bonus"));
 			GetTouzhuRet.f_t_fandian = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("t_fandian"));
 		}
-
-		strLogFile.Format(L"GetValue DBO_MB_GET_TOUZHU_XX_RET");
-		LogFile::instance().LogText(strLogFile);
 
 
 		m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_GET_TOUZHU_XX_RET,dwContextID,&GetTouzhuRet,sizeof(GetTouzhuRet));
@@ -2372,7 +2530,7 @@ bool CDataBaseEngineSink::OnGetTouzhuXX(DWORD dwContextID, VOID * pData, WORD wD
 		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_touzhuxx"),true);
 
 
-		char szTempHaoma[991600]=("");
+		char szTempHaoma[801600];
 		DBO_GP_GetTouzhuRet GetTouzhuRet;
 		ZeroMemory(&GetTouzhuRet,sizeof(GetTouzhuRet));
 	//	USES_CONVERSION;
@@ -2466,6 +2624,155 @@ bool CDataBaseEngineSink::OnGetTouzhuXX(DWORD dwContextID, VOID * pData, WORD wD
 
 
 }
+#include <algorithm>
+#include <functional> 
+#include <vector>
+int SplitString(const string &srcStr, vector<string> &destVec, const string splitStr="|")
+{
+	if(srcStr.size()==0 || srcStr.empty())
+	{   
+		return false;
+	}   
+	size_t oldPos,newPos;
+	oldPos=0;
+	newPos=0;
+	string tempData;
+	while(1)
+	{   
+		newPos=srcStr.find(splitStr,oldPos);
+		if(newPos!=string::npos)
+		{   
+			tempData = srcStr.substr(oldPos,newPos-oldPos);
+			destVec.push_back(tempData);
+			oldPos=newPos+splitStr.size();
+		}   
+		else if(oldPos<=srcStr.size())
+		{   
+			tempData= srcStr.substr(oldPos);
+			destVec.push_back(tempData);
+			break;
+		}   
+		else
+		{   
+			break;
+		}   
+	}   
+	return true;
+}
+bool CDataBaseEngineSink::CheckDate(TCHAR szTime[30])
+{
+	CTime time = CTime::GetCurrentTime();
+	CString strTime;
+	strTime.Format(L"%s",szTime);
+
+	CString strYear;
+	strYear = strTime.Left(10);
+	CString strHour;
+	strHour = strTime.Mid(11,9);
+	string strGetHaoma;
+
+	int nYear =  0;
+	int nMonth = 0;
+	int nDay = 0;
+	int nHour = 0;
+	int nMinute = 0;
+	int nSecond = 0;
+
+	ChangeStringToA(strYear,strGetHaoma);
+
+	vector<string> vectDanHaoma;
+	SplitString(strGetHaoma,vectDanHaoma,"-");
+	CString strTemp;
+	for(int i = 0;i < vectDanHaoma.size();i++)
+	{
+		CString strLog;
+		strLog.Format(L"CHECKDATE %s",ChangeStringToT(vectDanHaoma[i].c_str()));
+		OutputDebugString(strLog);
+
+		strTemp = ChangeStringToT(vectDanHaoma[i].c_str());
+		if(i == 0)
+		{
+
+			nYear = _ttoi(strTemp);
+		}
+		else if(i == 1)
+		{
+			nMonth = _ttoi(strTemp);
+		}
+		else if(i == 2)
+		{
+			nDay = _ttoi(strTemp);
+		}
+	}
+	
+
+	vectDanHaoma.clear();
+	ChangeStringToA(strHour,strGetHaoma);
+	SplitString(strGetHaoma,vectDanHaoma,":");
+	for(int i = 0;i < vectDanHaoma.size();i++)
+	{
+		CString strLog;
+		strLog.Format(L"CHECKDATE %s",ChangeStringToT(vectDanHaoma[i].c_str()));
+		OutputDebugString(strLog);
+		strTemp = ChangeStringToT(vectDanHaoma[i].c_str());
+
+		if(i == 0)
+		{
+			nHour = _ttoi(strTemp);
+		}
+		else if(i == 1)
+		{
+			nMinute = _ttoi(strTemp);
+		}
+		else if(i == 2)
+		{
+			nSecond = _ttoi(strTemp);
+		}
+
+	}
+
+	if(nYear>2100 || nYear < 2000)
+	{
+		return false;
+	}
+
+	if(nMonth > 12 || nMonth < 1)
+	{
+		return false;
+	}
+
+	if(nDay > 31 || nDay<1)
+	{
+		return false;
+	}
+
+	if(nHour > 23 || nHour<0)
+	{
+		return false;
+	}
+	if(nMinute >59 || nMinute < 0)
+	{
+		return false;
+	}
+	if(nSecond > 59 || nSecond < 0)
+	{
+		return false;
+	}
+// 	CTime QueryTime(nYear,nMonth,nDay,nHour,nMinute,nSecond);
+// 	CTime LowTime(2000,1,1,0,0,0);
+// 	if((QueryTime.GetYear() > time.GetYear())||(QueryTime.GetMonth() > time.GetMonth())||(QueryTime.GetDay() > time.GetDay()))
+// 	{
+// 		return false;
+// 	}
+	
+// 	if(QueryTime<LowTime)
+// 	{
+// 		return false;
+// 	}
+	
+
+	return true;
+}
 //获取会员数据
 bool CDataBaseEngineSink::OnGetHyShj(DWORD dwContextID, VOID * pData, WORD wDataSize)
 {
@@ -2477,6 +2784,19 @@ bool CDataBaseEngineSink::OnGetHyShj(DWORD dwContextID, VOID * pData, WORD wData
 
 		DBR_GP_GetHyShj* pUserInfo = (DBR_GP_GetHyShj*)pData;
 
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pUserInfo->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pUserInfo->szTimeEnd);
+
+		if((pUserInfo->szTimeEnd < pUserInfo->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetHyShjRet GetHyShjRet;
+			ZeroMemory(&GetHyShjRet,sizeof(GetHyShjRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_HYSHJ_RET,dwContextID,&GetHyShjRet,0);
+
+		}
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pUserInfo->dwUserID);
 		m_GameSSCDBAide.AddParameter(TEXT("@only_today"),pUserInfo->cbOnlyToday);
@@ -2511,6 +2831,10 @@ bool CDataBaseEngineSink::OnGetHyShj(DWORD dwContextID, VOID * pData, WORD wData
 			GetHyShjRet.f_chedan_zonge = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("chedanzonge"));
 			GetHyShjRet.f_touzhuyongjin = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("touzhuyongjin"));
 			GetHyShjRet.f_kuisunyongjin = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("kuisunyongjin"));
+			GetHyShjRet.n_t_qianfenlv = m_GameSSCDBAide.GetValue_WORD(TEXT("chongzhi_lv"));
+			GetHyShjRet.n_t_newchongzhi = m_GameSSCDBAide.GetValue_INT(TEXT("todayChongzhi"));
+			GetHyShjRet.f_t_userfandian = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("userFandian"));
+
 		}
 		m_GameSSCDBModule->CloseRecordset();
 		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_HYSHJ_RET,dwContextID,&GetHyShjRet,sizeof(GetHyShjRet));
@@ -2998,6 +3322,20 @@ bool CDataBaseEngineSink::OnGetTouzhuLog(DWORD dwContextID, VOID * pData, WORD w
 		
 		DBR_GP_GetTouzhuLog* pLog = (DBR_GP_GetTouzhuLog*)pData;
 
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLog->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLog->szTimeEnd);
+
+		if((pLog->szTimeEnd < pLog->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetTouzhuLogRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_TOUZHU_LOG_RET,dwContextID,&LogRet,0);
+
+		}
+
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
 		m_GameSSCDBAide.AddParameter(TEXT("@page"),pLog->nPage);
@@ -3005,8 +3343,11 @@ bool CDataBaseEngineSink::OnGetTouzhuLog(DWORD dwContextID, VOID * pData, WORD w
 		m_GameSSCDBAide.AddParameter(TEXT("@by_time"),pLog->bByTime);
 		m_GameSSCDBAide.AddParameter(TEXT("@time_start"),pLog->szTimeStart);
 		m_GameSSCDBAide.AddParameter(TEXT("@time_end"),pLog->szTimeEnd);
+		m_GameSSCDBAide.AddParameter(TEXT("@qihao"),TEXT(""));
+		m_GameSSCDBAide.AddParameter(TEXT("@state"),pLog->nStatus);
+		m_GameSSCDBAide.AddParameter(TEXT("@kind"),pLog->nCaiZhong);
 
-		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_touzhu_log"),true);
+		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_touzhu_logWeb"),true);
 		if(lResultCode == DB_SUCCESS)
 		{
 			DBO_GR_GetTouzhuLogRet GetTouzhuResult[20];
@@ -3055,6 +3396,121 @@ bool CDataBaseEngineSink::OnGetTouzhuLog(DWORD dwContextID, VOID * pData, WORD w
 	}
 	return true;
 }
+//查看站内信
+bool CDataBaseEngineSink::OnChkZnxInboxLog(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	try
+	{
+		//效验参数
+		ASSERT(wDataSize==sizeof(DBR_GP_ChkInboxMessage));
+		if (wDataSize!=sizeof(DBR_GP_ChkInboxMessage)) return false;
+
+		DBR_GP_ChkInboxMessage* pLog = (DBR_GP_ChkInboxMessage*)pData;
+
+		m_GameSSCDBAide.ResetParameter();
+		m_GameSSCDBAide.AddParameter(TEXT("@id"),pLog->n_t_id);
+		m_GameSSCDBAide.AddParameter(TEXT("@userid"),pLog->n_t_userid);
+
+		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("b_get_QueryAdvOfID"),false);
+
+
+// 		//发送结果
+// 		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_GET_ZNX_INBOX_RET,dwContextID,&GetZnxCountRet,sizeof(DBO_GP_GetInboxMessageRet)*lResult);
+	}
+	catch (IDataBaseException * pIException)
+	{
+		//错误信息
+		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
+		CString strLogFile;
+		strLogFile.Format(L"Exception b_get_QueryAdvOfID");
+		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
+		ReconnectSql();
+
+		return false;
+	}
+	return true;
+}
+//查询站内信
+bool CDataBaseEngineSink::OnGetZnxInboxLog(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	try
+	{
+		//效验参数
+		ASSERT(wDataSize==sizeof(DBR_GP_GetInboxMessage));
+		if (wDataSize!=sizeof(DBR_GP_GetInboxMessage)) return false;
+		
+		DBR_GP_GetInboxMessage* pLog = (DBR_GP_GetInboxMessage*)pData;
+
+		m_GameSSCDBAide.ResetParameter();
+		m_GameSSCDBAide.AddParameter(TEXT("@userID"),pLog->n_t_userid);
+		m_GameSSCDBAide.AddParameter(TEXT("@typeid"),pLog->n_t_typeid);
+		m_GameSSCDBAide.AddParameter(TEXT("@npage"),pLog->n_t_page);
+		m_GameSSCDBAide.AddParameter(TEXT("@nsize"),pLog->n_t_size);
+
+		//输出参数
+		TCHAR szDescribeString[128]=TEXT("");
+		m_GameSSCDBAide.AddParameterOutput(TEXT("@cnt"),szDescribeString,sizeof(szDescribeString),adParamOutput);
+
+		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_siteNotice"),true);
+
+// 		//结果处理
+		CDBVarValue DBVarValue;
+		m_GameSSCDBModule->GetParameter(TEXT("@cnt"),DBVarValue);
+		lstrcpyn(szDescribeString,CW2CT(DBVarValue.bstrVal),CountArray(szDescribeString));
+		if(lResultCode == DB_SUCCESS)
+		{
+			DBO_GP_GetInboxMessageRet GetZnxCountRet[5];
+			ZeroMemory(&GetZnxCountRet,sizeof(GetZnxCountRet));
+			BYTE lResult = 0;
+			while ((m_GameSSCDBModule->IsRecordsetEnd() == FALSE))
+			{
+				if(lResult >= 5)
+				{
+					m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_GET_ZNX_INBOX_RET,dwContextID,&GetZnxCountRet,sizeof(DBO_GP_GetInboxMessageRet)*lResult);
+					ZeroMemory(&GetZnxCountRet,sizeof(GetZnxCountRet));
+					lResult = 0;
+				}
+				GetZnxCountRet[lResult].n_t_id =  m_GameSSCDBAide.GetValue_INT(TEXT("t_id"));
+				m_GameSSCDBAide.GetValue_String(TEXT("t_title"),GetZnxCountRet[lResult].s_t_title,CountArray(GetZnxCountRet[lResult].s_t_title));
+				m_GameSSCDBAide.GetValue_String(TEXT("t_content"),GetZnxCountRet[lResult].s_t_content,CountArray(GetZnxCountRet[lResult].s_t_content));
+				m_GameSSCDBAide.GetValue_SystemTime(TEXT("t_time"),GetZnxCountRet[lResult].n_t_time);
+				if(pLog->n_t_typeid==1)
+				{
+					GetZnxCountRet[lResult].n_send_userid =  m_GameSSCDBAide.GetValue_INT(TEXT("s_userID"));
+					GetZnxCountRet[lResult].n_rcv_userid =  m_GameSSCDBAide.GetValue_INT(TEXT("s_RevUserID"));
+					GetZnxCountRet[lResult].n_t_sitetype =  m_GameSSCDBAide.GetValue_INT(TEXT("t_siteType"));
+				}
+				m_GameSSCDBAide.GetValue_String(TEXT("UserName"),GetZnxCountRet[lResult].s_t_username,CountArray(GetZnxCountRet[lResult].s_t_username));
+				GetZnxCountRet[lResult].c_t_ifread =  m_GameSSCDBAide.GetValue_BYTE(TEXT("ifRead"));
+				GetZnxCountRet[lResult].n_t_rownum =  m_GameSSCDBAide.GetValue_INT(TEXT("RowNo"));
+				GetZnxCountRet[lResult].n_t_count = _ttoi(szDescribeString);
+				GetZnxCountRet[lResult].n_t_ifSj =  m_GameSSCDBAide.GetValue_INT(TEXT("ifsj"));
+
+				CString strLog;
+				strLog.Format(L"ZHANNEIXIN %s,%d-%d-%d %d:%d:%d",GetZnxCountRet[lResult].s_t_title,GetZnxCountRet[lResult].n_t_time.wYear,GetZnxCountRet[lResult].n_t_time.wMonth,GetZnxCountRet[lResult].n_t_time.wDay,GetZnxCountRet[lResult].n_t_time.wHour,GetZnxCountRet[lResult].n_t_time.wMinute,GetZnxCountRet[lResult].n_t_time.wSecond);
+				OutputDebugString(strLog);
+				lResult++;
+				m_GameSSCDBModule->MoveToNext();
+			}	
+
+			m_GameSSCDBModule->CloseRecordset();
+			//发送结果
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_GET_ZNX_INBOX_RET,dwContextID,&GetZnxCountRet,sizeof(DBO_GP_GetInboxMessageRet)*lResult);
+		}
+	}
+	catch (IDataBaseException * pIException)
+	{
+		//错误信息
+		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
+		CString strLogFile;
+		strLogFile.Format(L"Exception p_get_siteNotice");
+		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
+		ReconnectSql();
+
+		return false;
+	}
+	return true;
+}
 //查询新闻
 bool CDataBaseEngineSink::OnGetNewsInfo(DWORD dwContextID, VOID * pData, WORD wDataSize)
 {
@@ -3067,10 +3523,10 @@ bool CDataBaseEngineSink::OnGetNewsInfo(DWORD dwContextID, VOID * pData, WORD wD
 		DBR_GP_GetNews* pLog = (DBR_GP_GetNews*)pData;
 
 		m_GameSSCDBAide.ResetParameter();
-		m_GameSSCDBAide.AddParameter(TEXT("@userid"),pLog->n_t_id);
-		m_GameSSCDBAide.AddParameter(TEXT("@count"),pLog->n_t_ccount);
+// 		m_GameSSCDBAide.AddParameter(TEXT("@userid"),pLog->n_t_id);
+// 		m_GameSSCDBAide.AddParameter(TEXT("@count"),pLog->n_t_ccount);
 
-		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_top_news"),true);
+		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_Get_TopZhongJingInfo"),true);
 		if(lResultCode == DB_SUCCESS)
 		{
 			DBO_GP_GetNewsRet GetNews[50];
@@ -3084,8 +3540,10 @@ bool CDataBaseEngineSink::OnGetNewsInfo(DWORD dwContextID, VOID * pData, WORD wD
 					ZeroMemory(&GetNews,sizeof(GetNews));
 					lResult = 0;
 				}
-				m_GameSSCDBAide.GetValue_String(TEXT("title"),GetNews[lResult].s_t_news,CountArray(GetNews[lResult].s_t_news));
-				m_GameSSCDBAide.GetValue_SystemTime(TEXT("t_time"),GetNews[lResult].s_t_time);
+				m_GameSSCDBAide.GetValue_String(TEXT("t_account"),GetNews[lResult].s_t_account,CountArray(GetNews[lResult].s_t_account));
+				m_GameSSCDBAide.GetValue_String(TEXT("TypeName"),GetNews[lResult].s_t_TypeName,CountArray(GetNews[lResult].s_t_TypeName));
+				GetNews[lResult].f_t_yingkui = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("t_yingkui"));
+				m_GameSSCDBAide.GetValue_String(TEXT("t_qishu"),GetNews[lResult].s_t_qihao,CountArray(GetNews[lResult].s_t_qihao));
 
 				lResult++;
 				m_GameSSCDBModule->MoveToNext();
@@ -3168,6 +3626,20 @@ bool CDataBaseEngineSink::OnGetXJCHZHLog(DWORD dwContextID, VOID * pData, WORD w
 		
 		DBR_GP_GetXJCHZHLog* pLog = (DBR_GP_GetXJCHZHLog*)pData;
 
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLog->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLog->szTimeEnd);
+
+		if((pLog->szTimeEnd < pLog->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetXJCHZHLogRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_XJCHZH_LOG_RET,dwContextID,&LogRet,0);
+
+		}
+
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
 		m_GameSSCDBAide.AddParameter(TEXT("@type"),pLog->n_t_type);
@@ -3234,6 +3706,20 @@ bool CDataBaseEngineSink::OnGetXJTxLog(DWORD dwContextID, VOID * pData, WORD wDa
 		if (wDataSize!=sizeof(DBR_GP_GetXJTxLog)) return false;
 		
 		DBR_GP_GetXJTxLog* pLog = (DBR_GP_GetXJTxLog*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLog->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLog->szTimeEnd);
+
+		if((pLog->szTimeEnd < pLog->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetXJTxLogRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_XJTX_LOG_RET,dwContextID,&LogRet,0);
+
+		}
+
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
@@ -3295,6 +3781,10 @@ bool CDataBaseEngineSink::OnGetXJTxLog(DWORD dwContextID, VOID * pData, WORD wDa
 //下级盈亏记录查询
 bool CDataBaseEngineSink::OnGetXJYKLog(DWORD dwContextID, VOID * pData, WORD wDataSize)
 {
+	DWORD dwTickCount = GetTickCount();
+	CString strLog;
+	strLog.Format(L"XIHYLOG tick9:%d",dwTickCount);
+	OutputDebugString(strLog);
 	try
 	{
 		//效验参数
@@ -3302,6 +3792,19 @@ bool CDataBaseEngineSink::OnGetXJYKLog(DWORD dwContextID, VOID * pData, WORD wDa
 		if (wDataSize!=sizeof(DBR_GP_GetXJYKLog)) return false;
 
 		DBR_GP_GetXJYKLog* pLog = (DBR_GP_GetXJYKLog*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLog->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLog->szTimeEnd);
+
+		if((pLog->szTimeEnd < pLog->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetXJYKLogRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_XJYK_LOG_RET,dwContextID,&LogRet,0);
+
+		}
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
@@ -3314,6 +3817,11 @@ bool CDataBaseEngineSink::OnGetXJYKLog(DWORD dwContextID, VOID * pData, WORD wDa
 		m_GameSSCDBAide.AddParameter(TEXT("@time_start"),pLog->szTimeStart);
 		m_GameSSCDBAide.AddParameter(TEXT("@time_end"),pLog->szTimeEnd);
 		m_GameSSCDBAide.AddParameter(TEXT("@sorttype"),pLog->n_sort_type);
+		
+		dwTickCount = GetTickCount();
+		
+		strLog.Format(L"XIHYLOG tick2:%d",dwTickCount);
+		OutputDebugString(strLog);
 
 		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_xjyk_log"),true);
 		if(lResultCode == DB_SUCCESS)
@@ -3342,6 +3850,11 @@ bool CDataBaseEngineSink::OnGetXJYKLog(DWORD dwContextID, VOID * pData, WORD wDa
 				lResult++;
 				m_GameSSCDBModule->MoveToNext();
 			}	
+			dwTickCount = GetTickCount();
+
+			strLog.Format(L"XIHYLOG tick3:%d",dwTickCount);
+			OutputDebugString(strLog);
+
 			m_GameSSCDBModule->CloseRecordset();
 			//发送结果
 			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_XJYK_LOG_RET,dwContextID,&GetXJYKResult,sizeof(DBO_GR_GetXJYKLogRet)*lResult);
@@ -3370,6 +3883,20 @@ bool CDataBaseEngineSink::OnGetXJYKTj(DWORD dwContextID, VOID * pData, WORD wDat
 		if (wDataSize!=sizeof(DBR_GP_GetXJYKTj)) return false;
 
 		DBR_GP_GetXJYKTj* pLog = (DBR_GP_GetXJYKTj*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLog->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLog->szTimeEnd);
+
+		if((pLog->szTimeEnd < pLog->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetXJYKTjRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_XJYK_TJ_RET,dwContextID,&LogRet,0);
+
+		}
+
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
@@ -3399,7 +3926,8 @@ bool CDataBaseEngineSink::OnGetXJYKTj(DWORD dwContextID, VOID * pData, WORD wDat
 				}
 				GetXJYKResult[lResult].n_t_id =  m_GameSSCDBAide.GetValue_INT(TEXT("t_id"));
 				m_GameSSCDBAide.GetValue_String(TEXT("t_account"),GetXJYKResult[lResult].s_t_account,sizeof(GetXJYKResult[lResult].s_t_account));
-				GetXJYKResult[lResult].n_t_type =  m_GameSSCDBAide.GetValue_INT(TEXT("t_type"));
+				GetXJYKResult[lResult].n_t_type =  m_GameSSCDBAide.GetValue_WORD(TEXT("t_type"));
+				GetXJYKResult[lResult].n_t_permillage = m_GameSSCDBAide.GetValue_WORD(TEXT("chongzhi_lv"));
 				GetXJYKResult[lResult].f_t_chongzhi_ze = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("chongzhi_ze"));
 				GetXJYKResult[lResult].f_t_qukuan_ze = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("qukuan_ze"));
 				GetXJYKResult[lResult].f_t_touzhu_ze = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("touzhu_ze"));
@@ -3408,7 +3936,8 @@ bool CDataBaseEngineSink::OnGetXJYKTj(DWORD dwContextID, VOID * pData, WORD wDat
 				GetXJYKResult[lResult].f_t_xjfandian_ze = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("xiajifandian_ze"));
 				GetXJYKResult[lResult].f_t_huodong_ze = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("huodong_ze"));
 				GetXJYKResult[lResult].f_t_tuandui_ye = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("t_yue"));
-			//	GetXJYKResult[lResult].f_t_qipai_ze = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("qipai_ze"));
+				GetXJYKResult[lResult].f_t_qipai_yk = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("qipai_yk"));
+				GetXJYKResult[lResult].f_t_qipai_fd = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("qipai_fandian"));
 
 				lResult++;
 				m_GameSSCDBModule->MoveToNext();
@@ -3442,6 +3971,20 @@ bool CDataBaseEngineSink::OnGetXJYXTj(DWORD dwContextID, VOID * pData, WORD wDat
 		if (wDataSize!=sizeof(DBR_GP_GetXJYXTj)) return false;
 
 		DBR_GP_GetXJYXTj* pLog = (DBR_GP_GetXJYXTj*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLog->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLog->szTimeEnd);
+
+		if((pLog->szTimeEnd < pLog->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetXJYXTjRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_XJYX_TJ_RET,dwContextID,&LogRet,0);
+
+		}
+
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
@@ -3509,6 +4052,19 @@ bool CDataBaseEngineSink::OnGetXJTZHLog(DWORD dwContextID, VOID * pData, WORD wD
 		if (wDataSize!=sizeof(DBR_GP_GetXJTZHLog)) return false;
 		
 		DBR_GP_GetXJTZHLog* pLog = (DBR_GP_GetXJTZHLog*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLog->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLog->szTimeEnd);
+
+		if((pLog->szTimeEnd < pLog->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetXJTZHLogRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_XJTZH_LOG_RET,dwContextID,&LogRet,0);
+
+		}
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
@@ -3584,17 +4140,33 @@ bool CDataBaseEngineSink::OnCHKXJTZHLog(DWORD dwContextID, VOID * pData, WORD wD
 		if (wDataSize!=sizeof(DBR_GP_CHKXJTZHLog)) return false;
 		
 		DBR_GP_CHKXJTZHLog* pLog = (DBR_GP_CHKXJTZHLog*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLog->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLog->szTimeEnd);
+
+		if((pLog->szTimeEnd < pLog->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_CHKXJTZHLogRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_CHKXJTZH_LOG_RET,dwContextID,&LogRet,0);
+
+		}
+
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
 		m_GameSSCDBAide.AddParameter(TEXT("@type"),pLog->n_t_type);
 		m_GameSSCDBAide.AddParameter(TEXT("@xiaji_id"),pLog->n_t_user_id);
 		m_GameSSCDBAide.AddParameter(TEXT("@xiaji_act"),pLog->s_t_account);
+		m_GameSSCDBAide.AddParameter(TEXT("@KindType"),pLog->n_t_caizhong);
 		m_GameSSCDBAide.AddParameter(TEXT("@page"),pLog->nPage);
 		m_GameSSCDBAide.AddParameter(TEXT("@size"),pLog->nSize);
 		m_GameSSCDBAide.AddParameter(TEXT("@by_time"),pLog->bByTime);
 		m_GameSSCDBAide.AddParameter(TEXT("@time_start"),pLog->szTimeStart);
 		m_GameSSCDBAide.AddParameter(TEXT("@time_end"),pLog->szTimeEnd);
+		m_GameSSCDBAide.AddParameter(TEXT("@state"),pLog->n_t_status);
 
 		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_xjtzh_log"),true);
 		if(lResultCode == DB_SUCCESS)
@@ -3624,9 +4196,9 @@ bool CDataBaseEngineSink::OnCHKXJTZHLog(DWORD dwContextID, VOID * pData, WORD wD
 				m_GameSSCDBAide.GetValue_String(TEXT("t_account"),GetTouzhuResult[lResult].s_t_account,sizeof(GetTouzhuResult[lResult].s_t_account));
 				GetTouzhuResult[lResult].n_t_zhuihao = m_GameSSCDBAide.GetValue_INT(TEXT("t_zhuihao"));
 
-				CString strLog;
-				strLog.Format(L"t_id:%d,t_zhushu:%d,t_beishu:%d",GetTouzhuResult[lResult].n_t_id,GetTouzhuResult[lResult].n_t_zhushu,GetTouzhuResult[lResult].n_t_beishu );
-				LogFile::instance().LogText(strLog);
+// 				CString strLog;
+// 				strLog.Format(L"t_id:%d,t_zhushu:%d,t_beishu:%d",GetTouzhuResult[lResult].n_t_id,GetTouzhuResult[lResult].n_t_zhushu,GetTouzhuResult[lResult].n_t_beishu );
+// 				LogFile::instance().LogText(strLog);
 				lResult++;	
 				m_GameSSCDBModule->MoveToNext();
 			}	
@@ -3650,432 +4222,44 @@ bool CDataBaseEngineSink::OnCHKXJTZHLog(DWORD dwContextID, VOID * pData, WORD wD
 	return true;
  
 }
-//查询下级提现记录
-bool CDataBaseEngineSink::OnGetXJTXLogByID(DWORD dwContextID, VOID * pData, WORD wDataSize)
-{
-	try
-	{
-		//效验参数
-		ASSERT(wDataSize==sizeof(DBR_GP_GetXJTxLogByID));
-		if (wDataSize!=sizeof(DBR_GP_GetXJTxLogByID)) return false;
-		
-		DBR_GP_GetXJTxLogByID* pLog = (DBR_GP_GetXJTxLogByID*)pData;
 
-		m_GameSSCDBAide.ResetParameter();
-		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
-		m_GameSSCDBAide.AddParameter(TEXT("@xj_id"),pLog->nXiaJiID);
-
-		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_xjtx_by_id"),true);
-		if(lResultCode == DB_SUCCESS)
-		{
-			DBO_GR_GetXJTxLogRet GetXJTxLogResult[20];
-			ZeroMemory(&GetXJTxLogResult,sizeof(GetXJTxLogResult));
-			BYTE lResult = 0;
-			while ((m_GameSSCDBModule->IsRecordsetEnd() == FALSE))
-			{
-				if(lResult >= 20)
-				{
-					m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_XJTX_LOG_RET,dwContextID,&GetXJTxLogResult,sizeof(DBO_GR_GetXJTxLogRet)*lResult);
-					ZeroMemory(&GetXJTxLogResult,sizeof(GetXJTxLogResult));
-					lResult = 0;
-				}
-				GetXJTxLogResult[lResult].n_t_id =  m_GameSSCDBAide.GetValue_INT(TEXT("t_id"));
-				GetXJTxLogResult[lResult].n_t_user_id =  m_GameSSCDBAide.GetValue_INT(TEXT("t_user_id"));
-				m_GameSSCDBAide.GetValue_String(TEXT("t_account"),GetXJTxLogResult[lResult].s_t_account,CountArray(GetXJTxLogResult[lResult].s_t_account));
-				m_GameSSCDBAide.GetValue_SystemTime(TEXT("t_time"),GetXJTxLogResult[lResult].n_t_time);
-				m_GameSSCDBAide.GetValue_String(TEXT("yinhang"),GetXJTxLogResult[lResult].s_t_yinhang,CountArray(GetXJTxLogResult[lResult].s_t_yinhang));
-				GetXJTxLogResult[lResult].f_t_jine = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("t_jine"));
-				m_GameSSCDBAide.GetValue_String(TEXT("kaihuren"),GetXJTxLogResult[lResult].s_t_kaihuiren,CountArray(GetXJTxLogResult[lResult].s_t_kaihuiren));
-				GetXJTxLogResult[lResult].n_t_state =  m_GameSSCDBAide.GetValue_INT(TEXT("t_state"));
-				m_GameSSCDBAide.GetValue_String(TEXT("t_note"),GetXJTxLogResult[lResult].s_t_note,CountArray(GetXJTxLogResult[lResult].s_t_note));
-
-				lResult++;
-				m_GameSSCDBModule->MoveToNext();
-			}	
-			m_GameSSCDBModule->CloseRecordset();
-
-			//发送结果
-			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_XJTX_LOG_RET,dwContextID,&GetXJTxLogResult,sizeof(DBO_GR_GetXJTxLogRet)*lResult);
-		}
-	}
-	catch (IDataBaseException * pIException)
-	{
-		//错误信息
-		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
-		CString strLogFile;
-		strLogFile.Format(L"Exception p_get_xjtx_by_id");
-		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
-
-		CString strLog;
-		strLog.Format(L"查询下级提现日志,数据库异常");
-		CTraceService::TraceString(strLog,TraceLevel_Exception);
-
-		return false;
-	}
-	return true;
-}
-//查询下级提现记录
-bool CDataBaseEngineSink::OnGetXJTxLogByAct(DWORD dwContextID, VOID * pData, WORD wDataSize)
-{
-	try
-	{
-		//效验参数
-		ASSERT(wDataSize==sizeof(DBR_GP_GetXJTZHLogByAct));
-		if (wDataSize!=sizeof(DBR_GP_GetXJTZHLogByAct)) return false;
-
-		DBR_GP_GetXJTZHLogByAct* pLog = (DBR_GP_GetXJTZHLogByAct*)pData;
-
-		m_GameSSCDBAide.ResetParameter();
-		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
-		m_GameSSCDBAide.AddParameter(TEXT("@act"),pLog->szAccount);
-
-		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_xjtx_by_act"),true);
-		if(lResultCode == DB_SUCCESS)
-		{
-			DBO_GR_GetXJTxLogRet GetXJTxLogResult[20];
-			ZeroMemory(&GetXJTxLogResult,sizeof(GetXJTxLogResult));
-			BYTE lResult = 0;
-			while ((m_GameSSCDBModule->IsRecordsetEnd() == FALSE))
-			{
-				if(lResult >= 20)
-				{
-					m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_XJTX_LOG_RET,dwContextID,&GetXJTxLogResult,sizeof(DBO_GR_GetXJTxLogRet)*lResult);
-					ZeroMemory(&GetXJTxLogResult,sizeof(GetXJTxLogResult));
-					lResult = 0;
-				}
-				GetXJTxLogResult[lResult].n_t_id =  m_GameSSCDBAide.GetValue_INT(TEXT("t_id"));
-				GetXJTxLogResult[lResult].n_t_user_id =  m_GameSSCDBAide.GetValue_INT(TEXT("t_user_id"));
-				m_GameSSCDBAide.GetValue_String(TEXT("t_account"),GetXJTxLogResult[lResult].s_t_account,CountArray(GetXJTxLogResult[lResult].s_t_account));
-				m_GameSSCDBAide.GetValue_SystemTime(TEXT("t_time"),GetXJTxLogResult[lResult].n_t_time);
-				m_GameSSCDBAide.GetValue_String(TEXT("yinhang"),GetXJTxLogResult[lResult].s_t_yinhang,CountArray(GetXJTxLogResult[lResult].s_t_yinhang));
-				GetXJTxLogResult[lResult].f_t_jine = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("t_jine"));
-				m_GameSSCDBAide.GetValue_String(TEXT("kaihuren"),GetXJTxLogResult[lResult].s_t_kaihuiren,CountArray(GetXJTxLogResult[lResult].s_t_kaihuiren));
-				GetXJTxLogResult[lResult].n_t_state =  m_GameSSCDBAide.GetValue_INT(TEXT("t_state"));
-				m_GameSSCDBAide.GetValue_String(TEXT("t_note"),GetXJTxLogResult[lResult].s_t_note,CountArray(GetXJTxLogResult[lResult].s_t_note));
-
-				lResult++;
-				m_GameSSCDBModule->MoveToNext();
-			}	
-			m_GameSSCDBModule->CloseRecordset();
-
-			//发送结果
-			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_XJTX_LOG_RET,dwContextID,&GetXJTxLogResult,sizeof(DBO_GR_GetXJTxLogRet)*lResult);
-		}
-	}
-	catch (IDataBaseException * pIException)
-	{
-		//错误信息
-		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
-		CString strLogFile;
-		strLogFile.Format(L"Exception p_get_xjtx_by_act");
-		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
-
-		CString strLog;
-		strLog.Format(L"查询下级提现记录,数据库异常");
-		CTraceService::TraceString(strLog,TraceLevel_Exception);
-	
-		return false;
-	}
-	return true;
-}
-
-//查询下级投注记录
-bool CDataBaseEngineSink::OnGetXJTZHLogByID(DWORD dwContextID, VOID * pData, WORD wDataSize)
-{
-	try
-	{
-		//效验参数
-		ASSERT(wDataSize==sizeof(DBR_GP_GetXJTZHLogByID));
-		if (wDataSize!=sizeof(DBR_GP_GetXJTZHLogByID)) return false;
-		
-		DBR_GP_GetXJTZHLogByID* pLog = (DBR_GP_GetXJTZHLogByID*)pData;
-
-		m_GameSSCDBAide.ResetParameter();
-		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
-		m_GameSSCDBAide.AddParameter(TEXT("@xj_id"),pLog->nXiaJiID);
-
-		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_xjtzhtj_by_id"),true);
-		if(lResultCode == DB_SUCCESS)
-		{
-			DBO_GR_GetXJTZHLogRet GetTouzhuResult[20];
-			ZeroMemory(&GetTouzhuResult,sizeof(GetTouzhuResult));
-			BYTE lResult = 0;
-			while ((m_GameSSCDBModule->IsRecordsetEnd() == FALSE))
-			{
-				if(lResult >= 20)
-				{
-					m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_XJTZH_LOG_RET,dwContextID,&GetTouzhuResult,sizeof(DBO_GR_GetXJTZHLogRet)*lResult);
-					ZeroMemory(&GetTouzhuResult,sizeof(GetTouzhuResult));
-					lResult = 0;
-				}
-				GetTouzhuResult[lResult].n_t_id =  m_GameSSCDBAide.GetValue_INT(TEXT("t_id"));
-				m_GameSSCDBAide.GetValue_String(TEXT("t_account"),GetTouzhuResult[lResult].s_t_account,CountArray(GetTouzhuResult[lResult].s_t_account));
-				GetTouzhuResult[lResult].n_t_type =  m_GameSSCDBAide.GetValue_INT(TEXT("t_type"));
-				GetTouzhuResult[lResult].f_t_touzhu_ze = fabs(m_GameSSCDBAide.GetValue_DOUBLE(TEXT("touzhu_ze")));
-				GetTouzhuResult[lResult].f_t_yingkui_ze = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("yingkui_ze"));
-
-				lResult++;
-				m_GameSSCDBModule->MoveToNext();
-			}	
-			m_GameSSCDBModule->CloseRecordset();
-
-			//发送结果
-			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_XJTZH_LOG_RET,dwContextID,&GetTouzhuResult,sizeof(DBO_GR_GetXJTZHLogRet)*lResult);
-		}
-	}
-	catch (IDataBaseException * pIException)
-	{
-		//错误信息
-		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
-		CString strLogFile;
-		strLogFile.Format(L"Exception p_get_xjtzhtj_by_id");
-		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
-
-		CString strLog;
-		strLog.Format(L"查询下级投注记录,数据库异常");
-		CTraceService::TraceString(strLog,TraceLevel_Exception);
-
-		return false;
-	}
-	return true;
-}
-//查询下级投注记录
-bool CDataBaseEngineSink::OnGetXJTZHLogByAct(DWORD dwContextID, VOID * pData, WORD wDataSize)
-{
-	try
-	{
-		//效验参数
-		ASSERT(wDataSize==sizeof(DBR_GP_GetXJTZHLogByAct));
-		if (wDataSize!=sizeof(DBR_GP_GetXJTZHLogByAct)) return false;
-
-		DBR_GP_GetXJTZHLogByAct* pLog = (DBR_GP_GetXJTZHLogByAct*)pData;
-
-		m_GameSSCDBAide.ResetParameter();
-		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
-		m_GameSSCDBAide.AddParameter(TEXT("@act"),pLog->szAccount);
-
-		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_xjtzhtj_by_act"),true);
-		if(lResultCode == DB_SUCCESS)
-		{
-			DBO_GR_GetXJTZHLogRet GetTouzhuResult[20];
-			ZeroMemory(&GetTouzhuResult,sizeof(GetTouzhuResult));
-			BYTE lResult = 0;
-			while ((m_GameSSCDBModule->IsRecordsetEnd() == FALSE))
-			{
-				if(lResult >= 20)
-				{
-					m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_XJTZH_LOG_RET,dwContextID,&GetTouzhuResult,sizeof(DBO_GR_GetXJTZHLogRet)*lResult);
-					ZeroMemory(&GetTouzhuResult,sizeof(GetTouzhuResult));
-					lResult = 0;
-				}
-				GetTouzhuResult[lResult].n_t_id =  m_GameSSCDBAide.GetValue_INT(TEXT("t_id"));
-				m_GameSSCDBAide.GetValue_String(TEXT("t_account"),GetTouzhuResult[lResult].s_t_account,CountArray(GetTouzhuResult[lResult].s_t_account));
-				GetTouzhuResult[lResult].n_t_type =  m_GameSSCDBAide.GetValue_INT(TEXT("t_type"));
-				GetTouzhuResult[lResult].f_t_touzhu_ze = fabs(m_GameSSCDBAide.GetValue_DOUBLE(TEXT("touzhu_ze")));
-				GetTouzhuResult[lResult].f_t_yingkui_ze = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("yingkui_ze"));
-
-				lResult++;
-				m_GameSSCDBModule->MoveToNext();
-			}	
-			m_GameSSCDBModule->CloseRecordset();
-
-			//发送结果
-			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_XJTZH_LOG_RET,dwContextID,&GetTouzhuResult,sizeof(DBO_GR_GetXJTZHLogRet)*lResult);
-		}
-	}
-	catch (IDataBaseException * pIException)
-	{
-		//错误信息
-		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
-		CString strLogFile;
-		strLogFile.Format(L"Exception p_get_xjtzhtj_by_act");
-		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
-
-		CString strLog;
-		strLog.Format(L"查询下级投注记录,数据库异常");
-		CTraceService::TraceString(strLog,TraceLevel_Exception);
-
-		return false;
-	}
-	return true;
-}
-//查询下级投注记录
-bool CDataBaseEngineSink::OnCHKXJTZHLogByID(DWORD dwContextID, VOID * pData, WORD wDataSize)
-{
-	try
-	{
-		//效验参数
-		ASSERT(wDataSize==sizeof(DBR_GP_CHKXJTZHLogByID));
-		if (wDataSize!=sizeof(DBR_GP_CHKXJTZHLogByID)) return false;
-		
-		DBR_GP_CHKXJTZHLogByID* pLog = (DBR_GP_CHKXJTZHLogByID*)pData;
-
-		m_GameSSCDBAide.ResetParameter();
-		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
-		m_GameSSCDBAide.AddParameter(TEXT("@xj_id"),pLog->nXiaJiID);
-		m_GameSSCDBAide.AddParameter(TEXT("@page"),pLog->nPage);
-		m_GameSSCDBAide.AddParameter(TEXT("@size"),pLog->nSize);
-
-		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_xjtzh_by_id"),true);
-		if(lResultCode == DB_SUCCESS)
-		{
-			DBO_GR_CHKXJTZHLogRet GetTouzhuResult[20];
-			ZeroMemory(&GetTouzhuResult,sizeof(GetTouzhuResult));
-			BYTE lResult = 0;
-			while ((m_GameSSCDBModule->IsRecordsetEnd() == FALSE))
-			{
-				if(lResult >= 20)
-				{
-					m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_CHKXJTZH_LOG_RET,dwContextID,&GetTouzhuResult,sizeof(DBO_GR_CHKXJTZHLogRet)*lResult);
-					ZeroMemory(&GetTouzhuResult,sizeof(GetTouzhuResult));
-					lResult = 0;
-				}
-				GetTouzhuResult[lResult].n_t_id =  m_GameSSCDBAide.GetValue_INT(TEXT("t_id"));
-				m_GameSSCDBAide.GetValue_String(TEXT("t_account"),GetTouzhuResult[lResult].s_t_account,sizeof(GetTouzhuResult[lResult].s_t_account));
-
-				GetTouzhuResult[lResult].n_t_type =  m_GameSSCDBAide.GetValue_INT(TEXT("t_type"));
-				GetTouzhuResult[lResult].n_t_kind = m_GameSSCDBAide.GetValue_INT(TEXT("t_kind"));
-				m_GameSSCDBAide.GetValue_String(TEXT("t_qishu"),GetTouzhuResult[lResult].s_t_qishu,sizeof(GetTouzhuResult[lResult].s_t_qishu));
-				GetTouzhuResult[lResult].n_t_zhushu = m_GameSSCDBAide.GetValue_INT(TEXT("t_zhushu"));
-				GetTouzhuResult[lResult].n_t_moshi = m_GameSSCDBAide.GetValue_INT(TEXT("t_moshi"));
-				GetTouzhuResult[lResult].n_t_beishu = m_GameSSCDBAide.GetValue_INT(TEXT("t_beishu"));
-				m_GameSSCDBAide.GetValue_SystemTime(TEXT("t_time"),GetTouzhuResult[lResult].n_t_time);
-				GetTouzhuResult[lResult].n_t_state = m_GameSSCDBAide.GetValue_INT(TEXT("t_state"));
-				GetTouzhuResult[lResult].n_t_winzhushu = m_GameSSCDBAide.GetValue_INT(TEXT("t_winzhushu"));
-				GetTouzhuResult[lResult].f_t_yingkui = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("t_yingkui"));
-				GetTouzhuResult[lResult].n_t_zhuihao = m_GameSSCDBAide.GetValue_INT(TEXT("t_zhuihao"));
-
-				lResult++;	
-				m_GameSSCDBModule->MoveToNext();
-			}	
-			m_GameSSCDBModule->CloseRecordset();
-
-			//发送结果
-			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_CHKXJTZH_LOG_RET,dwContextID,&GetTouzhuResult,sizeof(DBO_GR_CHKXJTZHLogRet)*lResult);		}
-	}
-	catch (IDataBaseException * pIException)
-	{
-		//错误信息
-		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
-		CString strLogFile;
-		strLogFile.Format(L"Exception p_get_xjtzh_by_id");
-		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
-
-		return false;
-	}
-	return true;
-}
-//查询下级投注记录
-bool CDataBaseEngineSink::OnCHKXJTZHLogByAct(DWORD dwContextID, VOID * pData, WORD wDataSize)
-{
-	try
-	{
-		//效验参数
-		ASSERT(wDataSize==sizeof(DBR_GP_CHKXJTZHLogByAct));
-		if (wDataSize!=sizeof(DBR_GP_CHKXJTZHLogByAct)) return false;
-
-		DBR_GP_CHKXJTZHLogByAct* pLog = (DBR_GP_CHKXJTZHLogByAct*)pData;
-
-		m_GameSSCDBAide.ResetParameter();
-		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
-		m_GameSSCDBAide.AddParameter(TEXT("@act"),pLog->szAccount);
-
-		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_xjtzh_by_act"),true);
-		if(lResultCode == DB_SUCCESS)
-		{
-			DBO_GR_CHKXJTZHLogRet GetTouzhuResult[20];
-			ZeroMemory(&GetTouzhuResult,sizeof(GetTouzhuResult));
-			BYTE lResult = 0;
-			while ((m_GameSSCDBModule->IsRecordsetEnd() == FALSE))
-			{
-				if(lResult >= 20)
-				{
-					m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_CHKXJTZH_LOG_RET,dwContextID,&GetTouzhuResult,sizeof(DBO_GR_CHKXJTZHLogRet)*lResult);
-					ZeroMemory(&GetTouzhuResult,sizeof(GetTouzhuResult));
-					lResult = 0;
-				}
-				GetTouzhuResult[lResult].n_t_id =  m_GameSSCDBAide.GetValue_INT(TEXT("t_id"));
-				GetTouzhuResult[lResult].n_t_type =  m_GameSSCDBAide.GetValue_INT(TEXT("t_type"));
-				GetTouzhuResult[lResult].n_t_kind = m_GameSSCDBAide.GetValue_INT(TEXT("t_kind"));
-				m_GameSSCDBAide.GetValue_String(TEXT("t_qishu"),GetTouzhuResult[lResult].s_t_qishu,sizeof(GetTouzhuResult[lResult].s_t_qishu));
-				GetTouzhuResult[lResult].n_t_zhushu = m_GameSSCDBAide.GetValue_INT(TEXT("t_zhushu"));
-				GetTouzhuResult[lResult].n_t_moshi = m_GameSSCDBAide.GetValue_INT(TEXT("t_moshi"));
-				GetTouzhuResult[lResult].n_t_beishu = m_GameSSCDBAide.GetValue_INT(TEXT("t_beishu"));
-				m_GameSSCDBAide.GetValue_SystemTime(TEXT("t_time"),GetTouzhuResult[lResult].n_t_time);
-				GetTouzhuResult[lResult].n_t_state = m_GameSSCDBAide.GetValue_INT(TEXT("t_state"));
-				GetTouzhuResult[lResult].n_t_winzhushu = m_GameSSCDBAide.GetValue_INT(TEXT("t_winzhushu"));
-				GetTouzhuResult[lResult].f_t_yingkui = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("t_yingkui"));
-				lResult++;	
-				m_GameSSCDBModule->MoveToNext();
-			}	
-			m_GameSSCDBModule->CloseRecordset();
-			//发送结果
-			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_CHKXJTZH_LOG_RET,dwContextID,&GetTouzhuResult,sizeof(DBO_GR_CHKXJTZHLogRet)*lResult);
-		}
-	}
-	catch (IDataBaseException * pIException)
-	{
-		//错误信息
-		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
-		CString strLogFile;
-		strLogFile.Format(L"Exception p_get_xjtzh_by_act");
-		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
-
-		CString strLog;
-		strLog.Format(L"查询下级投注日志,数据库异常");
-		CTraceService::TraceString(strLog,TraceLevel_Exception);
-
-		return false;
-	}
-	return true;
-
-}
 //查询下级盈亏记录
-bool CDataBaseEngineSink::OnGetXJYKLogByID(DWORD dwContextID, VOID * pData, WORD wDataSize)
+bool CDataBaseEngineSink::OnGetQipaiKind(DWORD dwContextID, VOID * pData, WORD wDataSize)
 {
 	try
 	{
 		//效验参数
-		ASSERT(wDataSize==sizeof(DBR_GP_GetXJYKLogByID));
-		if (wDataSize!=sizeof(DBR_GP_GetXJYKLogByID)) return false;
-		
-		DBR_GP_GetXJYKLogByID* pLog = (DBR_GP_GetXJYKLogByID*)pData;
+		ASSERT(wDataSize==sizeof(DBR_GP_GetQipaiKind));
+		if (wDataSize!=sizeof(DBR_GP_GetQipaiKind)) return false;
 
-		m_GameSSCDBAide.ResetParameter();
-		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
-		m_GameSSCDBAide.AddParameter(TEXT("@xj_id"),pLog->nXiaJiID);
-		m_GameSSCDBAide.AddParameter(TEXT("@page"),pLog->nPage);
-		m_GameSSCDBAide.AddParameter(TEXT("@size"),pLog->nSize);
+		DBR_GP_GetQipaiKind* pLog = (DBR_GP_GetQipaiKind*)pData;
 
-		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_xjyk_by_id"),true);
+ 		m_GameSSCDBAide.ResetParameter();
+// 		m_GameSSCDBAide.AddParameter(TEXT("@type_id"),pLog->n_t_typeid);
+
+		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_GameTypeInfo"),true);
 		if(lResultCode == DB_SUCCESS)
 		{
-			DBO_GR_GetXJYKLogRet GetXJYKResult[20];
-			ZeroMemory(&GetXJYKResult,sizeof(GetXJYKResult));
+			DBO_GR_GetQipaiKindRet GetQipaiKindRet[20];
+			ZeroMemory(&GetQipaiKindRet,sizeof(GetQipaiKindRet));
 			BYTE lResult = 0;
 			while ((m_GameSSCDBModule->IsRecordsetEnd() == FALSE))
 			{
 				if(lResult >= 20)
 				{
-					m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_XJYK_LOG_RET,dwContextID,&GetXJYKResult,sizeof(DBO_GR_GetXJYKLogRet)*lResult);
-					ZeroMemory(&GetXJYKResult,sizeof(GetXJYKResult));
+					m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_GET_QIPAIKIND_RET,dwContextID,&GetQipaiKindRet,sizeof(DBO_GR_GetQipaiKindRet)*lResult);
+					ZeroMemory(&GetQipaiKindRet,sizeof(GetQipaiKindRet));
 					lResult = 0;
 				}
-				GetXJYKResult[lResult].n_t_id =  m_GameSSCDBAide.GetValue_INT(TEXT("t_id"));
-				GetXJYKResult[lResult].n_t_userid =  m_GameSSCDBAide.GetValue_INT(TEXT("t_user_id"));
-				m_GameSSCDBAide.GetValue_String(TEXT("t_account"),GetXJYKResult[lResult].s_t_account,sizeof(GetXJYKResult[lResult].s_t_account));
-				GetXJYKResult[lResult].f_t_yingkui = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("t_yingkui"));
-				GetXJYKResult[lResult].f_t_at_yue = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("t_at_yue"));
-				m_GameSSCDBAide.GetValue_SystemTime(TEXT("t_time"),GetXJYKResult[lResult].n_t_time);
-				GetXJYKResult[lResult].n_t_type =  m_GameSSCDBAide.GetValue_INT(TEXT("t_type"));
-				m_GameSSCDBAide.GetValue_String(TEXT("comments"),GetXJYKResult[lResult].s_t_comment,sizeof(GetXJYKResult[lResult].s_t_comment));
+				GetQipaiKindRet[lResult].n_t_kindid =  m_GameSSCDBAide.GetValue_INT(TEXT("KindID"));
+				m_GameSSCDBAide.GetValue_String(TEXT("KindName"),GetQipaiKindRet[lResult].s_t_Name,sizeof(GetQipaiKindRet[lResult].s_t_Name));
 
 				lResult++;
 				m_GameSSCDBModule->MoveToNext();
 			}	
 			m_GameSSCDBModule->CloseRecordset();
 			//发送结果
-			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_XJYK_LOG_RET,dwContextID,&GetXJYKResult,sizeof(DBO_GR_GetXJYKLogRet)*lResult);
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_GET_QIPAIKIND_RET,dwContextID,&GetQipaiKindRet,sizeof(DBO_GR_GetQipaiKindRet)*lResult);
 		}
 	}
 	catch (IDataBaseException * pIException)
@@ -4083,331 +4267,8 @@ bool CDataBaseEngineSink::OnGetXJYKLogByID(DWORD dwContextID, VOID * pData, WORD
 		//错误信息
 		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
 		CString strLogFile;
-		strLogFile.Format(L"Exception p_get_xjyk_by_id");
+		strLogFile.Format(L"Exception p_get_GameTypeInfo");
 		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
-
-		CString strLog;
-		strLog.Format(L"查询下级盈亏日志,数据库异常");
-		CTraceService::TraceString(strLog,TraceLevel_Exception);
-
-		return false;
-	}
-	return true;
- 
-}
-//查询下级盈亏记录
-bool CDataBaseEngineSink::OnGetXJYKLogByAct(DWORD dwContextID, VOID * pData, WORD wDataSize)
-{
-	try
-	{
-		//效验参数
-		ASSERT(wDataSize==sizeof(DBR_GP_CHKXJTZHLogByAct));
-		if (wDataSize!=sizeof(DBR_GP_CHKXJTZHLogByAct)) return false;
-
-		DBR_GP_CHKXJTZHLogByAct* pLog = (DBR_GP_CHKXJTZHLogByAct*)pData;
-
-		m_GameSSCDBAide.ResetParameter();
-		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
-		m_GameSSCDBAide.AddParameter(TEXT("@act"),pLog->szAccount);
-
-		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_xjyk_by_act"),true);
-		if(lResultCode == DB_SUCCESS)
-		{
-			DBO_GR_GetXJYKLogRet GetXJYKResult[20];
-			ZeroMemory(&GetXJYKResult,sizeof(GetXJYKResult));
-			BYTE lResult = 0;
-			while ((m_GameSSCDBModule->IsRecordsetEnd() == FALSE))
-			{
-				if(lResult >= 20)
-				{
-					m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_XJYK_LOG_RET,dwContextID,&GetXJYKResult,sizeof(DBO_GR_GetXJYKLogRet)*lResult);
-					ZeroMemory(&GetXJYKResult,sizeof(GetXJYKResult));
-					lResult = 0;
-				}
-				GetXJYKResult[lResult].n_t_id =  m_GameSSCDBAide.GetValue_INT(TEXT("t_id"));
-				GetXJYKResult[lResult].n_t_userid =  m_GameSSCDBAide.GetValue_INT(TEXT("t_user_id"));
-				m_GameSSCDBAide.GetValue_String(TEXT("t_account"),GetXJYKResult[lResult].s_t_account,sizeof(GetXJYKResult[lResult].s_t_account));
-				GetXJYKResult[lResult].f_t_yingkui = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("t_yingkui"));
-				GetXJYKResult[lResult].f_t_at_yue = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("t_at_yue"));
-				m_GameSSCDBAide.GetValue_SystemTime(TEXT("t_time"),GetXJYKResult[lResult].n_t_time);
-				GetXJYKResult[lResult].n_t_type =  m_GameSSCDBAide.GetValue_INT(TEXT("t_type"));
-				m_GameSSCDBAide.GetValue_String(TEXT("comments"),GetXJYKResult[lResult].s_t_comment,sizeof(GetXJYKResult[lResult].s_t_comment));
-
-				lResult++;
-				m_GameSSCDBModule->MoveToNext();
-			}	
-			m_GameSSCDBModule->CloseRecordset();
-			//发送结果
-			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_XJYK_LOG_RET,dwContextID,&GetXJYKResult,sizeof(DBO_GR_GetXJYKLogRet)*lResult);
-		}
-	}
-	catch (IDataBaseException * pIException)
-	{
-		//错误信息
-		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
-		CString strLogFile;
-		strLogFile.Format(L"Exception p_get_xjyk_by_act");
-		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
-
-		CString strLog;
-		strLog.Format(L"查询下级盈亏日志,数据库异常");
-		CTraceService::TraceString(strLog,TraceLevel_Exception);
-
-		return false;
-	}
-	return true;
-}
-//通过ID查询下级充值日志
-bool CDataBaseEngineSink::OnGetXJCHZHLogByID(DWORD dwContextID, VOID * pData, WORD wDataSize)
-{
-	try
-	{
-		//效验参数
-		ASSERT(wDataSize==sizeof(DBR_GP_GetXJCHZHLogByID));
-		if (wDataSize!=sizeof(DBR_GP_GetXJCHZHLogByID)) return false;
-
-		DBR_GP_GetXJCHZHLogByID* pLog = (DBR_GP_GetXJCHZHLogByID*)pData;
-
-		m_GameSSCDBAide.ResetParameter();
-		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
-		m_GameSSCDBAide.AddParameter(TEXT("@xj_id"),pLog->nXiaJiID);
-
-		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_xjchzh_by_id"),true);
-		if(lResultCode == DB_SUCCESS)
-		{
-			DBO_GR_GetXJCHZHLogRet GetXJYKResult[20];
-			ZeroMemory(&GetXJYKResult,sizeof(GetXJYKResult));
-			BYTE lResult = 0;
-			while ((m_GameSSCDBModule->IsRecordsetEnd() == FALSE))
-			{
-				if(lResult >= 20)
-				{
-					m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_XJCHZH_LOG_RET,dwContextID,&GetXJYKResult,sizeof(DBO_GR_GetXJYKLogRet)*lResult);
-					ZeroMemory(&GetXJYKResult,sizeof(GetXJYKResult));
-					lResult = 0;
-				}
-				GetXJYKResult[lResult].n_t_id =  m_GameSSCDBAide.GetValue_INT(TEXT("t_id"));
-				GetXJYKResult[lResult].n_t_user_id =  m_GameSSCDBAide.GetValue_INT(TEXT("t_user_id"));
-				m_GameSSCDBAide.GetValue_String(TEXT("t_account"),GetXJYKResult[lResult].s_t_account,sizeof(GetXJYKResult[lResult].s_t_account));
-
-				GetXJYKResult[lResult].f_t_jine = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("t_jine"));
-				m_GameSSCDBAide.GetValue_SystemTime(TEXT("t_time"),GetXJYKResult[lResult].n_t_time);
-				GetXJYKResult[lResult].n_t_state =  m_GameSSCDBAide.GetValue_INT(TEXT("t_state"));
-
-				m_GameSSCDBAide.GetValue_String(TEXT("t_pingtai"),GetXJYKResult[lResult].s_t_pingtai,sizeof(GetXJYKResult[lResult].s_t_pingtai));
-
-
-				lResult++;
-				m_GameSSCDBModule->MoveToNext();
-			}	
-			m_GameSSCDBModule->CloseRecordset();
-			//发送结果
-			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_XJCHZH_LOG_RET,dwContextID,&GetXJYKResult,sizeof(DBO_GR_GetXJYKLogRet)*lResult);
-		}
-	}
-	catch (IDataBaseException * pIException)
-	{
-		//错误信息
-		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
-		CString strLogFile;
-		strLogFile.Format(L"Exception p_get_xjchzh_by_id");
-		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
-
-		CString strLog;
-		strLog.Format(L"查询下级充值日志,数据库异常");
-		CTraceService::TraceString(strLog,TraceLevel_Exception);
-
-		return false;
-	}
-	return true;
-
-}
-//通过账户查询下级充值日志
-bool CDataBaseEngineSink::OnGetXJCHZHLogByAct(DWORD dwContextID, VOID * pData, WORD wDataSize)
-{
-	try
-	{
-		//效验参数
-		ASSERT(wDataSize==sizeof(DBR_GP_GetXJCHZHLogByAct));
-		if (wDataSize!=sizeof(DBR_GP_GetXJCHZHLogByAct)) return false;
-
-		DBR_GP_GetXJCHZHLogByAct* pLog = (DBR_GP_GetXJCHZHLogByAct*)pData;
-
-		m_GameSSCDBAide.ResetParameter();
-		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
-		m_GameSSCDBAide.AddParameter(TEXT("@act"),pLog->szAccount);
-
-		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_xjchzh_by_act"),true);
-		if(lResultCode == DB_SUCCESS)
-		{
-			DBO_GR_GetXJCHZHLogRet GetXICHZHLogResult[20];
-			ZeroMemory(&GetXICHZHLogResult,sizeof(GetXICHZHLogResult));
-			BYTE lResult = 0;
-			while ((m_GameSSCDBModule->IsRecordsetEnd() == FALSE))
-			{
-				if(lResult >= 20)
-				{
-					m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_XJCHZH_LOG_RET,dwContextID,&GetXICHZHLogResult,sizeof(DBO_GR_GetXJCHZHLogRet)*lResult);
-					ZeroMemory(&GetXICHZHLogResult,sizeof(GetXICHZHLogResult));
-					lResult = 0;
-				}
-				GetXICHZHLogResult[lResult].n_t_id =  m_GameSSCDBAide.GetValue_INT(TEXT("t_id"));
-				GetXICHZHLogResult[lResult].n_t_user_id =  m_GameSSCDBAide.GetValue_INT(TEXT("t_user_id"));
-				m_GameSSCDBAide.GetValue_String(TEXT("t_account"),GetXICHZHLogResult[lResult].s_t_account,CountArray(GetXICHZHLogResult[lResult].s_t_account));
-				GetXICHZHLogResult[lResult].f_t_jine = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("t_jine"));
-				m_GameSSCDBAide.GetValue_SystemTime(TEXT("t_time"),GetXICHZHLogResult[lResult].n_t_time);
-				GetXICHZHLogResult[lResult].n_t_state =  m_GameSSCDBAide.GetValue_INT(TEXT("t_state"));
-				m_GameSSCDBAide.GetValue_String(TEXT("t_pingtai"),GetXICHZHLogResult[lResult].s_t_pingtai,CountArray(GetXICHZHLogResult[lResult].s_t_pingtai));
-
-				lResult++;
-				m_GameSSCDBModule->MoveToNext();
-			}	
-
-			m_GameSSCDBModule->CloseRecordset();
-			//发送结果
-			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_XJCHZH_LOG_RET,dwContextID,&GetXICHZHLogResult,sizeof(DBO_GR_GetXJCHZHLogRet)*lResult);
-		}
-	}
-	catch (IDataBaseException * pIException)
-	{
-		//错误信息
-		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
-		CString strLogFile;
-		strLogFile.Format(L"Exception p_get_xjchzh_by_act");
-		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
-
-		CString strLog;
-		strLog.Format(L"查询下级充值日志,数据库异常");
-		CTraceService::TraceString(strLog,TraceLevel_Exception);
-
-		return false;
-	}
-	return true;
-}
-//查询下级盈亏统计
-bool CDataBaseEngineSink::OnGetXJYKTjByID(DWORD dwContextID, VOID * pData, WORD wDataSize)
-{
-	try
-	{
-		//效验参数
-		ASSERT(wDataSize==sizeof(DBR_GP_CHKXJTZHLogByID));
-		if (wDataSize!=sizeof(DBR_GP_CHKXJTZHLogByID)) return false;
-
-		DBR_GP_CHKXJTZHLogByID* pLog = (DBR_GP_CHKXJTZHLogByID*)pData;
-
-		m_GameSSCDBAide.ResetParameter();
-		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
-		m_GameSSCDBAide.AddParameter(TEXT("@xj_id"),pLog->nXiaJiID);
-
-		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_xjyktj_by_id"),true);
-		if(lResultCode == DB_SUCCESS)
-		{
-			DBO_GR_GetXJYKTjRet GetXJYKResult[20];
-			ZeroMemory(&GetXJYKResult,sizeof(GetXJYKResult));
-			BYTE lResult = 0;
-			while ((m_GameSSCDBModule->IsRecordsetEnd() == FALSE))
-			{
-				if(lResult >= 20)
-				{
-					m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_XJYK_TJ_RET,dwContextID,&GetXJYKResult,sizeof(DBO_GR_GetXJYKTjRet)*lResult);
-					ZeroMemory(&GetXJYKResult,sizeof(GetXJYKResult));
-					lResult = 0;
-				}
-				GetXJYKResult[lResult].n_t_id =  m_GameSSCDBAide.GetValue_INT(TEXT("t_id"));
-				m_GameSSCDBAide.GetValue_String(TEXT("t_account"),GetXJYKResult[lResult].s_t_account,sizeof(GetXJYKResult[lResult].s_t_account));
-				GetXJYKResult[lResult].n_t_type =  m_GameSSCDBAide.GetValue_INT(TEXT("t_type"));
-				GetXJYKResult[lResult].f_t_chongzhi_ze = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("chongzhi_ze"));
-				GetXJYKResult[lResult].f_t_qukuan_ze = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("qukuan_ze"));
-				GetXJYKResult[lResult].f_t_touzhu_ze = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("touzhu_ze"));
-				GetXJYKResult[lResult].f_t_fandian_ze = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("fandian_ze"));
-				GetXJYKResult[lResult].f_t_xjfandian_ze = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("xiajifandian_ze"));
-				//GetXJYKResult[lResult].f_t_yingkui_ze = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("yingkui_ze"));
-
-				lResult++;
-				m_GameSSCDBModule->MoveToNext();
-			}	
-
-			m_GameSSCDBModule->CloseRecordset();
-			//发送结果
-			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_XJYK_TJ_RET,dwContextID,&GetXJYKResult,sizeof(DBO_GR_GetXJYKTjRet)*lResult);
-		}
-	}
-	catch (IDataBaseException * pIException)
-	{
-		//错误信息
-		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
-		CString strLogFile;
-		strLogFile.Format(L"Exception p_get_xjyktj_by_id");
-		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
-
-		CString strLog;
-		strLog.Format(L"查询下级统计日志,数据库异常");
-		CTraceService::TraceString(strLog,TraceLevel_Exception);
-
-		return false;
-	}
-	return true;
-
-}
-//查询下级盈亏统计
-bool CDataBaseEngineSink::OnGetXJYKTjByAct(DWORD dwContextID, VOID * pData, WORD wDataSize)
-{
-	try
-	{
-		//效验参数
-		ASSERT(wDataSize==sizeof(DBR_GP_CHKXJTZHLogByAct));
-		if (wDataSize!=sizeof(DBR_GP_CHKXJTZHLogByAct)) return false;
-
-		DBR_GP_CHKXJTZHLogByAct* pLog = (DBR_GP_CHKXJTZHLogByAct*)pData;
-
-		m_GameSSCDBAide.ResetParameter();
-		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
-		m_GameSSCDBAide.AddParameter(TEXT("@act"),pLog->szAccount);
-
-		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_xjyktj_by_act"),true);
-		if(lResultCode == DB_SUCCESS)
-		{
-			DBO_GR_GetXJYKTjRet GetXJYKResult[20];
-			ZeroMemory(&GetXJYKResult,sizeof(GetXJYKResult));
-			BYTE lResult = 0;
-			while ((m_GameSSCDBModule->IsRecordsetEnd() == FALSE))
-			{
-				if(lResult >= 20)
-				{
-					m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_XJYK_TJ_RET,dwContextID,&GetXJYKResult,sizeof(DBO_GR_GetXJYKTjRet)*lResult);
-					ZeroMemory(&GetXJYKResult,sizeof(GetXJYKResult));
-					lResult = 0;
-				}
-				GetXJYKResult[lResult].n_t_id =  m_GameSSCDBAide.GetValue_INT(TEXT("t_id"));
-				m_GameSSCDBAide.GetValue_String(TEXT("t_account"),GetXJYKResult[lResult].s_t_account,sizeof(GetXJYKResult[lResult].s_t_account));
-				GetXJYKResult[lResult].n_t_type =  m_GameSSCDBAide.GetValue_INT(TEXT("t_type"));
-				GetXJYKResult[lResult].f_t_chongzhi_ze = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("chongzhi_ze"));
-				GetXJYKResult[lResult].f_t_qukuan_ze = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("qukuan_ze"));
-				GetXJYKResult[lResult].f_t_touzhu_ze = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("touzhu_ze"));
-				GetXJYKResult[lResult].f_t_fandian_ze = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("fandian_ze"));
-				GetXJYKResult[lResult].f_t_xjfandian_ze = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("xiajifandian_ze"));
-//				GetXJYKResult[lResult].f_t_yingkui_ze = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("yingkui_ze"));
-
-				lResult++;
-				m_GameSSCDBModule->MoveToNext();
-			}	
-			m_GameSSCDBModule->CloseRecordset();
-
-			//发送结果
-			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_XJYK_TJ_RET,dwContextID,&GetXJYKResult,sizeof(DBO_GR_GetXJYKTjRet)*lResult);
-		}
-	}
-	catch (IDataBaseException * pIException)
-	{
-		//错误信息
-		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
-		CString strLogFile;
-		strLogFile.Format(L"Exception p_get_xjyktj_by_act");
-		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
-
-		CString strLog;
-		strLog.Format(L"查询下级统计日志,数据库异常");
-		CTraceService::TraceString(strLog,TraceLevel_Exception);
 
 		return false;
 	}
@@ -4424,6 +4285,19 @@ bool CDataBaseEngineSink::OnGetTixianLog(DWORD dwContextID, VOID * pData, WORD w
 		if (wDataSize!=sizeof(DBR_GP_GetTixianLog)) return false;
 		
 		DBR_GP_GetTixianLog* pLog = (DBR_GP_GetTixianLog*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLog->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLog->szTimeEnd);
+
+		if((pLog->szTimeEnd < pLog->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetTixianLogRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_TIXIAN_LOG_RET,dwContextID,&LogRet,0);
+
+		}
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
@@ -4480,73 +4354,7 @@ bool CDataBaseEngineSink::OnGetTixianLog(DWORD dwContextID, VOID * pData, WORD w
 	 return true;
  
 }
-bool CDataBaseEngineSink::OnGetHYXXList(DWORD dwContextID, VOID * pData, WORD wDataSize)
-{
-	try
-	{
-		ASSERT(wDataSize == sizeof(DBR_GP_GetHYXXLog));
-		if(wDataSize!=sizeof(DBR_GP_GetHYXXLog)) return false;
 
-		DBR_GP_GetHYXXLog* pLog = (DBR_GP_GetHYXXLog*)pData;
-
-		m_GameSSCDBAide.ResetParameter();
-
-		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
-		m_GameSSCDBAide.AddParameter(TEXT("@type_id"),pLog->n_t_type);
-		m_GameSSCDBAide.AddParameter(TEXT("@xiaji_id"),pLog->n_t_user_id);
-		m_GameSSCDBAide.AddParameter(TEXT("@xiaji_act"),pLog->s_t_account);
-		m_GameSSCDBAide.AddParameter(TEXT("@npage"),pLog->nPage);
-		m_GameSSCDBAide.AddParameter(TEXT("@nsize"),pLog->nSize);
-		m_GameSSCDBAide.AddParameter(TEXT("@by_time"),pLog->bByTime);
-		m_GameSSCDBAide.AddParameter(TEXT("@time_start"),pLog->szTimeStart);
-		m_GameSSCDBAide.AddParameter(TEXT("@time_end"),pLog->szTimeEnd);
-		m_GameSSCDBAide.AddParameter(TEXT("@sorttype"),pLog->n_t_sorttype);
-		m_GameSSCDBAide.AddParameter(TEXT("@online"),pLog->nOnline);
-		m_GameSSCDBAide.AddParameter(TEXT("@yue"),pLog->nYue);
-
-		LONG lResult = m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_xjhy_log"),true);
-		if(lResult == DB_SUCCESS)
-		{
-			DBO_GR_GetHYXXLogRet GetHYXXResult[20];
-			ZeroMemory(&GetHYXXResult,sizeof(GetHYXXResult));
-			int nResult =0;
-			while(!m_GameSSCDBModule->IsRecordsetEnd())
-			{
-				if(nResult >= 20)
-				{
-					m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_HYXX_LOG_RET,dwContextID,&GetHYXXResult,sizeof(DBO_GR_GetHYXXLogRet)*nResult);
-					ZeroMemory(&GetHYXXResult,sizeof(GetHYXXResult));
-					nResult = 0;
-				}
-				GetHYXXResult[nResult].n_t_id =  m_GameSSCDBAide.GetValue_INT(TEXT("t_id"));
-				m_GameSSCDBAide.GetValue_String(TEXT("t_account"),GetHYXXResult[nResult].s_t_account,CountArray(GetHYXXResult[nResult].s_t_account));
-				m_GameSSCDBAide.GetValue_SystemTime(TEXT("t_reg_time"),GetHYXXResult[nResult].n_t_time);
-				GetHYXXResult[nResult].n_t_type = m_GameSSCDBAide.GetValue_INT(TEXT("t_type"));
-				GetHYXXResult[nResult].f_t_fandian = m_GameSSCDBAide.GetValue_FLOAT(TEXT("t_fandian"));
-				GetHYXXResult[nResult].f_t_yue = m_GameSSCDBAide.GetValue_FLOAT(TEXT("t_yue"));
-				GetHYXXResult[nResult].n_t_online = m_GameSSCDBAide.GetValue_INT(TEXT("t_online"));
-				m_GameSSCDBAide.GetValue_String(TEXT("t_qq"),GetHYXXResult[nResult].s_t_qq,CountArray(GetHYXXResult[nResult].s_t_qq));
-
-				nResult++;
-				m_GameSSCDBModule->MoveToNext();
-
-			}
-			m_GameSSCDBModule->CloseRecordset();
-			//发送结果
-			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_HYXX_LOG_RET,dwContextID,&GetHYXXResult,sizeof(DBO_GR_GetHYXXLogRet)*nResult);
-
-		}
-		return true;
-	}
-	catch (CException* e)
-	{
-		CString strLogFile;
-		strLogFile.Format(L"Exception p_get_xjhy_log");
-		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
-
-	}
-	return true;
-}
 //查询提现记录
 bool CDataBaseEngineSink::OnGetHYXXLog(DWORD dwContextID, VOID * pData, WORD wDataSize)
 {
@@ -4558,7 +4366,8 @@ bool CDataBaseEngineSink::OnGetHYXXLog(DWORD dwContextID, VOID * pData, WORD wDa
 		
 		DBR_GP_GetHYXXLog* pLog = (DBR_GP_GetHYXXLog*)pData;
 
-
+		ZeroMemory(pLog->szTimeStart,sizeof(pLog->szTimeStart));
+		ZeroMemory(pLog->szTimeEnd,sizeof(pLog->szTimeEnd));
  		m_GameSSCDBAide.ResetParameter();
  		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
  		m_GameSSCDBAide.AddParameter(TEXT("@type_id"),pLog->n_t_type);
@@ -4594,9 +4403,11 @@ bool CDataBaseEngineSink::OnGetHYXXLog(DWORD dwContextID, VOID * pData, WORD wDa
  				GetHYXXResult[lResult].n_t_type = m_GameSSCDBAide.GetValue_INT(TEXT("t_type"));
  				GetHYXXResult[lResult].f_t_fandian = m_GameSSCDBAide.GetValue_FLOAT(TEXT("t_fandian"));
  				GetHYXXResult[lResult].f_t_yue = m_GameSSCDBAide.GetValue_FLOAT(TEXT("t_yue"));
- 				GetHYXXResult[lResult].n_t_online = m_GameSSCDBAide.GetValue_INT(TEXT("t_online"));
+				m_GameSSCDBAide.GetValue_SystemTime(TEXT("t_last_time"),GetHYXXResult[lResult].n_t_lasttime);
+				GetHYXXResult[lResult].n_t_online = m_GameSSCDBAide.GetValue_INT(TEXT("t_online"));
  				m_GameSSCDBAide.GetValue_String(TEXT("t_qq"),GetHYXXResult[lResult].s_t_qq,CountArray(GetHYXXResult[lResult].s_t_qq));
- 
+				m_GameSSCDBAide.GetValue_String(TEXT("cnt"),GetHYXXResult[lResult].s_t_online,CountArray(GetHYXXResult[lResult].s_t_online));
+				GetHYXXResult[lResult].cb_ifxj = m_GameSSCDBAide.GetValue_BYTE(TEXT("ifxj"));
  				lResult++;
  				m_GameSSCDBModule->MoveToNext();
  
@@ -4608,11 +4419,6 @@ bool CDataBaseEngineSink::OnGetHYXXLog(DWORD dwContextID, VOID * pData, WORD wDa
 		}
 
 		return true;
-/*
-		CString strLog;
-		strLog.Format(L"HYXX dwUserID = %ld,n_t_type = %d,n_t_user_id = %d,s_t_account = %s,nPage = %d,nSize = %d,bByTime = %d,szTimeStart = %s,szTimeEnd = %s",pLog->dwUserID,pLog->n_t_type,pLog->n_t_user_id,pLog->s_t_account,pLog->nPage,pLog->nSize,pLog->bByTime,pLog->szTimeStart,pLog->szTimeEnd);
-		OutputDebugString(strLog);
-*/
 
 	}
 	catch (IDataBaseException * pIException)
@@ -4632,134 +4438,7 @@ bool CDataBaseEngineSink::OnGetHYXXLog(DWORD dwContextID, VOID * pData, WORD wDa
 	return true;
  
 }
-//查询提现记录
-bool CDataBaseEngineSink::OnGetHYXXLogByID(DWORD dwContextID, VOID * pData, WORD wDataSize)
-{
-	try
-	{
-		//效验参数
-		ASSERT(wDataSize==sizeof(DBR_GP_GetHYXXLogByID));
-		if (wDataSize!=sizeof(DBR_GP_GetHYXXLogByID)) return false;
-		
-		DBR_GP_GetHYXXLogByID* pLog = (DBR_GP_GetHYXXLogByID*)pData;
 
-		m_GameSSCDBAide.ResetParameter();
-		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
-		m_GameSSCDBAide.AddParameter(TEXT("@xj_id"),pLog->nXiaJiID);
-
-		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_hyxx_by_id"),true);
-		if(lResultCode == DB_SUCCESS)
-		{
-			DBO_GR_GetHYXXLogRet GetHYXXResult[20];
-			ZeroMemory(&GetHYXXResult,sizeof(GetHYXXResult));
-			BYTE lResult = 0;
-			while ((m_GameSSCDBModule->IsRecordsetEnd() == FALSE))
-			{
-				if(lResult >= 20)
-				{
-					m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_HYXX_LOG_RET,dwContextID,&GetHYXXResult,sizeof(DBO_GR_GetHYXXLogRet)*lResult);
-					ZeroMemory(&GetHYXXResult,sizeof(GetHYXXResult));
-					lResult = 0;
-				}
-				GetHYXXResult[lResult].n_t_id =  m_GameSSCDBAide.GetValue_INT(TEXT("t_id"));
-				m_GameSSCDBAide.GetValue_String(TEXT("t_account"),GetHYXXResult[lResult].s_t_account,CountArray(GetHYXXResult[lResult].s_t_account));
-				m_GameSSCDBAide.GetValue_SystemTime(TEXT("t_reg_time"),GetHYXXResult[lResult].n_t_time);
-				GetHYXXResult[lResult].n_t_type = m_GameSSCDBAide.GetValue_INT(TEXT("t_type"));
-				GetHYXXResult[lResult].f_t_fandian = m_GameSSCDBAide.GetValue_FLOAT(TEXT("t_fandian"));
-				GetHYXXResult[lResult].f_t_yue = m_GameSSCDBAide.GetValue_FLOAT(TEXT("t_yue"));
-				GetHYXXResult[lResult].n_t_online = m_GameSSCDBAide.GetValue_INT(TEXT("t_online"));
-				m_GameSSCDBAide.GetValue_String(TEXT("t_qq"),GetHYXXResult[lResult].s_t_qq,CountArray(GetHYXXResult[lResult].s_t_qq));
-
-				lResult++;
-				m_GameSSCDBModule->MoveToNext();
-			}	
-			m_GameSSCDBModule->CloseRecordset();
-
-			//发送结果
-			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_HYXX_LOG_RET,dwContextID,&GetHYXXResult,sizeof(DBO_GR_GetHYXXLogRet)*lResult);
-		}
-	}
-	catch (IDataBaseException * pIException)
-	{
-		//错误信息
-		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
-		CString strLogFile;
-		strLogFile.Format(L"Exception p_get_hyxx_by_id");
-		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
-
-		CString strLog;
-		strLog.Format(L"查询会员信息日志,数据库异常");
-		CTraceService::TraceString(strLog,TraceLevel_Exception);
-
-
-		return false;
-	}
-	return true; 
-}
-//查询会员信息
-bool CDataBaseEngineSink::OnGetHYXXLogByAct(DWORD dwContextID, VOID * pData, WORD wDataSize)
-{
-	try
-	{
-		//效验参数
-		ASSERT(wDataSize==sizeof(DBR_GP_GetHYXXLogByAct));
-		if (wDataSize!=sizeof(DBR_GP_GetHYXXLogByAct)) return false;
-		
-		DBR_GP_GetHYXXLogByAct* pLog = (DBR_GP_GetHYXXLogByAct*)pData;
-
-		m_GameSSCDBAide.ResetParameter();
-		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
-		m_GameSSCDBAide.AddParameter(TEXT("@act"),pLog->szAccount);
-
-		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_hyxx_by_act"),true);
-		if(lResultCode == DB_SUCCESS)
-		{
-			DBO_GR_GetHYXXLogRet GetHYXXResult[20];
-			ZeroMemory(&GetHYXXResult,sizeof(GetHYXXResult));
-			BYTE lResult = 0;
-			while ((m_GameSSCDBModule->IsRecordsetEnd() == FALSE))
-			{
-				if(lResult >= 20)
-				{
-					m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_HYXX_LOG_RET,dwContextID,&GetHYXXResult,sizeof(DBO_GR_GetHYXXLogRet)*lResult);
-					ZeroMemory(&GetHYXXResult,sizeof(GetHYXXResult));
-					lResult = 0;
-				}
-				GetHYXXResult[lResult].n_t_id =  m_GameSSCDBAide.GetValue_INT(TEXT("t_id"));
-				m_GameSSCDBAide.GetValue_String(TEXT("t_account"),GetHYXXResult[lResult].s_t_account,CountArray(GetHYXXResult[lResult].s_t_account));
-				m_GameSSCDBAide.GetValue_SystemTime(TEXT("t_reg_time"),GetHYXXResult[lResult].n_t_time);
-				GetHYXXResult[lResult].n_t_type = m_GameSSCDBAide.GetValue_INT(TEXT("t_type"));
-				GetHYXXResult[lResult].f_t_fandian = m_GameSSCDBAide.GetValue_FLOAT(TEXT("t_fandian"));
-				GetHYXXResult[lResult].f_t_yue = m_GameSSCDBAide.GetValue_FLOAT(TEXT("t_yue"));
-				GetHYXXResult[lResult].n_t_online = m_GameSSCDBAide.GetValue_INT(TEXT("t_online"));
-				m_GameSSCDBAide.GetValue_String(TEXT("t_qq"),GetHYXXResult[lResult].s_t_qq,CountArray(GetHYXXResult[lResult].s_t_qq));
-
-				lResult++;
-				m_GameSSCDBModule->MoveToNext();
-			}	
-
-			m_GameSSCDBModule->CloseRecordset();
-
-			//发送结果
-			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_HYXX_LOG_RET,dwContextID,&GetHYXXResult,sizeof(DBO_GR_GetHYXXLogRet)*lResult);
-		}
-	}
-	catch (IDataBaseException * pIException)
-	{
-		//错误信息
-		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
-		CString strLogFile;
-		strLogFile.Format(L"Exception p_get_hyxx_by_act");
-		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
-
-		CString strLog;
-		strLog.Format(L"查询会员信息日志,数据库异常");
-		CTraceService::TraceString(strLog,TraceLevel_Exception);
-
-		return false;
-	}
-	return true; 
-}
 //查询提现记录
 bool CDataBaseEngineSink::OnGetChongzhiLog(DWORD dwContextID, VOID * pData, WORD wDataSize)
 {
@@ -4770,6 +4449,19 @@ bool CDataBaseEngineSink::OnGetChongzhiLog(DWORD dwContextID, VOID * pData, WORD
 		if (wDataSize!=sizeof(DBR_GP_GetChongzhiLog)) return false;
 		
 		DBR_GP_GetChongzhiLog* pLog = (DBR_GP_GetChongzhiLog*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLog->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLog->szTimeEnd);
+
+		if((pLog->szTimeEnd < pLog->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetChongzhiRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_CHONGZHI_LOG_RET,dwContextID,&LogRet,0);
+
+		}
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
@@ -4834,6 +4526,19 @@ bool CDataBaseEngineSink::OnGetYingkuiLog(DWORD dwContextID, VOID * pData, WORD 
 		if (wDataSize!=sizeof(DBR_GP_GetYingkuiLog)) return false;
 		
 		DBR_GP_GetYingkuiLog* pLog = (DBR_GP_GetYingkuiLog*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLog->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLog->szTimeEnd);
+
+		if((pLog->szTimeEnd < pLog->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetYingkuiLogRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_YINGKUI_LOG_RET,dwContextID,&LogRet,0);
+
+		}
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
@@ -4902,6 +4607,19 @@ bool CDataBaseEngineSink::OnGetYingkuiMx(DWORD dwContextID, VOID * pData, WORD w
 		if (wDataSize!=sizeof(DBR_GP_GetYingkuiMx)) return false;
 		
 		DBR_GP_GetYingkuiMx* pLog = (DBR_GP_GetYingkuiMx*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLog->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLog->szTimeEnd);
+
+		if((pLog->szTimeEnd < pLog->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetYingkuiMxRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_YINGKUI_MX_RET,dwContextID,&LogRet,0);
+
+		}
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
@@ -4972,17 +4690,33 @@ bool CDataBaseEngineSink::OnGetQiPaiYingkui(DWORD dwContextID, VOID * pData, WOR
 		if (wDataSize!=sizeof(DBR_GP_GetQiPaiYingkui)) return false;
 		
 		DBR_GP_GetQiPaiYingkui* pLog = (DBR_GP_GetQiPaiYingkui*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLog->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLog->szTimeEnd);
+
+		if((pLog->szTimeEnd < pLog->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetQiPaiYingkuiRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_QP_YINGKUI_RET,dwContextID,&LogRet,0);
+
+		}
 
 		int nType = 2;
 		nType = (pLog->bByTime?2:1);
 		m_GameSSCDBAide.ResetParameter();
-		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->dwUserID);
+		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLog->n_t_userid);
 		m_GameSSCDBAide.AddParameter(TEXT("@type"),nType);
+		m_GameSSCDBAide.AddParameter(TEXT("@xiaji_id"),pLog->n_t_xjid);
 		m_GameSSCDBAide.AddParameter(TEXT("@page"),pLog->nPage);
 		m_GameSSCDBAide.AddParameter(TEXT("@size"),pLog->nSize);
 		m_GameSSCDBAide.AddParameter(TEXT("@by_time"),pLog->bByTime);
 		m_GameSSCDBAide.AddParameter(TEXT("@time_start"),pLog->szTimeStart);
 		m_GameSSCDBAide.AddParameter(TEXT("@time_end"),pLog->szTimeEnd);
+		m_GameSSCDBAide.AddParameter(TEXT("@gameTypeID"),pLog->nKindID);
+		m_GameSSCDBAide.AddParameter(TEXT("@xiaji_Name"),pLog->s_t_account);
 
 		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_yxcx_log"),true);
 
@@ -5045,14 +4779,30 @@ bool CDataBaseEngineSink::OnGetTouzhuLogCount(DWORD dwContextID, VOID * pData, W
 		if (wDataSize!=sizeof(DBR_GP_GetTouzhuLogCount)) return false;
 		
 		DBR_GP_GetTouzhuLogCount* pLogCount = (DBR_GP_GetTouzhuLogCount*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLogCount->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLogCount->szTimeEnd);
+
+		if((pLogCount->szTimeEnd < pLogCount->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetTouzhuLogCountRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_TOUZHU_LOG_COUNT_RET,dwContextID,&LogRet,sizeof(LogRet));
+
+		}
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLogCount->dwUserID);
 		m_GameSSCDBAide.AddParameter(TEXT("@by_time"),pLogCount->bTime);
 		m_GameSSCDBAide.AddParameter(TEXT("@time_start"),pLogCount->szTimeStart);
 		m_GameSSCDBAide.AddParameter(TEXT("@time_end"),pLogCount->szTimeEnd);
+		m_GameSSCDBAide.AddParameter(TEXT("@qihao"),TEXT(""));
+		m_GameSSCDBAide.AddParameter(TEXT("@state"),pLogCount->nStatus);
+		m_GameSSCDBAide.AddParameter(TEXT("@kind"),pLogCount->nCaiZhong);
 
-		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_touzhu_log_count"),true);
+		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_touzhu_log_countweb"),true);
 
 		DBO_GR_GetTouzhuLogCountRet TouzhuLogRet;
 		ZeroMemory(&TouzhuLogRet,sizeof(TouzhuLogRet));
@@ -5133,6 +4883,103 @@ bool CDataBaseEngineSink::OnGetRegUrl(DWORD dwContextID, VOID * pData, WORD wDat
 	}
 	return true;
 }
+//获取上级
+bool CDataBaseEngineSink::OnGetTansferVerify(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	try
+	{
+		//效验参数
+		ASSERT(wDataSize==sizeof(DBR_GP_GetPhoneTransferFenhong));
+		if (wDataSize!=sizeof(DBR_GP_GetPhoneTransferFenhong)) return false;
+
+		DBR_GP_GetPhoneTransferFenhong *pGetPhoneTransferFenhong = (DBR_GP_GetPhoneTransferFenhong*)pData;
+
+		m_GameSSCDBAide.ResetParameter();
+		m_GameSSCDBAide.AddParameter(TEXT("@UserID"),pGetPhoneTransferFenhong->n_t_userid);
+		m_GameSSCDBAide.AddParameter(TEXT("@sType"),pGetPhoneTransferFenhong->n_t_type);
+		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_PhoneVerifyCode_tranf_fenghong"),true);
+
+		DBO_GR_GetPhoneTransferFenhongRet GetPhoneTransferFenhongRet;
+		ZeroMemory(&GetPhoneTransferFenhongRet,sizeof(GetPhoneTransferFenhongRet));
+
+		if(m_GameSSCDBModule->IsRecordsetEnd() == FALSE)
+		{
+			GetPhoneTransferFenhongRet.n_t_state = m_GameSSCDBAide.GetValue_INT(TEXT("IFOpenCode"));
+			m_GameSSCDBAide.GetValue_String(TEXT("PhoneNum"),GetPhoneTransferFenhongRet.sPhoneNum,sizeof(GetPhoneTransferFenhongRet.sPhoneNum));
+		}
+		m_GameSSCDBModule->CloseRecordset();
+		//发送结果
+		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_GETTANSFERVERIFY_RET,dwContextID,&GetPhoneTransferFenhongRet,sizeof(GetPhoneTransferFenhongRet));
+
+	}
+	catch (IDataBaseException * pIException)
+	{
+		//错误信息
+		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
+		CString strLogFile;
+		strLogFile.Format(L"Exception p_get_PhoneVerifyCode_tranf_fenghong");
+		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
+
+	}
+	return true;
+}
+//获取上级
+bool CDataBaseEngineSink::OnHYXXGetParent(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	try
+	{
+		//效验参数
+		ASSERT(wDataSize==sizeof(DBO_GetParent));
+		if (wDataSize!=sizeof(DBO_GetParent)) return false;
+
+		DBO_GetParent *pGetUrlFandian = (DBO_GetParent*)pData;
+
+		m_GameSSCDBAide.ResetParameter();
+		m_GameSSCDBAide.AddParameter(TEXT("@UserID"),pGetUrlFandian->n_t_xj_id);
+		m_GameSSCDBAide.AddParameter(TEXT("@CurrentUserID"),pGetUrlFandian->n_t_userid);
+		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("P_get_cpsinfo"),true);
+
+		DBR_GetParentRet GetParentRet;
+		ZeroMemory(&GetParentRet,sizeof(GetParentRet));
+		LONG lResult = 0;
+
+		if(lResultCode==0)
+		{
+			while(m_GameSSCDBModule->IsRecordsetEnd() == FALSE)
+			{
+				if(lResult>=10)
+				{
+					break;
+				}
+
+				m_GameSSCDBAide.GetValue_String(TEXT("Accounts"),GetParentRet.s_t_desc[lResult],sizeof(GetParentRet.s_t_desc[lResult]));
+				GetParentRet.n_t_userid[lResult] = m_GameSSCDBAide.GetValue_INT(_T("userid"));
+
+				lResult++;
+				m_GameSSCDBModule->MoveToNext();
+
+			}
+
+		}
+		GetParentRet.n_t_result = lResult;
+		m_GameSSCDBModule->CloseRecordset();
+
+		//发送结果
+		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GR_GET_PARENT_RET,dwContextID,&GetParentRet,sizeof(DBR_GetParentRet));
+
+
+	}
+	catch (IDataBaseException * pIException)
+	{
+		//错误信息
+		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
+		CString strLogFile;
+		strLogFile.Format(L"Exception P_get_cpsinfo");
+		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
+
+	}
+	return true;
+}
 //查询配额
 bool CDataBaseEngineSink::OnGetPeie(DWORD dwContextID, VOID * pData, WORD wDataSize)
 {
@@ -5157,9 +5004,13 @@ bool CDataBaseEngineSink::OnGetPeie(DWORD dwContextID, VOID * pData, WORD wDataS
 			RegUrlRet.n_t_peie_1 = m_GameSSCDBAide.GetValue_INT(TEXT("t_xiaji_count56"));
 			RegUrlRet.n_t_peie_2 = m_GameSSCDBAide.GetValue_INT(TEXT("t_xiaji_count54"));
 			RegUrlRet.n_t_peie_3 = m_GameSSCDBAide.GetValue_INT(TEXT("t_xiaji_count52"));
+			RegUrlRet.n_t_peie_4 = m_GameSSCDBAide.GetValue_INT(TEXT("t_xiaji_count50"));
+			RegUrlRet.n_t_peie_5 = m_GameSSCDBAide.GetValue_INT(TEXT("t_xiaji_count48"));
 			RegUrlRet.n_t_peie_s_1 = m_GameSSCDBAide.GetValue_INT(TEXT("cnt3_0"));
-			RegUrlRet.n_t_peie_s_2 = m_GameSSCDBAide.GetValue_INT(TEXT("cnt2_8"));
-			RegUrlRet.n_t_peie_s_3 = m_GameSSCDBAide.GetValue_INT(TEXT("cnt2_7"));
+			RegUrlRet.n_t_peie_s_2 = m_GameSSCDBAide.GetValue_INT(TEXT("cnt2_9"));
+			RegUrlRet.n_t_peie_s_3 = m_GameSSCDBAide.GetValue_INT(TEXT("cnt2_8"));
+			RegUrlRet.n_t_peie_s_4 = m_GameSSCDBAide.GetValue_INT(TEXT("cnt2_7"));
+			RegUrlRet.n_t_peie_s_5 = m_GameSSCDBAide.GetValue_INT(TEXT("cnt2_6"));
 
 		}
 		m_GameSSCDBModule->CloseRecordset();
@@ -5203,10 +5054,13 @@ bool CDataBaseEngineSink::OnHYXXXiaJiPeie(DWORD dwContextID, VOID * pData, WORD 
 			RegUrlRet.n_t_peie_1 = m_GameSSCDBAide.GetValue_INT(TEXT("t_xiaji_count56"));
 			RegUrlRet.n_t_peie_2 = m_GameSSCDBAide.GetValue_INT(TEXT("t_xiaji_count54"));
 			RegUrlRet.n_t_peie_3 = m_GameSSCDBAide.GetValue_INT(TEXT("t_xiaji_count52"));
+			RegUrlRet.n_t_peie_4 = m_GameSSCDBAide.GetValue_INT(TEXT("t_xiaji_count50"));
+			RegUrlRet.n_t_peie_5 = m_GameSSCDBAide.GetValue_INT(TEXT("t_xiaji_count48"));
 			RegUrlRet.n_t_peie_s_1 = m_GameSSCDBAide.GetValue_INT(TEXT("cnt3_0"));
-			RegUrlRet.n_t_peie_s_2 = m_GameSSCDBAide.GetValue_INT(TEXT("cnt2_8"));
-			RegUrlRet.n_t_peie_s_3 = m_GameSSCDBAide.GetValue_INT(TEXT("cnt2_7"));
-
+			RegUrlRet.n_t_peie_s_2 = m_GameSSCDBAide.GetValue_INT(TEXT("cnt2_9"));
+			RegUrlRet.n_t_peie_s_3 = m_GameSSCDBAide.GetValue_INT(TEXT("cnt2_8"));
+			RegUrlRet.n_t_peie_s_4 = m_GameSSCDBAide.GetValue_INT(TEXT("cnt2_7"));
+			RegUrlRet.n_t_peie_s_5 = m_GameSSCDBAide.GetValue_INT(TEXT("cnt2_6"));
 		}
 		m_GameSSCDBModule->CloseRecordset();
 		//发送结果
@@ -5240,8 +5094,10 @@ bool CDataBaseEngineSink::OnHYXXSetXiaJiPeie(DWORD dwContextID, VOID * pData, WO
 		m_GameSSCDBAide.AddParameter(TEXT("@userid"),pGetXjPeie->n_t_userid);
 		m_GameSSCDBAide.AddParameter(TEXT("@xjUserid"),pGetXjPeie->n_t_xj_id);
 		m_GameSSCDBAide.AddParameter(TEXT("@allotNum1960"),pGetXjPeie->n_t_peie1);
-		m_GameSSCDBAide.AddParameter(TEXT("@allotNum1956"),pGetXjPeie->n_t_peie2);
-		m_GameSSCDBAide.AddParameter(TEXT("@allotNum1954"),pGetXjPeie->n_t_peie3);
+		m_GameSSCDBAide.AddParameter(TEXT("@allotNum1958"),pGetXjPeie->n_t_peie2);
+		m_GameSSCDBAide.AddParameter(TEXT("@allotNum1956"),pGetXjPeie->n_t_peie3);
+		m_GameSSCDBAide.AddParameter(TEXT("@allotNum1954"),pGetXjPeie->n_t_peie4);
+		m_GameSSCDBAide.AddParameter(TEXT("@allotNum1952"),pGetXjPeie->n_t_peie5);
 
 		TCHAR szDescvalue[126] = TEXT("");
 		m_GameSSCDBAide.AddParameterOutput(TEXT("@Desvalue"),szDescvalue,sizeof(szDescvalue),adParamOutput);
@@ -5286,6 +5142,19 @@ bool CDataBaseEngineSink::OnGetTixianLogCount(DWORD dwContextID, VOID * pData, W
 		if (wDataSize!=sizeof(DBR_GP_GetTixianLogCount)) return false;
 		
 		DBR_GP_GetTixianLogCount* pLogCount = (DBR_GP_GetTixianLogCount*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLogCount->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLogCount->szTimeEnd);
+
+		if((pLogCount->szTimeEnd < pLogCount->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetTixianLogCountRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_TIXIAN_LOG_COUNT_RET,dwContextID,&LogRet,sizeof(LogRet));
+
+		}
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLogCount->dwUserID);
@@ -5327,6 +5196,19 @@ bool CDataBaseEngineSink::OnGetChongzhiLogCount(DWORD dwContextID, VOID * pData,
 		if (wDataSize!=sizeof(DBR_GP_GetChongzhiLogCount)) return false;
 		
 		DBR_GP_GetChongzhiLogCount* pLogCount = (DBR_GP_GetChongzhiLogCount*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLogCount->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLogCount->szTimeEnd);
+
+		if((pLogCount->szTimeEnd < pLogCount->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetChongzhiLogCountRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_CHONGZHI_LOG_COUNT_RET,dwContextID,&LogRet,sizeof(LogRet));
+
+		}
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLogCount->dwUserID);
@@ -5368,6 +5250,19 @@ bool CDataBaseEngineSink::OnGetHYXXLogCount(DWORD dwContextID, VOID * pData, WOR
 		if (wDataSize!=sizeof(DBR_GP_GetHYXXLogCount)) return false;
 		
 		DBR_GP_GetHYXXLogCount* pLogCount = (DBR_GP_GetHYXXLogCount*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLogCount->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLogCount->szTimeEnd);
+
+		if((pLogCount->szTimeEnd < pLogCount->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetHYXXLogCountRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_HYXX_LOG_COUNT_RET,dwContextID,&LogRet,sizeof(LogRet));
+
+		}
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLogCount->dwUserID);
@@ -5380,9 +5275,6 @@ bool CDataBaseEngineSink::OnGetHYXXLogCount(DWORD dwContextID, VOID * pData, WOR
 		m_GameSSCDBAide.AddParameter(TEXT("@online"),pLogCount->nOnline);
 		m_GameSSCDBAide.AddParameter(TEXT("@yue"),pLogCount->nYue);
 
-		CString strLog;
-		strLog.Format(L"HYXXCOUNT user_id:%d,type:%d,xiaji_id:%d,xiaji_act:%s,by_time:%d,time_start:%s,time_end:%s,online:%d,yue:%d",pLogCount->dwUserID,pLogCount->n_t_type,pLogCount->n_t_user_id,pLogCount->s_t_account,pLogCount->bTime,pLogCount->szTimeStart,pLogCount->szTimeEnd,pLogCount->nOnline,pLogCount->nYue);
-		OutputDebugString(strLog);
 		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_hyxx_log_count"),true);
 
 		DBO_GR_GetHYXXLogCountRet LogRet;
@@ -5391,8 +5283,6 @@ bool CDataBaseEngineSink::OnGetHYXXLogCount(DWORD dwContextID, VOID * pData, WOR
 		if(m_GameSSCDBModule->IsRecordsetEnd() == FALSE)
 			LogRet.dwHYXXLogCount = m_GameSSCDBAide.GetValue_DWORD(TEXT("cnt"));
 		m_GameSSCDBModule->CloseRecordset();
-		strLog.Format(L"HYXXCOUNT lResultCode:%d,cnt:%d",lResultCode,LogRet.dwHYXXLogCount);
-		OutputDebugString(strLog);
 		//发送结果
 		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_HYXX_LOG_COUNT_RET,dwContextID,&LogRet,sizeof(LogRet));
 
@@ -5419,6 +5309,19 @@ bool CDataBaseEngineSink::OnGetYingkuiLogCount(DWORD dwContextID, VOID * pData, 
 		if (wDataSize!=sizeof(DBR_GP_GetYingkuiLogCount)) return false;
 		
 		DBR_GP_GetYingkuiLogCount* pLogCount = (DBR_GP_GetYingkuiLogCount*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLogCount->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLogCount->szTimeEnd);
+
+		if((pLogCount->szTimeEnd < pLogCount->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetYingkuiLogCountRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_YINGKUI_LOG_COUNT_RET,dwContextID,&LogRet,sizeof(LogRet));
+
+		}
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLogCount->dwUserID);
@@ -5460,6 +5363,19 @@ bool CDataBaseEngineSink::OnGetYingkuiMxCount(DWORD dwContextID, VOID * pData, W
 		if (wDataSize!=sizeof(DBR_GP_GetYingkuiMxCount)) return false;
 		
 		DBR_GP_GetYingkuiMxCount* pLogCount = (DBR_GP_GetYingkuiMxCount*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLogCount->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLogCount->szTimeEnd);
+
+		if((pLogCount->szTimeEnd < pLogCount->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetYingkuiMxCountRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_YINGKUI_MX_COUNT_RET,dwContextID,&LogRet,sizeof(LogRet));
+
+		}
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLogCount->dwUserID);
@@ -5500,13 +5416,29 @@ bool CDataBaseEngineSink::OnGetQiPaiYingkuiCount(DWORD dwContextID, VOID * pData
 		if (wDataSize!=sizeof(DBR_GP_GetQiPaiYingkuiMxCount)) return false;
 		
 		DBR_GP_GetQiPaiYingkuiMxCount* pLogCount = (DBR_GP_GetQiPaiYingkuiMxCount*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLogCount->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLogCount->szTimeEnd);
+
+		if((pLogCount->szTimeEnd < pLogCount->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetQiPaiYingkuiCountRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_QP_YINGKUI_COUNT_RET,dwContextID,&LogRet,sizeof(LogRet));
+
+		}
 
 		m_GameSSCDBAide.ResetParameter();
-		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLogCount->dwUserID);
+		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLogCount->n_t_userid);
 		m_GameSSCDBAide.AddParameter(TEXT("@type"),pLogCount->nTypeID);
+		m_GameSSCDBAide.AddParameter(TEXT("@xj_id"),pLogCount->n_t_xjid);
 		m_GameSSCDBAide.AddParameter(TEXT("@by_time"),pLogCount->nByTime);
 		m_GameSSCDBAide.AddParameter(TEXT("@time_start"),pLogCount->szTimeStart);
 		m_GameSSCDBAide.AddParameter(TEXT("@time_end"),pLogCount->szTimeEnd);
+		m_GameSSCDBAide.AddParameter(TEXT("@gameTypeID"),pLogCount->nKindID);
+		m_GameSSCDBAide.AddParameter(TEXT("@xiaji_Name"),pLogCount->s_t_account);
 
 		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_yxcx_count"),true);
 
@@ -5543,6 +5475,19 @@ bool CDataBaseEngineSink::OnGetXJTZHLogCount(DWORD dwContextID, VOID * pData, WO
 		if (wDataSize!=sizeof(DBR_GP_GetXJTZHLogCount)) return false;
 		
 		DBR_GP_GetXJTZHLogCount* pLogCount = (DBR_GP_GetXJTZHLogCount*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLogCount->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLogCount->szTimeEnd);
+
+		if((pLogCount->szTimeEnd < pLogCount->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetXJTZHLogCountRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_XJTZH_LOG_COUNT_RET,dwContextID,&LogRet,sizeof(LogRet));
+
+		}
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLogCount->dwUserID);
@@ -5589,15 +5534,30 @@ bool CDataBaseEngineSink::OnCHKXJTZHLogCount(DWORD dwContextID, VOID * pData, WO
 		if (wDataSize!=sizeof(DBR_GP_CHKXJTZHLogCount)) return false;
 		
 		DBR_GP_CHKXJTZHLogCount* pLogCount = (DBR_GP_CHKXJTZHLogCount*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLogCount->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLogCount->szTimeEnd);
+
+		if((pLogCount->szTimeEnd < pLogCount->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_CHKXJTZHLogCountRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_CHKXJTZH_LOG_COUNT_RET,dwContextID,&LogRet,sizeof(LogRet));
+
+		}
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLogCount->dwUserID);
 		m_GameSSCDBAide.AddParameter(TEXT("@type"),pLogCount->n_t_type);
 		m_GameSSCDBAide.AddParameter(TEXT("@xiaji_id"),pLogCount->n_t_user_id);
 		m_GameSSCDBAide.AddParameter(TEXT("@xiaji_act"),pLogCount->s_t_account);
+		m_GameSSCDBAide.AddParameter(TEXT("@KindType"),pLogCount->n_t_caizhong);
 		m_GameSSCDBAide.AddParameter(TEXT("@by_time"),pLogCount->bTime);
 		m_GameSSCDBAide.AddParameter(TEXT("@time_start"),pLogCount->szTimeStart);
 		m_GameSSCDBAide.AddParameter(TEXT("@time_end"),pLogCount->szTimeEnd);
+		m_GameSSCDBAide.AddParameter(TEXT("@state"),pLogCount->n_t_status);
 
 		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_xjtzh_log_count"),true);
 
@@ -5634,6 +5594,19 @@ bool CDataBaseEngineSink::OnXJYKLogCount(DWORD dwContextID, VOID * pData, WORD w
 		if (wDataSize!=sizeof(DBR_GP_GetXJYKLogCount)) return false;
 		
 		DBR_GP_GetXJYKLogCount* pLogCount = (DBR_GP_GetXJYKLogCount*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLogCount->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLogCount->szTimeEnd);
+
+		if((pLogCount->szTimeEnd < pLogCount->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetXJYKLogCountRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_XJYK_LOG_COUNT_RET,dwContextID,&LogRet,sizeof(LogRet));
+
+		}
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLogCount->dwUserID);
@@ -5680,6 +5653,19 @@ bool CDataBaseEngineSink::OnXJYKTjCount(DWORD dwContextID, VOID * pData, WORD wD
 		if (wDataSize!=sizeof(DBR_GP_GetXJYKTjCount)) return false;
 		
 		DBR_GP_GetXJYKTjCount* pLogCount = (DBR_GP_GetXJYKTjCount*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLogCount->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLogCount->szTimeEnd);
+
+		if((pLogCount->szTimeEnd < pLogCount->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetXJYKTjCountRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_XJYK_TJ_COUNT_RET,dwContextID,&LogRet,sizeof(LogRet));
+
+		}
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLogCount->dwUserID);
@@ -5725,6 +5711,19 @@ bool CDataBaseEngineSink::OnXJYXTjCount(DWORD dwContextID, VOID * pData, WORD wD
 		if (wDataSize!=sizeof(DBR_GP_GetXJYXTjCount)) return false;
 		
 		DBR_GP_GetXJYXTjCount* pLogCount = (DBR_GP_GetXJYXTjCount*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLogCount->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLogCount->szTimeEnd);
+
+		if((pLogCount->szTimeEnd < pLogCount->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetXJYXTjCountRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_XJYX_TJ_COUNT_RET,dwContextID,&LogRet,sizeof(LogRet));
+
+		}
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLogCount->dwUserID);
@@ -5737,7 +5736,7 @@ bool CDataBaseEngineSink::OnXJYXTjCount(DWORD dwContextID, VOID * pData, WORD wD
 
 		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_xjyktj_qipai_count"),true);
 
-		DBO_GR_GetXJYKTjCountRet LogRet;
+		DBO_GR_GetXJYXTjCountRet LogRet;
 		ZeroMemory(&LogRet,sizeof(LogRet));
 
 		if(m_GameSSCDBModule->IsRecordsetEnd() == FALSE)
@@ -5769,6 +5768,19 @@ bool CDataBaseEngineSink::OnXJCHZHLogCount(DWORD dwContextID, VOID * pData, WORD
 		if (wDataSize!=sizeof(DBR_GP_GetXjChzhLogCount)) return false;
 		
 		DBR_GP_GetXjChzhLogCount* pLogCount = (DBR_GP_GetXjChzhLogCount*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLogCount->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLogCount->szTimeEnd);
+
+		if((pLogCount->szTimeEnd < pLogCount->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetXjChzhLogCountRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_XJCHZH_LOG_COUNT_RET,dwContextID,&LogRet,sizeof(LogRet));
+
+		}
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLogCount->dwUserID);
@@ -5813,6 +5825,19 @@ bool CDataBaseEngineSink::OnXJTxLogCount(DWORD dwContextID, VOID * pData, WORD w
 		if (wDataSize!=sizeof(DBR_GP_GetXjTxLogCount)) return false;
 		
 		DBR_GP_GetXjTxLogCount* pLogCount = (DBR_GP_GetXjTxLogCount*)pData;
+		bool bIsSuit1 = true;
+		bIsSuit1 = CheckDate(pLogCount->szTimeStart);
+		bool bIsSuit2 = true;
+
+		bIsSuit2 = CheckDate(pLogCount->szTimeEnd);
+
+		if((pLogCount->szTimeEnd < pLogCount->szTimeStart)||!bIsSuit2||!bIsSuit1)
+		{
+			DBO_GR_GetXjTxLogCountRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_XJTX_LOG_COUNT_RET,dwContextID,&LogRet,sizeof(LogRet));
+
+		}
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLogCount->dwUserID);
@@ -5912,7 +5937,8 @@ bool CDataBaseEngineSink::OnGetChongzhiXinxi(DWORD dwContextID, VOID * pData, WO
 
 		m_GameSSCDBAide.ResetParameter();
 		m_GameSSCDBAide.AddParameter(TEXT("@t_user_id"),pLogCount->nUserID);
-		m_GameSSCDBAide.AddParameter(TEXT("@t_type"),pLogCount->cbType);
+//		m_GameSSCDBAide.AddParameter(TEXT("@t_type"),pLogCount->cbType);
+		m_GameSSCDBAide.AddParameter(TEXT("@t_type"), 0);
 
 		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_chongzhi_xinxi"),true);
 
@@ -5927,10 +5953,12 @@ bool CDataBaseEngineSink::OnGetChongzhiXinxi(DWORD dwContextID, VOID * pData, WO
 				ZeroMemory(&LogRet,sizeof(LogRet));
 				lResult = 0;
 			}
+			LogRet[lResult].n_t_typeid = m_GameSSCDBAide.GetValue_INT(TEXT("t_type"));
 			m_GameSSCDBAide.GetValue_String(TEXT("t_yinhang"),LogRet[lResult].s_t_yinhang,sizeof(LogRet[lResult].s_t_yinhang));
 			m_GameSSCDBAide.GetValue_String(TEXT("t_kaihuren"),LogRet[lResult].s_t_kaihuren,sizeof(LogRet[lResult].s_t_kaihuren));
 			m_GameSSCDBAide.GetValue_String(TEXT("t_zhanghao"),LogRet[lResult].s_t_zhanghao,sizeof(LogRet[lResult].s_t_zhanghao));
 			m_GameSSCDBAide.GetValue_String(TEXT("t_web"),LogRet[lResult].s_t_web,sizeof(LogRet[lResult].s_t_web));
+			m_GameSSCDBAide.GetValue_String(TEXT("t_czRemark"),LogRet[lResult].s_t_remark,sizeof(LogRet[lResult].s_t_remark));
 			lResult++;
 			m_GameSSCDBModule->MoveToNext();
 		}
@@ -6073,10 +6101,7 @@ bool CDataBaseEngineSink::OnGetYueInfo(DWORD dwContextID, VOID * pData, WORD wDa
 			LogRet.f_t_score = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("t_score"));
 
 		}
-		CString strLog;
-		strLog.Format(L"【%d】余额[%.4lf]棋牌[%.4lf]",pLogCount->dwUserID,LogRet.f_t_yue,LogRet.f_t_score);
-		LogFile::instance().LogText(strLog);
-		
+	
 		m_GameSSCDBModule->CloseRecordset();
 		//发送结果
 		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_GET_YUE_INFO_RET,dwContextID,&LogRet,sizeof(LogRet));
@@ -6143,6 +6168,35 @@ bool CDataBaseEngineSink::OnGetMoreRecord(DWORD dwContextID, VOID * pData, WORD 
 		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
 		CString strLogFile;
 		strLogFile.Format(L"Exception p_get_more_record");
+		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
+
+	}
+	return true;
+}
+//查询期号差
+bool CDataBaseEngineSink::OnGetQihaocha(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	try
+	{
+		m_GameSSCDBAide.ResetParameter();
+
+		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_hanguocaipianyivalue"),true);
+
+		DBO_GP_GetQihaoCha GetQihaoCha;
+		ZeroMemory(&GetQihaoCha,sizeof(GetQihaoCha));
+
+		GetQihaoCha.n_t_qishu = m_GameSSCDBAide.GetValue_INT(TEXT("setState"));
+		m_GameSSCDBModule->CloseRecordset();
+		//发送结果
+		m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBR_GP_GET_QIHAOCHA_RET,dwContextID,&GetQihaoCha,sizeof(GetQihaoCha));
+		return true;
+	}
+	catch (IDataBaseException * pIException)
+	{
+		//错误信息
+		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
+		CString strLogFile;
+		strLogFile.Format(L"Exception p_get_hanguocaipianyivalue");
 		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
 
 	}
@@ -6226,6 +6280,288 @@ bool CDataBaseEngineSink::OnDailiLingjiang(DWORD dwContextID, VOID * pData, WORD
 	}
 	return true;
 }
+//获取站内信数量
+bool CDataBaseEngineSink::OnGetZnxCount(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	try
+	{
+		//效验参数
+		ASSERT(wDataSize==sizeof(DBR_GP_GetZnxCount));
+		if (wDataSize!=sizeof(DBR_GP_GetZnxCount)) return false;
+		
+		DBR_GP_GetZnxCount* pLog = (DBR_GP_GetZnxCount*)pData;
+
+		m_GameSSCDBAide.ResetParameter();
+		m_GameSSCDBAide.AddParameter(TEXT("@userid"),pLog->n_t_userid);
+
+		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_NewNoticeCount"),true);
+
+		DBO_GP_GetZnxCountRet LogRet;
+		ZeroMemory(&LogRet,sizeof(LogRet));
+		LogRet.n_t_userid = pLog->n_t_userid;
+		if(m_GameSSCDBModule->IsRecordsetEnd() == FALSE)
+		{
+			LogRet.n_t_count = m_GameSSCDBAide.GetValue_INT(TEXT("cnt"));
+		}
+		m_GameSSCDBModule->CloseRecordset();
+		//发送结果
+		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_GET_ZNX_COUNT_RET,dwContextID,&LogRet,sizeof(LogRet));
+
+
+	}
+	catch (IDataBaseException * pIException)
+	{
+		//错误信息
+		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
+		CString strLogFile;
+		strLogFile.Format(L"Exception p_get_NewNoticeCount");
+		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
+
+	}
+	return true;
+
+}
+//发送信息
+bool CDataBaseEngineSink::OnSendMessage(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	try
+	{
+		//效验参数
+		ASSERT(wDataSize==sizeof(DBR_GP_SendMessage));
+		if (wDataSize!=sizeof(DBR_GP_SendMessage)) return false;
+		
+		DBR_GP_SendMessage* pLog = (DBR_GP_SendMessage*)pData;
+
+		m_GameSSCDBAide.ResetParameter();
+		m_GameSSCDBAide.AddParameter(TEXT("@title"),pLog->s_t_title);
+		m_GameSSCDBAide.AddParameter(TEXT("@tcontent"),pLog->s_t_content);
+		m_GameSSCDBAide.AddParameter(TEXT("@type"),pLog->n_t_type);
+		m_GameSSCDBAide.AddParameter(TEXT("@sUserid"),pLog->n_t_userid);
+		m_GameSSCDBAide.AddParameter(TEXT("@revuserid"),pLog->n_t_revid);
+
+		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("b_set_SendAdvInfo"),false);
+
+		DBO_GP_SendMessageRet LogRet;
+		ZeroMemory(&LogRet,sizeof(LogRet));
+		LogRet.n_t_retid = lResultCode;
+		LogRet.n_t_sign = pLog->n_t_sign;
+		//发送结果
+		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_SEND_MESSAGE_RET,dwContextID,&LogRet,sizeof(LogRet));
+
+
+	}
+	catch (IDataBaseException * pIException)
+	{
+		//错误信息
+		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
+		CString strLogFile;
+		strLogFile.Format(L"Exception b_set_SendAdvInfo");
+		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
+
+	}
+	return true;
+
+}
+//删除信息
+bool CDataBaseEngineSink::OnDelMessage(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	try
+	{
+		//效验参数
+		ASSERT(wDataSize==sizeof(DBR_GP_DelMessage));
+		if (wDataSize!=sizeof(DBR_GP_DelMessage)) return false;
+		
+		DBR_GP_DelMessage* pLog = (DBR_GP_DelMessage*)pData;
+
+		m_GameSSCDBAide.ResetParameter();
+		m_GameSSCDBAide.AddParameter(TEXT("@stype"),pLog->n_t_type);
+		m_GameSSCDBAide.AddParameter(TEXT("@t_id"),pLog->n_t_id);
+
+		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_set_DelNotice"),false);
+
+		DBO_GP_DelMessageRet LogRet;
+		ZeroMemory(&LogRet,sizeof(LogRet));
+		LogRet.n_t_retid = lResultCode;
+		//发送结果
+		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_DEL_MESSAGE_RET,dwContextID,&LogRet,sizeof(LogRet));
+
+
+	}
+	catch (IDataBaseException * pIException)
+	{
+		//错误信息
+		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
+		CString strLogFile;
+		strLogFile.Format(L"Exception b_set_SendAdvInfo");
+		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
+
+	}
+	return true;
+
+}
+//获取所有人站内信数量
+bool CDataBaseEngineSink::OnGetZnxAllCount(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	try
+	{
+		m_GameSSCDBAide.ResetParameter();
+
+		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_allNOReadNotice"),true);
+
+		DBO_GP_GetAllZnxCountRet LogRet[50];
+		ZeroMemory(&LogRet,sizeof(DBO_GP_GetAllZnxCountRet)*50);
+		int nIndex = 0;
+		while(m_GameSSCDBModule->IsRecordsetEnd() == FALSE)
+		{
+			if(nIndex>=50)
+			{
+				m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_GET_ZNX_ALLCOUNT_RET,dwContextID,&LogRet,sizeof(DBO_GP_GetAllZnxCountRet)*nIndex);
+				ZeroMemory(&LogRet,sizeof(DBO_GP_GetAllZnxCountRet)*50);
+				nIndex = 0;
+			}
+			LogRet[nIndex].n_t_userid = m_GameSSCDBAide.GetValue_INT(TEXT("s_RevUserID"));
+			LogRet[nIndex].n_t_count = m_GameSSCDBAide.GetValue_INT(TEXT("cnt"));
+
+			nIndex++;
+			m_GameSSCDBModule->MoveToNext();
+		}
+		m_GameSSCDBModule->CloseRecordset();
+		//发送结果
+		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_GET_ZNX_ALLCOUNT_RET,dwContextID,&LogRet,sizeof(DBO_GP_GetAllZnxCountRet)*nIndex);
+
+
+	}
+	catch (IDataBaseException * pIException)
+	{
+		//错误信息
+		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
+		CString strLogFile;
+		strLogFile.Format(L"Exception p_get_allNOReadNotice");
+		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
+
+	}
+	return true;
+
+}
+//获取上下级信息
+bool CDataBaseEngineSink::OnGetAllUserInfo(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	try
+	{
+		//效验参数
+		ASSERT(wDataSize==sizeof(DBR_GP_GetAllUserInfo));
+		if (wDataSize!=sizeof(DBR_GP_GetAllUserInfo)) return false;
+
+		DBR_GP_GetAllUserInfo* pLog = (DBR_GP_GetAllUserInfo*)pData;
+
+		m_GameSSCDBAide.ResetParameter();
+		m_GameSSCDBAide.AddParameter(TEXT("@typeid"),pLog->n_t_typeid);
+		m_GameSSCDBAide.AddParameter(TEXT("@userid"),pLog->s_t_search);
+		m_GameSSCDBAide.AddParameter(TEXT("@EditTyoe"),pLog->n_t_edittype);
+		m_GameSSCDBAide.AddParameter(TEXT("@npage"),pLog->n_t_size);
+		m_GameSSCDBAide.AddParameter(TEXT("@LoginUserID"),pLog->n_t_userid);
+		//输出变量
+		WCHAR szDescribe[128]=L"";
+		m_GameSSCDBAide.AddParameterOutput(TEXT("@sCount"),szDescribe,sizeof(szDescribe),adParamOutput);
+
+
+		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_allUserInfo"),true);
+			//Alter here 11.09
+		DBO_GP_GetAllUserInfoRet LogRet[50];
+		ZeroMemory(&LogRet,sizeof(DBO_GP_GetAllUserInfoRet)*50);
+		int nIndex = 0;
+		while(m_GameSSCDBModule->IsRecordsetEnd() == FALSE)
+		{
+			if(nIndex>=50)
+			{
+				m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_GET_ALL_USER_INFO_RET,dwContextID,&LogRet,sizeof(DBO_GP_GetAllUserInfoRet)*nIndex);
+				ZeroMemory(&LogRet,sizeof(DBO_GP_GetAllUserInfoRet)*50);
+				nIndex = 0;
+			}
+			LogRet[nIndex].n_t_userid = m_GameSSCDBAide.GetValue_INT(TEXT("t_id"));
+			
+			m_GameSSCDBAide.GetValue_String(TEXT("t_account"),LogRet[nIndex].s_t_name,CountArray(LogRet[nIndex].s_t_name));
+
+			LogRet[nIndex].n_t_type = m_GameSSCDBAide.GetValue_INT(TEXT("typeID"));
+			//获取信息
+			CDBVarValue DBVarValue;
+			m_GameSSCDBAide.GetParameter(TEXT("@sCount"),DBVarValue);
+
+			TCHAR szDesc[32]=TEXT("");
+			lstrcpyn(szDesc,CW2CT(DBVarValue.bstrVal),CountArray(szDesc));
+			LogRet[nIndex].n_t_count = _ttoi(szDesc);
+			CString strLog;
+			strLog.Format(L"\nSENDMESSAGESJ %s(%d) count:%d",LogRet[nIndex].s_t_name,LogRet[nIndex].n_t_userid,LogRet[nIndex].n_t_count);
+			OutputDebugString(strLog);
+			nIndex++;
+			m_GameSSCDBModule->MoveToNext();
+		}
+		m_GameSSCDBModule->CloseRecordset();
+		//发送结果
+		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_GET_ALL_USER_INFO_RET,dwContextID,&LogRet,sizeof(DBO_GP_GetAllUserInfoRet)*nIndex);
+
+
+	}
+	catch (IDataBaseException * pIException)
+	{
+		//错误信息
+		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
+		CString strLogFile;
+		strLogFile.Format(L"Exception p_get_allUserInfo");
+		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
+
+	}
+	return true;
+
+}
+
+//获取平台公告
+bool CDataBaseEngineSink::OnGetNotic(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	try
+	{
+		//效验参数
+		ASSERT(wDataSize==sizeof(DBO_GP_GetNotic));
+		if (wDataSize!=sizeof(DBO_GP_GetNotic)) return false;
+		
+		DBO_GP_GetNotic* pLog = (DBO_GP_GetNotic*)pData;
+
+		m_GameSSCDBAide.ResetParameter();
+		m_GameSSCDBAide.AddParameter(TEXT("@typeid"),pLog->n_t_type);
+
+		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_noticelist"),true);
+
+		DBR_GP_GetNoticRet LogRet[10];
+		ZeroMemory(&LogRet,sizeof(DBR_GP_GetNoticRet)*10);
+		int lResult = 0;
+		while(m_GameSSCDBModule->IsRecordsetEnd() == FALSE&&lResult<10)
+		{
+			LogRet[lResult].n_t_id = m_GameSSCDBAide.GetValue_INT(TEXT("t_id"));
+			m_GameSSCDBAide.GetValue_String(TEXT("t_content"),LogRet[lResult].s_t_content,CountArray(LogRet[lResult].s_t_content));
+			m_GameSSCDBAide.GetValue_SystemTime(TEXT("t_time"),LogRet[lResult].n_t_time);
+			LogRet[lResult].n_t_type = m_GameSSCDBAide.GetValue_INT(TEXT("t_type"));
+			m_GameSSCDBAide.GetValue_String(TEXT("t_title"),LogRet[lResult].s_t_title,CountArray(LogRet[lResult].s_t_title));
+			lResult++;
+			m_GameSSCDBModule->MoveToNext();
+		}
+		m_GameSSCDBModule->CloseRecordset();
+		//发送结果
+		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_GET_NOTICE_RET,dwContextID,&LogRet,sizeof(DBR_GP_GetNoticRet)*lResult);
+
+
+	}
+	catch (IDataBaseException * pIException)
+	{
+		//错误信息
+		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
+		CString strLogFile;
+		strLogFile.Format(L"Exception p_get_noticelist");
+		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
+
+	}
+	return true;
+
+}
 //退出游戏
 bool CDataBaseEngineSink::OnQuitGame(DWORD dwContextID, VOID * pData, WORD wDataSize)
 {
@@ -6241,10 +6577,6 @@ bool CDataBaseEngineSink::OnQuitGame(DWORD dwContextID, VOID * pData, WORD wData
 		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pLogCount->dwUserID);
 
 		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_logout"),false);
-
-		CString strLog;
-		strLog.Format(L"%d退出游戏",pLogCount->dwUserID);
-		LogFile::instance().LogText(strLog);
 
  		DBO_GP_QuitGameRet LogRet;
  		ZeroMemory(&LogRet,sizeof(LogRet));
@@ -6424,13 +6756,14 @@ bool CDataBaseEngineSink::OnDoQukuan(DWORD dwContextID, VOID * pData, WORD wData
 		m_GameSSCDBAide.AddParameterOutput(TEXT("@msg"),szDescribe,sizeof(szDescribe),adParamOutput);
 
 
-		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_qukuan"),true);
+		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_qukuan_new"),true);
 
 		DBO_GP_DoQukuanRet LogRet;
 		ZeroMemory(&LogRet,sizeof(LogRet));
 		
 		LogRet.nResult = lResultCode;
-		if(lResultCode == 8)
+		LogRet.nUserID = pLogCount->dwUserID;
+	//	if(lResultCode == 8)
 		{
 			//获取信息
 			CDBVarValue DBVarValue;
@@ -6450,6 +6783,61 @@ bool CDataBaseEngineSink::OnDoQukuan(DWORD dwContextID, VOID * pData, WORD wData
 		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
 		CString strLogFile;
 		strLogFile.Format(L"Exception p_qukuan");
+		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
+		ReconnectSql();
+
+	}
+	return true;
+}
+//取款限制
+bool CDataBaseEngineSink::OnGetQukuanLimit(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	try
+	{
+		//效验参数
+		ASSERT(wDataSize==sizeof(DBR_GP_GetQukuanLimit));
+		if (wDataSize!=sizeof(DBR_GP_GetQukuanLimit)) return false;
+		
+		DBR_GP_GetQukuanLimit* pGetQukuanLimit = (DBR_GP_GetQukuanLimit*)pData;
+
+		m_GameSSCDBAide.ResetParameter();
+		m_GameSSCDBAide.AddParameter(TEXT("@user_id"),pGetQukuanLimit->n_t_userid);
+
+		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("P_GetQuKuanParametersofUserId"),true);
+
+		DBO_GP_GetQukuanLimitRet GetQukuanLimitRet;
+		ZeroMemory(&GetQukuanLimitRet,sizeof(GetQukuanLimitRet));
+		
+		if(m_GameSSCDBModule->IsRecordsetEnd() == FALSE)
+		{
+			GetQukuanLimitRet.f_t_lowjine = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("QuKuanMinValue"));
+			GetQukuanLimitRet.n_t_allcount = m_GameSSCDBAide.GetValue_INT(TEXT("QuKuanNum"));
+			GetQukuanLimitRet.t_starttime = m_GameSSCDBAide.GetValue_INT(TEXT("MaxTime"));
+			GetQukuanLimitRet.t_endtime = m_GameSSCDBAide.GetValue_INT(TEXT("MinTime"));
+			GetQukuanLimitRet.n_t_sxfpercent = m_GameSSCDBAide.GetValue_INT(TEXT("shouxufei"));
+			m_GameSSCDBAide.GetValue_String(TEXT("Remark"),GetQukuanLimitRet.s_t_remark,CountArray(GetQukuanLimitRet.s_t_remark));
+			GetQukuanLimitRet.f_t_highjine = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("maxqukuan"));
+			GetQukuanLimitRet.n_t_limitcount = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("mfqukuan"));
+			GetQukuanLimitRet.f_t_lowsxf = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("minmoney"));
+			GetQukuanLimitRet.f_t_highsxf = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("maxmoney"));
+			GetQukuanLimitRet.n_t_lastcount = m_GameSSCDBAide.GetValue_INT(TEXT("tiKuanSYNum"));
+			GetQukuanLimitRet.n_t_freelastcount = m_GameSSCDBAide.GetValue_INT(TEXT("SYmfquKuanNum"));
+			GetQukuanLimitRet.f_t_xiaofei = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("xfJine"));
+			GetQukuanLimitRet.f_t_nowxiaofei = m_GameSSCDBAide.GetValue_DOUBLE(TEXT("currentxfjine"));
+
+		}
+		m_GameSSCDBModule->CloseRecordset();
+		//发送结果
+		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_GET_QUKUAN_LIMIT_RET,dwContextID,&GetQukuanLimitRet,sizeof(GetQukuanLimitRet));
+
+
+	}
+	catch (IDataBaseException * pIException)
+	{
+		//错误信息
+		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
+		CString strLogFile;
+		strLogFile.Format(L"Exception P_GetQuKuanParametersofUserId");
 		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
 		ReconnectSql();
 
@@ -6662,7 +7050,90 @@ bool CDataBaseEngineSink::OnSetUserBonus(DWORD dwContextID, VOID * pData, WORD w
 	}
 	return true;
 }
+//查询彩种状态
+bool CDataBaseEngineSink::OnQueryStatusLottery(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	try
+	{
+		//效验参数
+		ASSERT(wDataSize==sizeof(DBO_GP_QueryStatusLottery));
+		if (wDataSize!=sizeof(DBO_GP_QueryStatusLottery)) return false;
 
+		DBO_GP_QueryStatusLottery* pLog = (DBO_GP_QueryStatusLottery*)pData;
+		m_GameSSCDBAide.ResetParameter();
+
+		m_GameSSCDBAide.AddParameter(TEXT("@typeid"),pLog->n_t_kindid);
+		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_IssueNewyear"),true);
+
+		DBR_GP_QueryStatusLotteryRet QueryStatusLotteryRet;
+		ZeroMemory(&QueryStatusLotteryRet,sizeof(QueryStatusLotteryRet));
+		QueryStatusLotteryRet.n_t_kindid = pLog->n_t_kindid; 
+		if (m_GameSSCDBModule->IsRecordsetEnd() == FALSE)
+		{
+			m_GameSSCDBAide.GetValue_String(TEXT("t_startIssue"),QueryStatusLotteryRet.s_t_expect,CountArray(QueryStatusLotteryRet.s_t_expect));
+			m_GameSSCDBAide.GetValue_SystemTime(TEXT("t_startTime"),QueryStatusLotteryRet.n_t_shijian);
+			QueryStatusLotteryRet.c_t_ifts = m_GameSSCDBAide.GetValue_BYTE(TEXT("t_isStop"));
+
+		}
+		m_GameSSCDBModule->CloseRecordset();
+
+		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_QUERY_STATUS_LOTTERY_RET,dwContextID,&QueryStatusLotteryRet,sizeof(QueryStatusLotteryRet));
+
+	}
+	catch (IDataBaseException * pIException)
+	{
+		//错误信息
+		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
+		CString strLogFile;
+		strLogFile.Format(L"Exception p_get_IssueNewyear");
+		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
+		ReconnectSql();
+		return false;
+	}
+	return true;
+}
+//获取加拿大期号
+bool CDataBaseEngineSink::OnQueryCanandaQihao(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	try
+	{
+
+		m_GameSSCDBAide.ResetParameter();
+
+		m_GameSSCDBAide.AddParameter(TEXT("@typeid"),3);
+		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_getCanadaExpect"),true);
+
+		DBO_GR_GetCanadaQihaoRet LogRet[2];
+		int lResult = 0;
+		while (m_GameSSCDBModule->IsRecordsetEnd() == FALSE)
+		{
+			m_GameSSCDBAide.GetValue_String(TEXT("expect"),LogRet[lResult].s_t_qihao,CountArray(LogRet[lResult].s_t_qihao));
+			m_GameSSCDBAide.GetValue_SystemTime(TEXT("opentime"),LogRet[lResult].n_t_open_time);
+			m_GameSSCDBAide.GetValue_SystemTime(TEXT("addtime"),LogRet[lResult].n_t_add_time);
+			lResult++;
+			if(lResult>=2)
+			{
+				break;
+			}
+			m_GameSSCDBModule->MoveToNext();
+		}
+		m_GameSSCDBModule->CloseRecordset();
+
+		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_GET_CANADA_QIHAO_RET,dwContextID,&LogRet,sizeof(DBO_GR_GetCanadaQihaoRet)*lResult);
+
+	}
+	catch (IDataBaseException * pIException)
+	{
+		//错误信息
+		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
+		CString strLogFile;
+		strLogFile.Format(L"Exception [p_getCanadaExpect]");
+		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
+		ReconnectSql();
+		return true;
+	}
+	return true;
+}
 //获取系统时间
 bool CDataBaseEngineSink::OnQuerySystemTime(DWORD dwContextID, VOID * pData, WORD wDataSize)
 {
@@ -7008,8 +7479,13 @@ int CDataBaseEngineSink::GetTouZhuZongShu(int nTypeID,int nKindID,CString strHao
 	case  CZXinJiangSSC:
 	case CZ_FENFEN_CAI:
 	case CZ_WUFEN_CAI:
+	case CZ_TXfenfencai:
+	case CZ_QQfenfencai:
+	case CZ_BJ5FC:
 	case CZ_TianJinSSC:
 	case CZ_HGYDWFC:
+	case CZ_JiaNaDaSSC:
+	case CZ_ErFenCai:
 		{
 			nZongZhu = GetSSCZhushu(nTypeID,nKindID,strHaoma);
 			CString strLog;
@@ -7074,41 +7550,19 @@ int CDataBaseEngineSink::GetTouZhuZongShu(int nTypeID,int nKindID,CString strHao
 	}
 	return nZongZhu;
 }
-#include <vector>
-int SplitString(const string &srcStr, vector<string> &destVec, const string splitStr="|")
+bool  checkChongfu(string str)
 {
-	if(srcStr.size()==0 || srcStr.empty())
-	{   
-		return false;
-	}   
-	size_t oldPos,newPos;
-	oldPos=0;
-	newPos=0;
-	string tempData;
-	while(1)
-	{   
-		newPos=srcStr.find(splitStr,oldPos);
-		if(newPos!=string::npos)
-		{   
-			tempData = srcStr.substr(oldPos,newPos-oldPos);
-			destVec.push_back(tempData);
-			oldPos=newPos+splitStr.size();
-		}   
-		else if(oldPos<=srcStr.size())
-		{   
-			tempData= srcStr.substr(oldPos);
-			destVec.push_back(tempData);
-			break;
-		}   
-		else
-		{   
-			break;
-		}   
-	}   
-	return true;
+	int nLength = str.length();
+	for(int i = 0;i < nLength-1;i++)
+	{
+		for(int j = i+1;j<nLength;j++)
+		{
+			if(str[i] == str[j])
+				return true;
+		}
+	}
+	return false;
 }
-#include <algorithm>
-#include <functional> 
 //获取投注数
 int CDataBaseEngineSink::GetSSCZhushu(int nTypeID,int nKindID,CString strHaoma)
 {
@@ -7117,6 +7571,7 @@ int CDataBaseEngineSink::GetSSCZhushu(int nTypeID,int nKindID,CString strHaoma)
 	CString strTempHaoma;
 	CString strLog;
 
+//	strHaoma.Format(L"0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8,9");
  	string strGetHaoma;
  
  	ChangeStringToA(strHaoma,strGetHaoma);
@@ -7138,7 +7593,22 @@ int CDataBaseEngineSink::GetSSCZhushu(int nTypeID,int nKindID,CString strHaoma)
 		vector<string> vectDanHaoma;
 		SplitString(haoma,vectDanHaoma,",");
 		size_t vectDanSize = vectDanHaoma.size();
+		bool bHas = false;
+for (int i = 0;i < vectDanSize;i++)
+{
+	string str = vectDanHaoma[i];
+	if(!str.empty())
+	{
+		bHas = true;
+		break;
+	}
 
+}
+
+if(!bHas)
+{
+	return 0;
+}
 		if(nKindID == WuxingZhixuan)  //五星
 		{
 			int nSingleZhushu = 1;
@@ -7268,7 +7738,7 @@ int CDataBaseEngineSink::GetSSCZhushu(int nTypeID,int nKindID,CString strHaoma)
 			nZongZhu +=nSingleZhu;
 
 		}
-		else if(nKindID == QianSanZuXuan_ZuSanFuShi || nKindID == HouSanZuXuan_ZuSanFuShi || nKindID == ZhongsanZusan)  //前三后三中三   组选三
+		else if(nKindID == QianSanZuXuan_ZuSanFuShi || nKindID == HouSanZuXuan_ZuSanFuShi || nKindID == ZhongsanZusan|| nKindID == QianSanZuXuan_ZuSanDanShi ||nKindID == HouSanZuXuan_ZuSanDanShi || nKindID == Zhongsanzusandan)  //前三后三中三   组选三
 		{
 			int nLength = haoma.size()/2+1;
 
@@ -7607,8 +8077,134 @@ int CDataBaseEngineSink::GetSSCZhushu(int nTypeID,int nKindID,CString strHaoma)
 			}
 			nZongZhu+=nSingleZhushu;
 		}
+		else if(nKindID == QSZuXuan24||nKindID == HSZuXuan24)
+		{
+			string::iterator new_end = std::remove_if(haoma.begin(), haoma.end(), bind2nd(equal_to <char>(), ',')); 
+
+			haoma.erase(new_end, haoma.end()); 
+			if(checkChongfu(haoma))
+				return 0;
+			int nSingleZhushu = 0;
+			int nCount = vectDanSize;
+			if(nCount<4||nCount>10)
+				return 0;
+			nSingleZhushu = (nCount-3)*(nCount-2)*(nCount-1)*nCount/24;
+
+			nZongZhu+=nSingleZhushu;
+
+		}
+		else if(nKindID == QSZuXuan12||nKindID == HSZuXuan12)
+		{
+			string::iterator new_end = std::remove_if(haoma.begin(), haoma.end(), bind2nd(equal_to <char>(), ',')); 
+
+			haoma.erase(new_end, haoma.end()); 
+
+			vector<string> vectZuDanHaoma;
+			SplitString(haoma,vectZuDanHaoma,";");
+			size_t vectZuDanSize = vectZuDanHaoma.size();
+			if (vectZuDanSize<=1)
+			{
+				return 0;
+			}
+
+			int nSingleZhushu = 0;
+			string strFrist = vectZuDanHaoma[0];
+			string strSecond = vectZuDanHaoma[1];
+			if(checkChongfu(strFrist)||checkChongfu(strSecond))
+				return 0;
+
+			int nChongfu = 0;
+			for(int j = 0;j < strFrist.size();j++)
+			{
+				for (int k = 0;k < strSecond.size();k++)
+				{
+					if(strFrist[j] == strSecond[k])
+					{
+						nChongfu++;
+						if ((strSecond.size() == nChongfu) || (strFrist.size() == nChongfu && strFrist.size()  != 1))
+							return 0;
+					}
+				}
+
+				int nFenzi = 1;
+				int nFenmu = 1;
+				for(int m = (strSecond.size() - nChongfu);m >0;m-- )
+				{
+					nFenzi *= m;
+				}
+				for(int m = (strSecond.size() - nChongfu-2);m > 0;m--)
+				{
+					nFenmu *= m;
+				}
+
+				nFenmu*=2;
+				nSingleZhushu += nFenzi/nFenmu;
+
+				nChongfu=0;
+
+			}
+			nZongZhu+=nSingleZhushu;
+		}
+		else if(nKindID == QSZuXuan6||nKindID == HSZuXuan6)
+		{
+			string::iterator new_end = std::remove_if(haoma.begin(), haoma.end(), bind2nd(equal_to <char>(), ',')); 
+
+			haoma.erase(new_end, haoma.end()); 
+			if(checkChongfu(haoma))
+				return 0;
+			int nSingleZhushu = 0;
+			int nCount = vectDanSize;
+			if(nCount<2||nCount>10)
+				return 0;
+			nSingleZhushu = (nCount-1)*nCount/2;
+
+			nZongZhu+=nSingleZhushu;
+
+		}
+		else if (nKindID == QSZuXuan4||nKindID == HSZuXuan4)
+		{
+			string::iterator new_end = std::remove_if(haoma.begin(), haoma.end(), bind2nd(equal_to <char>(), ',')); 
+
+			haoma.erase(new_end, haoma.end()); 
+
+			vector<string> vectZuDanHaoma;
+			SplitString(haoma,vectZuDanHaoma,";");
+			size_t vectZuDanSize = vectZuDanHaoma.size();
+			if (vectZuDanSize<=1)
+			{
+				return 0;
+			}
+
+			int nSingleZhushu = 0;
+			string strFrist = vectZuDanHaoma[0];
+			string strSecond = vectZuDanHaoma[1];
+			if(checkChongfu(strFrist)||checkChongfu(strSecond))
+				return 0;
+
+			int nChongfu = 0;
+			for(int j = 0;j < strFrist.size();j++)
+			{
+				for (int k = 0;k < strSecond.size();k++)
+				{
+					if(strFrist[j] == strSecond[k])
+					{
+						nChongfu++;
+					}
+				}
+
+				nSingleZhushu+= (strSecond.size()-nChongfu);
+				nChongfu = 0;
+
+			}
+			nZongZhu+=nSingleZhushu;
+		}
 		else if(nKindID == Zuxuan120)
 		{
+			string::iterator new_end = std::remove_if(haoma.begin(), haoma.end(), bind2nd(equal_to <char>(), ',')); 
+
+			haoma.erase(new_end, haoma.end()); 
+			if(checkChongfu(haoma))
+				return 0;
 			int nSingleZhushu = 0;
 			int nCount = vectDanSize;
 			nSingleZhushu = (nCount-4)*(nCount-3)*(nCount-2)*(nCount-1)*nCount/120;
@@ -7623,10 +8219,17 @@ int CDataBaseEngineSink::GetSSCZhushu(int nTypeID,int nKindID,CString strHaoma)
 			vector<string> vectZuDanHaoma;
 			SplitString(haoma,vectZuDanHaoma,";");
 			size_t vectZuDanSize = vectZuDanHaoma.size();
+			if (vectZuDanSize<=1)
+			{
+				return 0;
+			}
 
 			int nSingleZhushu = 0;
 			string strFrist = vectZuDanHaoma[0];
 			string strSecond = vectZuDanHaoma[1];
+			if(checkChongfu(strFrist)||checkChongfu(strSecond))
+				return 0;
+
 			int nChongfu = 0;
 			for(int j = 0;j < strFrist.size();j++)
 			{
@@ -7635,7 +8238,7 @@ int CDataBaseEngineSink::GetSSCZhushu(int nTypeID,int nKindID,CString strHaoma)
 					if(strFrist[j] == strSecond[k])
 					{
 						nChongfu++;
-						if(strSecond.size()-1<3)
+						if ((strSecond.size() == nChongfu) || (strFrist.size() == nChongfu && strFrist.size()  != 1))
 							return 0;
 					}
 				}
@@ -7668,10 +8271,17 @@ int CDataBaseEngineSink::GetSSCZhushu(int nTypeID,int nKindID,CString strHaoma)
 			vector<string> vectZuDanHaoma;
 			SplitString(haoma,vectZuDanHaoma,";");
 			size_t vectZuDanSize = vectZuDanHaoma.size();
+			if (vectZuDanSize<=1)
+			{
+				return 0;
+			}
 
 			int nSingleZhushu = 0;
 			string strFrist = vectZuDanHaoma[0];
 			string strSecond = vectZuDanHaoma[1];
+			if(checkChongfu(strFrist)||checkChongfu(strSecond))
+				return 0;
+
 			int nChongfu = 0;
 
 			for (int j = 0;j < strSecond.size();j++)
@@ -7705,8 +8315,6 @@ int CDataBaseEngineSink::GetSSCZhushu(int nTypeID,int nKindID,CString strHaoma)
 			}
 
 			nZongZhu+=nSingleZhushu;
-
-
 		}
 		else if(nKindID == Zuxuan20)
 		{
@@ -7717,10 +8325,17 @@ int CDataBaseEngineSink::GetSSCZhushu(int nTypeID,int nKindID,CString strHaoma)
 			vector<string> vectZuDanHaoma;
 			SplitString(haoma,vectZuDanHaoma,";");
 			size_t vectZuDanSize = vectZuDanHaoma.size();
+			if (vectZuDanSize<=1)
+			{
+				return 0;
+			}
 
 			int nSingleZhushu = 0;
 			string strFrist = vectZuDanHaoma[0];
 			string strSecond = vectZuDanHaoma[1];
+			if(checkChongfu(strFrist)||checkChongfu(strSecond))
+				return 0;
+
 			int nChongfu = 0;
 			for(int j = 0;j < strFrist.size();j++)
 			{
@@ -7755,10 +8370,17 @@ int CDataBaseEngineSink::GetSSCZhushu(int nTypeID,int nKindID,CString strHaoma)
 			vector<string> vectZuDanHaoma;
 			SplitString(haoma,vectZuDanHaoma,";");
 			size_t vectZuDanSize = vectZuDanHaoma.size();
+			if (vectZuDanSize<=1)
+			{
+				return 0;
+			}
 
 			int nSingleZhushu = 0;
 			string strFrist = vectZuDanHaoma[0];
 			string strSecond = vectZuDanHaoma[1];
+			if(checkChongfu(strFrist)||checkChongfu(strSecond))
+				return 0;
+
 			int nChongfu = 0;
 			for(int j = 0;j < strFrist.size();j++)
 			{
@@ -7803,6 +8425,11 @@ int CDataBaseEngineSink::Get11X5Zhushu(int nTypeID,int nKindID,CString strHaoma)
 			int nCount = strTempHaoma.GetLength()/3+1;
 			nZongZhu += (nCount-1)*nCount/2;
 
+		}
+		else if(nKindID == IIRenXuan1)
+		{
+			int nCount = strTempHaoma.GetLength()/3+1;
+			nZongZhu += nCount;
 		}
 		else if(nKindID == IIRenXuan3)
 		{
@@ -7937,11 +8564,95 @@ int CDataBaseEngineSink::Get11X5Zhushu(int nTypeID,int nKindID,CString strHaoma)
 			nSingleZhu = (nCount-2)*(nCount-1)*nCount/6;
 			nZongZhu+=nSingleZhu;
 		}
+		else if(nKindID == Ren2_Dantuo||nKindID == Ren3_Dantuo||nKindID == Ren4_Dantuo||nKindID == Ren5_Dantuo||nKindID == Ren6_Dantuo||nKindID == Ren7_Dantuo||nKindID == Ren8_Dantuo)
+		{
+			CString strDanHao;
+			int nWei = 0;
+			int nSingleZhushu = 0;
+			CString strCalHaoma[3];
+			strTempHaoma.Replace(_T(","),_T(""));
+			do 
+			{
+				if(!AfxExtractSubString(strDanHao,strTempHaoma,  nWei++, ';'))
+					break;
 
+				if(strDanHao.IsEmpty())
+					continue;
+
+				strCalHaoma[nWei-1] = strDanHao;
+			}
+			while(nWei<3);
+			CString strQian,strBai;
+			strQian = strCalHaoma[0];
+			strBai = strCalHaoma[1];
+
+			int nMax = 0;
+			if(nKindID == Ren2_Dantuo)
+				nMax = 2;
+			else if(nKindID == Ren3_Dantuo)
+				nMax = 3;
+			else if(nKindID == Ren4_Dantuo)
+				nMax = 4;
+			else if(nKindID == Ren5_Dantuo)
+				nMax = 5;
+			else if(nKindID == Ren6_Dantuo)
+				nMax = 6;
+			else if(nKindID == Ren7_Dantuo)
+				nMax = 7;
+			else if(nKindID == Ren8_Dantuo)
+				nMax = 8;
+
+			int nQianCount = strQian.GetLength()/2;
+			int nBaiCount = strBai.GetLength()/2;
+
+			if(nQianCount>(nMax-1)||nBaiCount<1||nQianCount<1)
+			{
+				return  0;
+
+			}
+			CString strQianDan,strBaiDan;
+			for (int i = 0;i < nQianCount;i++)
+			{
+				strQianDan = strQian.Mid(i,2);
+				for (int j = 0;j < nBaiCount;j++)
+				{
+					strBaiDan = strBai.Mid(j,2);
+
+					if(strQianDan == strBaiDan)
+					{
+						return  0;
+					}
+				}
+			}
+			nZongZhu = combo(nBaiCount,nMax-nQianCount);
+
+		}
 	}
 	while(nIndex<80000);
 	return nZongZhu;
 }
+int CDataBaseEngineSink::combo(int base, int up)
+{
+	//此方案容易溢出
+	//return factorial(base)/(factorial(up)*factorial(base-up));
+	int tempUp = factorial(up);
+	int tempInt = 1;
+	for(int i = 0;i < up;i ++)
+	{
+		tempInt *= base - i;
+	}
+	return tempInt / tempUp;
+}
+
+int CDataBaseEngineSink::factorial(int number)
+{
+	int total = 1;
+	for(int i = 1 ; i <= number; i++){
+		total *= i;
+	}
+	return total;
+}
+
 //3D、排列三
 //获取投注数
 int CDataBaseEngineSink::Get3DZhushu(int nTypeID,int nKindID,CString strHaoma)
@@ -8085,6 +8796,7 @@ int CDataBaseEngineSink::Get3DZhushu(int nTypeID,int nKindID,CString strHaoma)
 //获取幸运28注数
 int CDataBaseEngineSink::GetXY28Zhushu(int nTypeID,int nKindID,CString strHaoma)
 {
+	return 1;
 	int nZongZhu = 0;
 	int nIndex = 0;
 	CString strTempHaoma;
@@ -8923,21 +9635,23 @@ bool CDataBaseEngineSink::OnTouzhuCQSSCZhuihao(DWORD dwContextID, VOID * pData, 
 		DBR_GP_TouZhuCQSSC_Zhuihao* pTouzhuCQSSC = (DBR_GP_TouZhuCQSSC_Zhuihao*)pData;
 		static int nIndex = 0;
 		int nZhushu = 0;
+
 		if( pTouzhuCQSSC->nIndex == 0 || nTouZhuSign != pTouzhuCQSSC->nSign)
 		{
-			nIndex = 0;
-			nZhushu = 0;
 			nTouZhuSign = pTouzhuCQSSC->nSign;
 
-			memset(szHaomaTemp, 0, sizeof(szHaomaTemp));
-			memcpy(szHaomaTemp,	pTouzhuCQSSC->strHaoma,pTouzhuCQSSC->nHaoMaLen);
+			string str;
+
+			str.assign(pTouzhuCQSSC->strHaoma,sizeof(pTouzhuCQSSC->strHaoma)/sizeof(char));
+			mapTempHaoma[pTouzhuCQSSC->dwUserID] = str;  
 		}
 		else
 		{
-			int nPos = sizeof(pTouzhuCQSSC->strHaoma)* pTouzhuCQSSC->nIndex;
-			memcpy(szHaomaTemp+nPos,	pTouzhuCQSSC->strHaoma,pTouzhuCQSSC->nHaoMaLen);
-		}
+			string str;
 
+			str.assign(pTouzhuCQSSC->strHaoma,sizeof(pTouzhuCQSSC->strHaoma)/sizeof(char));
+			mapTempHaoma[pTouzhuCQSSC->dwUserID] += str;
+		}
 
 		nZhushu = pTouzhuCQSSC->nZhushu; 
  		nIndex++; 			
@@ -8945,19 +9659,21 @@ bool CDataBaseEngineSink::OnTouzhuCQSSCZhuihao(DWORD dwContextID, VOID * pData, 
  		{
  			return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_TOUZHU_CONTINUE_RET,dwContextID,NULL,NULL);;
  		}
-		//m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_TOUZHU_CONTINUE_RET,dwContextID,NULL,NULL);
-		memset(szHaoma, 0, sizeof(szHaoma));
+
+
+		char cMyHaoma[512000]={0};
 
 		int nLeng =(sizeof(pTouzhuCQSSC->strHaoma)* pTouzhuCQSSC->nIndex+pTouzhuCQSSC->nHaoMaLen);
+		int nRet =  CWHService::LZUnCompressData((byte*)mapTempHaoma[pTouzhuCQSSC->dwUserID].c_str(), nLeng, (byte*)cMyHaoma, sizeof(cMyHaoma));
 
-		int nRet =  CWHService::LZUnCompressData((byte*)szHaomaTemp, nLeng, (byte*)szHaoma, sizeof(szHaoma));
+		CString strAllHaoma = ChangeStringToT(cMyHaoma);
 
 		if(nZhushu <= 0)
 		{
 			return false;
 		}
 
-		CString strAllHaoma = ChangeStringToT(szHaoma);
+		//CString strAllHaoma = ChangeStringToT(szHaoma);
 		CString strQishu ;
 		strQishu = ChangeStringToT(pTouzhuCQSSC->strQishu[0]);
 
@@ -9038,7 +9754,7 @@ bool CDataBaseEngineSink::OnTouzhuCQSSCZhuihao(DWORD dwContextID, VOID * pData, 
 			}
 
 		LONG lResultCode=0;
-		for(int i = 0;i < 50;i++)
+		for(int i = 0;i < 100;i++)
 		{
 			strQishu = ChangeStringToT(pTouzhuCQSSC->strQishu[i]);
 
@@ -9188,9 +9904,6 @@ bool CDataBaseEngineSink::OnMBTouzhuCQSSCZhuihao(DWORD dwContextID, VOID * pData
 			BYTE * pClientAddr=(BYTE *)&pTouzhuCQSSC->dwClientAddr;
 			_sntprintf(szClientAddr,CountArray(szClientAddr),TEXT("%d.%d.%d.%d"),pClientAddr[0],pClientAddr[1],pClientAddr[2],pClientAddr[3]);
 
-			CString strLogFile;
-			strLogFile.Format(L"WRONGTOUZHU [%d] TypeID:%d,KindID:%d,haoma:[%s],zhushu:%d,checkzhushu:%d,ip:%s",pTouzhuCQSSC->dwUserID,pTouzhuCQSSC->nGameType,pTouzhuCQSSC->nGameKind,strAllHaoma,nZhushu,nCheckZongzhu,szClientAddr);
-			LogFile::instance().LogText(strLogFile);
 			DBO_GR_TouzhuResult  TouzhuRes;
 			ZeroMemory(&TouzhuRes,sizeof(TouzhuRes));
 			TouzhuRes.lResultCode = 11;
@@ -9225,7 +9938,7 @@ bool CDataBaseEngineSink::OnMBTouzhuCQSSCZhuihao(DWORD dwContextID, VOID * pData
 
 
 		}
-		for(int i = 0;i < 50;i++)
+		for(int i = 0;i < 100;i++)
 		{
 			if(pTouzhuCQSSC->nBeitou[i]>999)
 			{
@@ -9247,7 +9960,7 @@ bool CDataBaseEngineSink::OnMBTouzhuCQSSCZhuihao(DWORD dwContextID, VOID * pData
 		{
 			return false;
 		}
-		for(int i = 0;i < 50;i++)
+		for(int i = 0;i < 100;i++)
 		{
 			strQishu = ChangeStringToT(pTouzhuCQSSC->strQishu[i]);
 
@@ -9357,6 +10070,7 @@ bool CDataBaseEngineSink::CheckTouzhuNum(CString strHaoma,int nLength,int nUserI
 	}
 	return true;
 }
+
 //投注
 bool CDataBaseEngineSink::OnTouzhuCQSSCDan(DWORD dwContextID, VOID * pData, WORD wDataSize)
 {
@@ -9368,24 +10082,23 @@ bool CDataBaseEngineSink::OnTouzhuCQSSCDan(DWORD dwContextID, VOID * pData, WORD
 		{
 			return false;
 		}
-		CString strLog;
-		strLog.Format(L"CQSSCTZH touzhu3");
-		OutputDebugString(strLog);
-
 		DBR_GP_TouZhuCQSSC_Dan* pTouzhuCQSSC = (DBR_GP_TouZhuCQSSC_Dan*)pData;
 
 		if( pTouzhuCQSSC->nIndex == 0 || nTouZhuSign != pTouzhuCQSSC->nSign)
 		{
-		//	nZhushu = 0;
 			nTouZhuSign = pTouzhuCQSSC->nSign;
 
-			memset(szHaomaTemp, 0, sizeof(szHaomaTemp));
-			memcpy(szHaomaTemp,	pTouzhuCQSSC->strHaoma,pTouzhuCQSSC->nHaoMaLen);
+			string str;
+
+			str.assign(pTouzhuCQSSC->strHaoma,sizeof(pTouzhuCQSSC->strHaoma)/sizeof(char));
+			mapTempHaoma[pTouzhuCQSSC->dwUserID] = str;  
 		}
 		else
 		{
-			int nPos = sizeof(pTouzhuCQSSC->strHaoma)* pTouzhuCQSSC->nIndex;
-			memcpy(szHaomaTemp+nPos,	pTouzhuCQSSC->strHaoma,pTouzhuCQSSC->nHaoMaLen);
+			string str;
+
+			str.assign(pTouzhuCQSSC->strHaoma,sizeof(pTouzhuCQSSC->strHaoma)/sizeof(char));
+			mapTempHaoma[pTouzhuCQSSC->dwUserID] += str;
 		}
  		if(pTouzhuCQSSC->nEnd == 1)
  		{
@@ -9393,16 +10106,12 @@ bool CDataBaseEngineSink::OnTouzhuCQSSCDan(DWORD dwContextID, VOID * pData, WORD
  		}
 		int nZhushu = 0;
 		nZhushu = pTouzhuCQSSC->nZhushu; 
-		memset(szHaoma, 0, sizeof(szHaoma));
+		char cMyHaoma[512000]={0};
 
 		int nLeng =(sizeof(pTouzhuCQSSC->strHaoma)* pTouzhuCQSSC->nIndex+pTouzhuCQSSC->nHaoMaLen);
-
+		int nRet =  CWHService::LZUnCompressData((byte*)mapTempHaoma[pTouzhuCQSSC->dwUserID].c_str(), nLeng, (byte*)cMyHaoma, sizeof(cMyHaoma));
 	
-		int nCeshiSize = sizeof(szHaoma);
-		int nRet =  CWHService::LZUnCompressData((byte*)szHaomaTemp, nLeng, (byte*)szHaoma, sizeof(szHaoma));
-	
-		CString strAllHaoma = ChangeStringToT(szHaoma);
-		nCeshiSize = strAllHaoma.GetLength();
+		CString strAllHaoma = ChangeStringToT(cMyHaoma);
 // 		if(nLeng <= 1024)
 // 		{
 // 			//正式语句
@@ -9427,10 +10136,9 @@ bool CDataBaseEngineSink::OnTouzhuCQSSCDan(DWORD dwContextID, VOID * pData, WORD
 // 				}
 // 			}
 // 
-// 			strLog.Format(L"CQSSCTZH touzhu5");
-// 			OutputDebugString(strLog);
+			CString strLog;
  			int nCheckZongzhu = GetTouZhuZongShu(pTouzhuCQSSC->nGameType,pTouzhuCQSSC->nGameKind,strAllHaoma);
-			strLog.Format(L"TOUZHU [%d] TypeID:%d,KindID:%d,zhushu:%d,checkzhushu:%d,haoma:[%s]",pTouzhuCQSSC->dwUserID,pTouzhuCQSSC->nGameType,pTouzhuCQSSC->nGameKind,nZhushu,nCheckZongzhu,strAllHaoma);
+			strLog.Format(L"TOUZHU [%d] Qihao:%s,TypeID:%d,KindID:%d,zhushu:%d,checkzhushu:%d,haoma:[%s]",pTouzhuCQSSC->dwUserID,ChangeStringToT(pTouzhuCQSSC->strQishu),pTouzhuCQSSC->nGameType,pTouzhuCQSSC->nGameKind,nZhushu,nCheckZongzhu,strAllHaoma);
 			CTraceService::TraceString(strLog,TraceLevel_Normal);
 			if ((pTouzhuCQSSC->nGameType == CZ_PK10&&pTouzhuCQSSC->nGameKind == WF_GYHZH )||((pTouzhuCQSSC->nGameType == CZ3D||pTouzhuCQSSC->nGameType == CZPaiLie3)&&pTouzhuCQSSC->nGameKind == enWF_ZhixuanHezhi))
 			{
@@ -9443,10 +10151,6 @@ bool CDataBaseEngineSink::OnTouzhuCQSSCDan(DWORD dwContextID, VOID * pData, WORD
 				TCHAR szClientAddr[16]=TEXT("");
 				BYTE * pClientAddr=(BYTE *)&pTouzhuCQSSC->dwClientAddr;
 				_sntprintf(szClientAddr,CountArray(szClientAddr),TEXT("%d.%d.%d.%d"),pClientAddr[0],pClientAddr[1],pClientAddr[2],pClientAddr[3]);
-
-				CString strLogFile;
-				strLogFile.Format(L"WRONGTOUZHU [%d] TypeID:%d,KindID:%d,haoma:[%s],zhushu:%d,checkzhushu:%d,ip:%s",pTouzhuCQSSC->dwUserID,pTouzhuCQSSC->nGameType,pTouzhuCQSSC->nGameKind,strAllHaoma,nZhushu,nCheckZongzhu,szClientAddr);
-				LogFile::instance().LogText(strLogFile);
 
 				DBO_GR_TouzhuResult  TouzhuRes;
 				ZeroMemory(&TouzhuRes,sizeof(TouzhuRes));
@@ -9485,8 +10189,7 @@ bool CDataBaseEngineSink::OnTouzhuCQSSCDan(DWORD dwContextID, VOID * pData, WORD
 
 		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_touzhu"),false);
 
-		strLog.Format(L"CQSSCTZH touzhu5");
-		OutputDebugString(strLog);
+		mapTempHaoma.erase(pTouzhuCQSSC->dwUserID);
 
 		if(lResultCode != 0)
 		{
@@ -9502,7 +10205,7 @@ bool CDataBaseEngineSink::OnTouzhuCQSSCDan(DWORD dwContextID, VOID * pData, WORD
 		TouzhuRes.nUserID = pTouzhuCQSSC->dwUserID;
 
 
-		ZeroMemory(&szHaoma,sizeof(szHaoma));
+	//	ZeroMemory(&szHaoma,sizeof(szHaoma));
 		nZhushu = 0;
 		//发送结果
 		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_TOUZHU_CQSSC_RET,dwContextID,&TouzhuRes,sizeof(TouzhuRes));
@@ -9545,6 +10248,7 @@ bool CDataBaseEngineSink::OnQueryGameResult(DWORD dwContextID, VOID * pData, WOR
 			DBO_GP_QueryLotResult QueryLotResult[70];
 			ZeroMemory(&QueryLotResult,sizeof(QueryLotResult));
 			LONG lResult = 0;
+			int nIndex = 0;
 			while ((m_GameSSCDBModule->IsRecordsetEnd() == FALSE))
 			{
 				if(lResult>=70)
@@ -9558,8 +10262,6 @@ bool CDataBaseEngineSink::OnQueryGameResult(DWORD dwContextID, VOID * pData, WOR
 				m_GameSSCDBAide.GetValue_String(TEXT("opencode"),QueryLotResult[lResult].szLotNum,CountArray(QueryLotResult[lResult].szLotNum));
 				m_GameSSCDBAide.GetValue_String(TEXT("opentime"),QueryLotResult[lResult].szShijian,CountArray(QueryLotResult[lResult].szShijian));
 
-
-
 				lResult++;
 				m_GameSSCDBModule->MoveToNext();
 			}	
@@ -9570,6 +10272,59 @@ bool CDataBaseEngineSink::OnQueryGameResult(DWORD dwContextID, VOID * pData, WOR
 
 		return true;
 	
+
+	}
+	catch (IDataBaseException * pIException)
+	{
+		//输出错误
+		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
+		CString strLogFile;
+		strLogFile.Format(L"Exception p_get_lucky_num");
+		CTraceService::TraceString(strLogFile,TraceLevel_Exception);
+		ReconnectSql();
+
+		return false;
+	}
+	return true;
+}
+//查询游戏开奖结果
+bool CDataBaseEngineSink::OnQueryMobileGameResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	try
+	{
+		//效验参数
+		ASSERT(wDataSize==sizeof(DBR_GP_QueryGameResult));
+		if (wDataSize!=sizeof(DBR_GP_QueryGameResult)) return false;
+
+		DBR_GP_QueryGameResult* pQueryGameResult = (DBR_GP_QueryGameResult*)pData;
+
+		int nTypeid = pQueryGameResult->wKindID;
+		m_GameSSCDBAide.ResetParameter();
+		m_GameSSCDBAide.AddParameter(TEXT("@nKindID"),nTypeid);
+
+		//执行查询
+		LONG lResultCode=m_GameSSCDBAide.ExecuteProcess(TEXT("p_get_lucky_num_mobile"),true);
+
+		//结果处理
+		if(lResultCode == DB_SUCCESS)
+		{
+			DBO_GP_QueryLotResult QueryLotResult;
+			ZeroMemory(&QueryLotResult,sizeof(QueryLotResult));
+			if ((m_GameSSCDBModule->IsRecordsetEnd() == FALSE))
+			{
+				QueryLotResult.wKindID = m_GameSSCDBAide.GetValue_INT(TEXT("typeid"));
+				m_GameSSCDBAide.GetValue_String(TEXT("expect"),QueryLotResult.wPeriod,CountArray(QueryLotResult.wPeriod));
+				m_GameSSCDBAide.GetValue_String(TEXT("opencode"),QueryLotResult.szLotNum,CountArray(QueryLotResult.szLotNum));
+				m_GameSSCDBAide.GetValue_String(TEXT("opentime"),QueryLotResult.szShijian,CountArray(QueryLotResult.szShijian));
+			}	
+			m_GameSSCDBModule->CloseRecordset();
+
+			//发送结果
+			m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_QUERY_MOBILE_RESULT,dwContextID,&QueryLotResult,sizeof(QueryLotResult));
+		}
+
+		return true;
+
 
 	}
 	catch (IDataBaseException * pIException)
@@ -10553,18 +11308,16 @@ VOID CDataBaseEngineSink::OnLogonDisposeResult(DWORD dwContextID, DWORD dwErrorC
 			//变量定义
 			DBO_GP_LogonSuccess LogonSuccess;
 			ZeroMemory(&LogonSuccess,sizeof(LogonSuccess));
-
-			CString strLog;
-			strLog.Format(L"获取属性资料");
-			LogFile::instance().LogText(strLog);
-
+	
 			//属性资料
 			LogonSuccess.wFaceID=m_AccountsDBAide.GetValue_WORD(TEXT("FaceID"));
 			LogonSuccess.dwUserID=m_AccountsDBAide.GetValue_DWORD(TEXT("UserID"));
 			LogonSuccess.dwExperience=m_AccountsDBAide.GetValue_DWORD(TEXT("Experience"));
 			m_AccountsDBAide.GetValue_String(TEXT("Accounts"),LogonSuccess.szAccounts,CountArray(LogonSuccess.szAccounts));
-			m_AccountsDBAide.GetValue_String(TEXT("NickName"),LogonSuccess.szNickName,CountArray(LogonSuccess.szNickName));
-			m_AccountsDBAide.GetValue_String(TEXT("IpAddrDescribe"),LogonSuccess.szAddrDescribe,CountArray(LogonSuccess.szAddrDescribe));
+			//m_AccountsDBAide.GetValue_String(TEXT("NickName"),LogonSuccess.szNickName,CountArray(LogonSuccess.szNickName));
+			LogonSuccess.cIsYanZheng = m_AccountsDBAide.GetValue_BYTE(L"VeriftyOPenState");
+		//	m_AccountsDBAide.GetValue_String(TEXT("NickName"),LogonSuccess.szNickName,CountArray(LogonSuccess.szNickName));
+			m_AccountsDBAide.GetValue_String(TEXT("phoneNum"),LogonSuccess.szPhoneNum,CountArray(LogonSuccess.szPhoneNum));
 
 			//用户积分
 			LogonSuccess.lScore=m_AccountsDBAide.GetValue_DOUBLE(TEXT("Score"));
@@ -10583,14 +11336,13 @@ VOID CDataBaseEngineSink::OnLogonDisposeResult(DWORD dwContextID, DWORD dwErrorC
 			LogonSuccess.f_fandian = m_AccountsDBAide.GetValue_DOUBLE(TEXT("t_fandian"));
 			LogonSuccess.f_yue = m_AccountsDBAide.GetValue_DOUBLE(TEXT("t_yue"));
 			LogonSuccess.f_dongjie = m_AccountsDBAide.GetValue_DOUBLE(TEXT("t_dongjie"));
+			LogonSuccess.wServerID = m_AccountsDBAide.GetValue_INT(TEXT("ServerID"));
 			//获取信息
 			lstrcpyn(LogonSuccess.szDescribeString,pszErrorString,CountArray(LogonSuccess.szDescribeString));
 
 			//发送结果
 			WORD wDataSize=CountStringBuffer(LogonSuccess.szDescribeString);
 			WORD wHeadSize=sizeof(LogonSuccess)-sizeof(LogonSuccess.szDescribeString);
-			strLog.Format(L"获取完成，开始发送");
-			LogFile::instance().LogText(strLog);
 
 			m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_LOGON_SUCCESS,dwContextID,&LogonSuccess,wHeadSize+wDataSize);
 		}

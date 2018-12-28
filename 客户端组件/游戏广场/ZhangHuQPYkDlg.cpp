@@ -471,7 +471,7 @@ VOID CZhangHuQPYkDlg::SendToServer(int nSendType)
 			CMD_GP_GetQiPaiYingkuiCount GetQiPaiYingkuiCount;
 			ZeroMemory(&GetQiPaiYingkuiCount,sizeof(GetQiPaiYingkuiCount));
 
-			GetQiPaiYingkuiCount.dwUserID = theAccount.user_id;
+			//GetQiPaiYingkuiCount.dwUserID = theAccount.user_id;
 			GetQiPaiYingkuiCount.nTypeID = (m_byTime)?2:1;
 			GetQiPaiYingkuiCount.nByTime = (m_byTime)?1:0;
 // 			if(m_tStart == m_tEnd)
@@ -501,7 +501,7 @@ VOID CZhangHuQPYkDlg::SendToServer(int nSendType)
 			CMD_GP_GetQiPaiYingkui QiPaiYingkui;
 			ZeroMemory(&QiPaiYingkui,sizeof(QiPaiYingkui));
 
-			QiPaiYingkui.dwUserID = theAccount.user_id;
+			//QiPaiYingkui.dwUserID = theAccount.user_id;
 			QiPaiYingkui.bByTime = m_byTime?1:0;
 			QiPaiYingkui.nPage = m_page;
 			QiPaiYingkui.nSize = page_size;

@@ -27,6 +27,12 @@ typedef enum {
 	CZXingYun28,
 	CZ_HGYDWFC=20,
 	CZ_TianJinSSC = 23,	//天津时时彩
+	CZ_BJ5FC=24,
+	CZ_JiaNaDaSSC = 25,	//天津时时彩
+	CZ_ErFenCai,					//吉利二分彩
+	CZ_CaiZhangdie,			//猜涨跌
+	CZ_TXfenfencai,			//腾讯分分彩
+	CZ_QQfenfencai,			//QQ分分彩
 	CZCount
 
 }CaiZhong;
@@ -41,7 +47,8 @@ typedef enum {
 #define IDI_GET_SQL_TIME		    5                                   //获取数据库时间
 #define IDI_GET_NEWS			    6                                   //获取新闻公告
 #define IDI_GET_ZHONGJIANG		    7                                   //获取中奖USERID
-
+#define IDI_GET_CANADA_QIHAO	8									//获取加拿大期号
+#define IDI_GET_ZNX_COUNT			9									//获取站内信数量
 //////////////////////////////////////////////////////////////////////////////////
 
 
@@ -53,6 +60,7 @@ map<int, tagUserBonusInfo*> mapUserBonusInfo;
 
 map<int ,tagLuckNum*>			m_AllLuckNum;
 map<int ,DWORD>	m_UserSocketID;
+map<int ,DWORD>	m_UserSocketIDhc;		//登录的socketid缓存
 map<CString ,DWORD> m_UserLogonTickCount;
 map<CString ,WORD> m_UserLogonBlackList;
 
@@ -66,6 +74,13 @@ struct tagMapBonus
 };
 
 map<int ,tagMapBonus* > mapMapBonus;
+map<int ,tagMapNotice*> mapNotice;
+
+struct tagMapLottery
+{
+	DBR_GP_QueryStatusLotteryRet MapLottery;
+};
+map<int,tagMapLottery*> mapLotteryStatus;
 //构造函数
 CAttemperEngineSink::CAttemperEngineSink()
 {
@@ -75,14 +90,14 @@ CAttemperEngineSink::CAttemperEngineSink()
 	//状态变量
 	m_pInitParameter=NULL;
 	m_pBindParameter=NULL;
-
+	m_dwCanadaQihaoTick = 0;
 	//组件变量
 	m_pITimerEngine=NULL;
 	m_pIDataBaseEngine=NULL;
 	m_pITCPNetworkEngine=NULL;
 	m_pITCPSocketService=NULL;
 	ZeroMemory(&m_MyLuckNum,sizeof(m_MyLuckNum));
-
+	ZeroMemory(&m_MyNotice,sizeof(m_MyNotice));
 
 	for(int i = 0;i < 13;i++)
 		m_dwLuckyNumTickCount[i] = GetTickCount();
@@ -110,6 +125,7 @@ bool CAttemperEngineSink::OnAttemperEngineStart(IUnknownEx * pIUnknownEx)
 	ZeroMemory(m_pBindParameter,sizeof(tagBindParameter)*m_pInitParameter->m_wMaxConnect);
 
 	mapMapBonus.clear();
+	m_dwTickZnx.clear();
 	//设置时间
 	ASSERT(m_pITimerEngine!=NULL);
 	//统计大厅在线人数，没有用到，暂时去掉
@@ -133,6 +149,7 @@ bool CAttemperEngineSink::OnAttemperEngineStart(IUnknownEx * pIUnknownEx)
 	m_pITimerEngine->SetTimer(IDI_GET_SQL_TIME,300*1000L,TIMES_INFINITY,0);
 	m_pITimerEngine->SetTimer(IDI_GET_ZHONGJIANG,30*1000L,TIMES_INFINITY,0);
 	m_pITimerEngine->SetTimer(IDI_GET_NEWS,30*1000L,TIMES_INFINITY,0);
+	m_pITimerEngine->SetTimer(IDI_GET_ZNX_COUNT,10*1000L,TIMES_INFINITY,0);
 
 	for( map<CString ,DWORD>::iterator pos = m_UserLogonTickCount.begin(); pos!=m_UserLogonTickCount.end(); ++pos)
 	{
@@ -209,6 +226,13 @@ bool CAttemperEngineSink::OnGetSqlserverTimer()
 	return true;
 
 }
+//获取加拿大期号
+bool CAttemperEngineSink::OnGetCanadaQihao()
+{
+	m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_GET_CANADA_QIHAO,0,NULL,NULL);
+	return true;
+
+}
 //获取系统时间
 bool CAttemperEngineSink::OnGetNews()
 {
@@ -236,6 +260,11 @@ bool CAttemperEngineSink::OnEventTimer(DWORD dwTimerID, WPARAM wBindParam)
 {
 	switch (dwTimerID)
 	{
+// 	case IDI_GET_CANADA_QIHAO:
+// 		{
+// 			OnGetCanadaQihao();
+// 			return TRUE;
+// 		}
 	case IDI_GET_SQL_TIME:
 		{
 			OnGetSqlserverTimer();
@@ -250,6 +279,11 @@ bool CAttemperEngineSink::OnEventTimer(DWORD dwTimerID, WPARAM wBindParam)
 		//	return true;
 			return OnGetNews();
 
+		}
+	case IDI_GET_ZNX_COUNT:
+		{
+			m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_GET_ZNX_ALLCOUNT,0,NULL,0);
+			return true;
 		}
 	case IDI_LOAD_GAME_LIST:		//加载列表
 		{
@@ -363,11 +397,8 @@ bool CAttemperEngineSink::OnEventTCPNetworkShut(DWORD dwClientAddr, DWORD dwActi
 
 			LogCount.dwUserID = nUserID;
 
-			CString strLog;
-			strLog.Format(L"[%d]=[%d]",nUserID,dwSocketID);
-			CTraceService::TraceString(strLog,TraceLevel_Normal);
-
 			m_UserSocketID[nUserID]=0;
+			m_UserSocketIDhc[nUserID]=0;
 			 m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_QUIT_GAME,0,&LogCount,sizeof(LogCount));
 
 			return true;
@@ -438,9 +469,17 @@ bool CAttemperEngineSink::OnEventDataBase(WORD wRequestID, DWORD dwContextID, VO
 		{
 			return OnSetUserBonusRet(dwContextID,pData,wDataSize);
 		}
+	case DBO_GP_QUERY_STATUS_LOTTERY_RET:
+		{
+			return OnQueryStatusLotteryRet(dwContextID,pData,wDataSize);
+		}
 	case DBO_GP_GET_SYS_TIME_RET:
 		{
 			return OnGetSysTimeRet(dwContextID,pData,wDataSize);
+		}
+	case DBO_GP_GET_CANADA_QIHAO_RET:
+		{
+			return OnGetCanadaQiHaoRet(dwContextID,pData,wDataSize);
 		}
 	case DBO_GP_GET_WIN_USER_RET:
 		{
@@ -514,6 +553,10 @@ bool CAttemperEngineSink::OnEventDataBase(WORD wRequestID, DWORD dwContextID, VO
 		{
 			return OnDBQueryOpenResult(dwContextID,pData,wDataSize);
 		}
+	case DBO_GP_QUERY_MOBILE_RESULT:			//查询开奖结果返回
+		{
+			return OnDBQueryMobileOpenResult(dwContextID,pData,wDataSize);
+		}
 	case DBO_GP_QUERY_YINHANG_RET:			//查询开奖结果返回
 		{
 			return OnDBQueryYinHangResult(dwContextID,pData,wDataSize);
@@ -533,6 +576,14 @@ bool CAttemperEngineSink::OnEventDataBase(WORD wRequestID, DWORD dwContextID, VO
 	case DBO_GP_GET_REG_URL_RET:
 		{
 			return OnDBQueryRegUrlResult(dwContextID,pData,wDataSize);
+		}
+	case DBO_GP_GETTANSFERVERIFY_RET:
+		{
+			return OnDBGetTransVerifyResult(dwContextID,pData,wDataSize);
+		}
+	case DBO_GR_GET_PARENT_RET:
+		{
+			return OnDBGetParentResult(dwContextID,pData,wDataSize);
 		}
 	case DBO_GR_GET_Peie_RET:
 		{
@@ -621,9 +672,37 @@ bool CAttemperEngineSink::OnEventDataBase(WORD wRequestID, DWORD dwContextID, VO
 		{
 			return OnDBGetDailiHuikuiResult(dwContextID,pData,wDataSize);
 		}
+	case DBR_GP_GET_QIHAOCHA_RET:
+		{
+			return OnDBGetQihaochaResult(dwContextID,pData,wDataSize);
+		}
 	case DBO_GP_DAILI_LJ_RET:
 		{
 			return OnDBDailiLingjiangResult(dwContextID,pData,wDataSize);
+		}
+	case DBO_GP_GET_ZNX_COUNT_RET:
+		{
+			return OnDBGetZnxCountResult(dwContextID,pData,wDataSize);
+		}
+	case DBO_GP_SEND_MESSAGE_RET:
+		{
+			return OnDBSendMessageResult(dwContextID,pData,wDataSize);
+		}
+	case DBO_GP_DEL_MESSAGE_RET:
+		{
+			return OnDBDelMessageResult(dwContextID,pData,wDataSize);
+		}
+	case DBO_GP_GET_ZNX_ALLCOUNT_RET:
+		{
+			return OnDBGetZnxAllCountResult(dwContextID,pData,wDataSize);
+		}
+	case DBO_GP_GET_NOTICE_RET:
+		{
+			return OnDBGetNoticeRet(dwContextID,pData,wDataSize);
+		}
+	case DBO_GP_GET_ALL_USER_INFO_RET:
+		{
+			return OnDBGetAllUserInfoRet(dwContextID,pData,wDataSize);
 		}
 	case DBO_GP_QUIT_GAME_RET:
 		{
@@ -645,9 +724,18 @@ bool CAttemperEngineSink::OnEventDataBase(WORD wRequestID, DWORD dwContextID, VO
 		{
 			return OnDBDoQukuanResult(dwContextID,pData,wDataSize);
 		}
+	case DBO_GP_GET_QUKUAN_LIMIT_RET:
+		{
+			return OnDBDoQukuanLimitResult(dwContextID,pData,wDataSize);
+
+		}
 	case DBO_GP_TOUZHU_LOG_RET:
 		{
 			return OnDBGetTouzhuLogResult(dwContextID,pData,wDataSize);
+		}
+	case DBO_GP_GET_ZNX_INBOX_RET:
+		{
+			return OnDBGetZnxInboxResult(dwContextID,pData,wDataSize);
 		}
 	case DBO_GP_GET_NEWS_RET:
 		{
@@ -668,6 +756,10 @@ bool CAttemperEngineSink::OnEventDataBase(WORD wRequestID, DWORD dwContextID, VO
 	case DBR_GP_GET_XJYK_LOG_RET:
 		{
 			return OnDBGetXJYKLogResult(dwContextID,pData,wDataSize);
+		}
+	case DBO_GP_GET_QIPAIKIND_RET:
+		{
+			return OnDBGetQipaiKindResult(dwContextID,pData,wDataSize);
 		}
 	case DBR_GP_GET_XJYK_TJ_RET:
 		{
@@ -769,9 +861,29 @@ bool CAttemperEngineSink::OnEventDataBase(WORD wRequestID, DWORD dwContextID, VO
 		{
 			return OnDBLockMachineResult(dwContextID,pData,wDataSize);
 		}
+	case DBO_GP_BIND_PHONE_RESULT:
+		{
+			return OnDBBindPhoneResult(dwContextID,pData,wDataSize);
+		}
+	case DBO_GP_SET_PHONE_VERIFY_RESULT:
+		{
+			return OnDBSetPhoneInfoResult(dwContextID,pData,wDataSize);
+		}
+	case DBO_GP_UNBIND_PHONE_RESULT:
+		{
+			return OnDBSetUnBindPhoneResult(dwContextID,pData,wDataSize);
+		}
 	case DBO_GP_XG_QUKUAN_PASS_RET:
 		{
 			return OnDBXGQukuanPassResult(dwContextID,pData,wDataSize);
+		}
+	case DBO_GP_SEND_CHECK_YZM_RET:
+		{
+			return OnDBCheckYzmResult(dwContextID,pData,wDataSize);
+		}
+	case DBO_GP_SEND_CHECK_YZM_TRANS_RET:
+		{
+			return OnDBCheckYzmTransResult(dwContextID,pData,wDataSize);
 		}
 	case DBO_GP_SET_QUKUAN_PROTECT_RET:
 		{
@@ -952,7 +1064,8 @@ bool CAttemperEngineSink::OnTCPSocketMainRegister(WORD wSubCmdID, VOID * pData, 
 				_sntprintf(MyKillSocket.szMessage,CountArray(MyKillSocket.szMessage),TEXT("您的账号已在别处登录，您被强制下线！"));
 				m_pITCPNetworkEngine->SendData(m_UserSocketID[dwUserID],MDM_GP_USER_SERVICE,SUB_GP_KILL_SOCKET,&MyKillSocket,sizeof(MyKillSocket));
 				m_pITCPNetworkEngine->ShutDownSocket(m_UserSocketID[dwUserID]);
-
+				m_UserSocketID[dwUserID]=0;
+				m_UserSocketIDhc[dwUserID]=0;
 			}
 
 			return true;
@@ -1186,7 +1299,7 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCServerList(WORD wSubCmdID, VOID * pD
 			//发送列表
 			SendGameTypeInfo(dwSocketID);
 			SendGameKindInfo(dwSocketID);
-			SendGameServerInfo(dwSocketID);
+			SendGameServerInfo(dwSocketID,0);
 
 			//发送完成
 			m_pITCPNetworkEngine->SendData(dwSocketID,MDM_GP_SERVER_LIST,SUB_GP_LIST_FINISH);
@@ -1311,6 +1424,46 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 			//投递请求
 			m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_MODIFY_MACHINE,dwSocketID,&ModifyMachine,sizeof(ModifyMachine));
 
+			return true;
+		}
+	case SUB_GP_SEND_YANZHENGMA:
+		{
+			//效验参数
+			ASSERT(wDataSize==sizeof(CMD_SendYanZhengma));
+			if (wDataSize!=sizeof(CMD_SendYanZhengma)) return false;
+
+			m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_SEND_YANGZHENGMA,dwSocketID,pData,wDataSize);
+			return true;
+		}
+	case SUB_GP_SEND_YANZHENGMA_TRANS:
+		{
+			//效验参数
+			ASSERT(wDataSize==sizeof(CMD_SendYanZhengma));
+			if (wDataSize!=sizeof(CMD_SendYanZhengma)) return false;
+
+			m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_SEND_YANGZHENGMA_TRANS,dwSocketID,pData,wDataSize);
+			return true;
+		}
+	case SUB_GP_SEND_CHECKYANZHENGMA:
+		{
+			//效验参数
+			ASSERT(wDataSize==sizeof(CMD_SendYanZhengma));
+			if (wDataSize!=sizeof(CMD_SendYanZhengma)) return false;
+
+//			CMD_SendYanZhengma* pSendYan = (CMD_SendYanZhengma*)pData;
+
+			m_pIDataBaseEngine->PostDataBaseRequest(DBO_GP_SEND_CHECK_YZM,dwSocketID,pData,wDataSize);
+			return true;
+		}
+	case SUB_GP_SEND_CHECKYANZHENGMA_TRANS:
+		{
+			//效验参数
+			ASSERT(wDataSize==sizeof(CMD_SendYanZhengma));
+			if (wDataSize!=sizeof(CMD_SendYanZhengma)) return false;
+
+//			CMD_SendYanZhengma* pSendYan = (CMD_SendYanZhengma*)pData;
+
+			m_pIDataBaseEngine->PostDataBaseRequest(DBO_GP_SEND_CHECK_YZM_TRANS,dwSocketID,pData,wDataSize);
 			return true;
 		}
 	case SUB_GP_MODIFY_LOGON_PASS:	//修改密码
@@ -1692,7 +1845,7 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 				int nSize = m_AllLuckNum.size();
 				for( map<int ,tagLuckNum*>::iterator pos = m_AllLuckNum.begin(); pos!=m_AllLuckNum.end(); ++pos)
 				{
-					for(int kk=0; kk<5; kk++)
+					for(int kk=0; kk<50; kk++)
 					{
 						if(nIndex>=70)
 						{	
@@ -1704,10 +1857,58 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 						lstrcpyn(QuseryLotResult[nIndex].wPeriod, pos->second->LuckNum[kk].qihao,CountArray(QuseryLotResult[nIndex].wPeriod));
 						lstrcpyn(QuseryLotResult[nIndex].szLotNum,pos->second->LuckNum[kk].haoma,CountArray(QuseryLotResult[nIndex].szLotNum));
 						lstrcpyn(QuseryLotResult[nIndex].szShijian,pos->second->LuckNum[kk].shijian,CountArray(QuseryLotResult[nIndex].szShijian));
+						if(kk>=5&&QuseryLotResult[nIndex].wKindID!=CZXingYun28)
+						{
+							break;
+						}
 						nIndex++;
 					}
 				}				
 				m_pITCPNetworkEngine->SendData(dwSocketID,MDM_GP_USER_SERVICE,SUB_GP_QUERY_GAME_RET,&QuseryLotResult,sizeof(DBO_GP_QueryLotResult)* (nIndex-1));
+
+			}
+			return true;
+		}
+	case SUB_GP_QUERY_GAME_MOBILE_RESULT:
+		{
+			//效验参数
+
+			ASSERT(wDataSize==sizeof(CMD_GP_QueryGameResult));
+			if (wDataSize!=sizeof(CMD_GP_QueryGameResult)) return false;
+
+			CMD_GP_QueryGameResult* pQueryGameResult = (CMD_GP_QueryGameResult*)pData;
+			int nTypeID = pQueryGameResult->wKindID;
+			if((GetTickCount() - m_dwLuckyNumTickCount[nTypeID])>=3000)
+			{	
+				m_dwLuckyNumTickCount[nTypeID] = GetTickCount();
+				DBR_GP_QueryGameResult QueryGameResult;
+				ZeroMemory(&QueryGameResult,sizeof(QueryGameResult));
+				QueryGameResult.wKindID = pQueryGameResult->wKindID;
+
+
+				m_nLuckNumID = pQueryGameResult->wKindID;
+				//投递请求
+				m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_QUERY_MOBILE_RESULT,dwSocketID,&QueryGameResult,sizeof(QueryGameResult));
+			}
+			else
+			{
+				int nIndex = 0;
+				DBO_GP_QueryLotResult QuseryLotResult;
+
+				int nSize = m_AllLuckNum.size();
+				for( map<int ,tagLuckNum*>::iterator pos = m_AllLuckNum.begin(); pos!=m_AllLuckNum.end(); ++pos)
+				{
+					if(nTypeID == pos->first)
+					{
+						QuseryLotResult.wKindID = pos->first;
+						lstrcpyn(QuseryLotResult.wPeriod, pos->second->LuckNum[0].qihao,CountArray(QuseryLotResult.wPeriod));
+						lstrcpyn(QuseryLotResult.szLotNum,pos->second->LuckNum[0].haoma,CountArray(QuseryLotResult.szLotNum));
+						lstrcpyn(QuseryLotResult.szShijian,pos->second->LuckNum[0].shijian,CountArray(QuseryLotResult.szShijian));
+
+					}
+
+				}				
+				m_pITCPNetworkEngine->SendData(dwSocketID,MDM_GP_USER_SERVICE,SUB_GP_QUERY_GAME_RET,&QuseryLotResult,sizeof(QuseryLotResult));
 
 			}
 			return true;
@@ -1854,7 +2055,7 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 			TouzhuSSC.nSign =pTouzhu->nSign;
 			TouzhuSSC.bZhuihao = pTouzhu->bZhuihao;
 			strcpy(TouzhuSSC.strHaoma, pTouzhu->strHaoma);
-///////////////////////////////////////期数限制//////////////////////////////////////////////////////////////////////////////////////////////////////////
+			///////////////////////////////////////期数限制//////////////////////////////////////////////////////////////////////////////////////////////////////////
 			bool bCheDan = true;
 			int nGameKind = pTouzhu->nGameType;
 			CString sQihao = ChangeStringToT(pTouzhu->strQishu);
@@ -1863,82 +2064,284 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 			{
 				CChqSSCRule rule;
 				rule.SetTimeSpan(m_timespan);
-				strNowQihao = rule.GetNextExpect(-1);
+
+				long secDiff = rule.GetKjShjDiff(); 
+				strNowQihao = rule.GetNextExpect();
+
+				bCheDan = (strNowQihao==sQihao);
+
+				if (secDiff <= 33 )
+				{
+					bCheDan = false;
+				}
+
 			}
 			else if(nGameKind == CZ_TianJinSSC)
 			{
 				CJxSSCRule rule;
 				rule.SetTimeSpan(m_timespan);
-				bCheDan = rule.IsCanCancel(sQihao);
+				strNowQihao = rule.GetNextExpect();
+				bCheDan = (strNowQihao==sQihao);
+				long secDiff = rule.GetKjShjDiff(); 
+
+				if (secDiff <= 198 )
+				{
+					bCheDan = false;
+				}
+			}
+			else if(nGameKind == CZ_TXfenfencai)
+			{
+				CTXFenFenCaiRule rule;
+				rule.SetTimeSpan(m_timespan);
+				strNowQihao = rule.GetNextExpect();
+				bCheDan = (strNowQihao==sQihao);
+				long secDiff = rule.GetKjShjDiff(); 
+
+				if (secDiff <= 0 )
+				{
+					bCheDan = false;
+				}
+			}
+			else if(nGameKind == CZ_QQfenfencai)
+			{
+				CQQFenFenCaiRule rule;
+				rule.SetTimeSpan(m_timespan);
+				strNowQihao = rule.GetNextExpect();
+				bCheDan = (strNowQihao==sQihao);
+				long secDiff = rule.GetKjShjDiff(); 
+
+				if (secDiff <= 0 )
+				{
+					bCheDan = false;
+				}
 			}
 			else if(nGameKind == CZXinJiangSSC)
 			{
 				CXJSSCRule rule;
 				rule.SetTimeSpan(m_timespan);
-				bCheDan = rule.IsCanCancel(sQihao);
+				strNowQihao = rule.GetNextExpect();
+				bCheDan = (strNowQihao==sQihao);
+				long secDiff = rule.GetKjShjDiff(); 
+
+				if (secDiff < 58 )
+				{
+					bCheDan = false;
+				}
 			}
-			else if(nGameKind == CZ_FENFEN_CAI)
+ 			else if(nGameKind == CZ_FENFEN_CAI)
+ 			{
+ 				CFenFenCaiRule rule;
+ 				rule.SetTimeSpan(m_timespan);
+				long secDiff = rule.GetKjShjDiff(); 
+				CString strLog;
+				strLog.Format(L"secDiff:%d,span:%d",secDiff-3,rule.GetQiSpan());
+				CTraceService::TraceString(strLog,TraceLevel_Exception);
+				if((secDiff)>3)
+				{
+					if((secDiff)>rule.GetQiSpan())
+						strNowQihao = rule.GetNextExpect(-1);
+					else
+						strNowQihao = rule.GetNextExpect();
+
+					bCheDan = (strNowQihao==sQihao);
+				}
+				else
+				{
+					bCheDan = false;
+				}
+
+
+			}
+			else if(nGameKind == CZ_ErFenCai)//9.28
 			{
-				CFenFenCaiRule rule;
+				CErFenCaiRule rule;
 				rule.SetTimeSpan(m_timespan);
-				bCheDan = rule.IsCanCancel(sQihao);
+				long secDiff = rule.GetKjShjDiff(); 
+				if((secDiff)>13)
+				{
+					if((secDiff)>rule.GetQiSpan())
+						strNowQihao = rule.GetNextExpect(-1);
+					else
+						strNowQihao = rule.GetNextExpect();
+
+					bCheDan = (strNowQihao==sQihao);
+				}
+				else
+				{
+					bCheDan = false;
+				}
+
+
 			}
 			else if(nGameKind == CZ_HGYDWFC)
 			{
 				CHgydwfcRule rule;
 				rule.SetTimeSpan(m_timespan);
-				bCheDan = rule.IsCanCancel(sQihao);
+				long secDiff = rule.GetKjShjDiff(); 
+				if((secDiff)>3)
+				{
+					if((secDiff)>rule.GetQiSpan())
+						strNowQihao = rule.GetNextExpect(-1);
+					else
+						strNowQihao = rule.GetNextExpect();
+
+					CString strLog;
+					strLog.Format(L"secDiff:%d,span:%d,strNowQihao:%s,sQihao:%s",secDiff-3,rule.GetQiSpan(),strNowQihao,sQihao);
+					CTraceService::TraceString(strLog,TraceLevel_Exception);
+					bCheDan = (strNowQihao==sQihao);
+				}
+				else
+				{
+					bCheDan = false;
+				}
+
+
+			}
+			else if(nGameKind == CZ_JiaNaDaSSC)
+			{
+				CCanadaRule rule;
+				rule.SetTimeSpan(m_timespan);
+				rule.SetQihaoStart(m_nCanadaQihao,m_tCanadaStartTime);
+				long secDiff = rule.GetKjShjDiff(); 
+				if((secDiff)>3)
+				{
+					if((secDiff)>rule.GetQiSpan())
+						strNowQihao = rule.GetNextExpect(-1);
+					else
+						strNowQihao = rule.GetNextExpect();
+
+					CString strLog;
+					strLog.Format(L"secDiff:%d,span:%d,strNowQihao:%s,sQihao:%s",secDiff-3,rule.GetQiSpan(),strNowQihao,sQihao);
+					CTraceService::TraceString(strLog,TraceLevel_Exception);
+					bCheDan = (strNowQihao==sQihao);
+				}
+				else
+				{
+					bCheDan = false;
+				}
+
+
 			}
 			else if(nGameKind == CZ_WUFEN_CAI)
 			{
 				CWuFenCaiRule rule;
 				rule.SetTimeSpan(m_timespan);
-				bCheDan = rule.IsCanCancel(sQihao);
+				strNowQihao = rule.GetNextExpect();
+				bCheDan = (strNowQihao==sQihao);
+				long secDiff = rule.GetKjShjDiff(); 
+
+				if (secDiff <= 43 )
+				{
+					bCheDan = false;
+				}
+			}
+			else if(nGameKind == CZ_BJ5FC)
+			{
+				int nStartQihao = 0;
+				CTime tTime;
+				for (map<int ,tagMapLottery*>::iterator pos = mapLotteryStatus.begin();pos!=mapLotteryStatus.end();++pos)
+				{
+					if(pos->second->MapLottery.n_t_kindid == nGameKind)
+					{
+						nStartQihao = _ttoi(pos->second->MapLottery.s_t_expect);
+
+						CTime ctm(pos->second->MapLottery.n_t_shijian);
+						tTime = ctm;
+					}
+				}
+
+				CKuaiLe8RUle rule;
+				rule.SetStartQihao(nStartQihao,tTime);
+				rule.SetTimeSpan(m_timespan);
+				strNowQihao = rule.GetNextExpect();
+				bCheDan = (strNowQihao==sQihao);
+				long secDiff = rule.GetKjShjDiff(); 
+
+				if (secDiff <= 58 )
+				{
+					bCheDan = false;
+				}
 			}
 			else if(nGameKind == CZGD11Xuan5)
 			{
 				CGD11X5Rule rule;
 				rule.SetTimeSpan(m_timespan);
-				bCheDan = rule.IsCanCancel(sQihao);
+				strNowQihao = rule.GetNextExpect();
+				bCheDan = (strNowQihao==sQihao);
+				long secDiff = rule.GetKjShjDiff(); 
+
+				if (secDiff <= 58 )
+				{
+					bCheDan = false;
+				}
 			}
 			else if(nGameKind == CZSD11Xuan5)
 			{
 				CSD11X5Rule rule;
 				rule.SetTimeSpan(m_timespan);
-				bCheDan = rule.IsCanCancel(sQihao);
+				strNowQihao = rule.GetNextExpect();
+				bCheDan = (strNowQihao==sQihao);
+				long secDiff = rule.GetKjShjDiff(); 
+
+				if (secDiff < 58 )
+				{
+					bCheDan = false;
+				}
 			}
 			else if(nGameKind == CZJX11Xuan5)
 			{
 				CJX11X5Rule rule;
 				rule.SetTimeSpan(m_timespan);
-				bCheDan = rule.IsCanCancel(sQihao);
+				strNowQihao = rule.GetNextExpect();
+				bCheDan = (strNowQihao==sQihao);
+				long secDiff = rule.GetKjShjDiff(); 
+
+				if (secDiff < 58 )
+				{
+					bCheDan = false;
+				}
 			}
 			else if(nGameKind == CZHLJ11Xuan5)
 			{
 				CHLJ11X5Rule rule;
 				rule.SetTimeSpan(m_timespan);
-				bCheDan = rule.IsCanCancel(sQihao);
+				strNowQihao = rule.GetNextExpect();
+				bCheDan = (strNowQihao==sQihao);
+				long secDiff = rule.GetKjShjDiff(); 
+
+				if (secDiff < 58 )
+				{
+					bCheDan = false;
+				}
 			}
 			else if(nGameKind == CZ_PK10)
 			{
 				CBJPK10Rule rule;
 				rule.SetTimeSpan(m_timespan);
-				bCheDan = rule.IsCanCancel(sQihao);
+				strNowQihao = rule.GetNextExpect();
+				bCheDan = (strNowQihao==sQihao);
+				long secDiff = rule.GetKjShjDiff(); 
+
+				if (secDiff < 30 )
+				{
+					bCheDan = false;
+				}
 			}
-//			CTraceService::TraceString(strNowQihao,TraceLevel_Exception);
 
-// 			if (!bCheDan)
-// 			{
-// 				CMD_GR_CancelTouzhuRet CancelTouzhu;
-// 				ZeroMemory(&CancelTouzhu,sizeof(CancelTouzhu));
-// 
-// 				CancelTouzhu.nResult = 2;
-// 
-// 				return m_pITCPNetworkEngine->SendData(dwSocketID,MDM_GP_USER_SERVICE,SUB_GR_CANCEL_TOUZHU_RET,&CancelTouzhu, sizeof(CancelTouzhu));
-// 			}
-// 
+			if (!bCheDan)
+			{
+				CMD_GR_TouzhuRes TouzhuRes;
+				ZeroMemory(&TouzhuRes,sizeof(TouzhuRes));
+				TouzhuRes.lResult = 2;
+				lstrcpyn(TouzhuRes.szDesc,_T(""),sizeof(TouzhuRes.szDesc));
+				TouzhuRes.nSign = pTouzhu->nSign;
 
-///////////////////////////////////////期数限制//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+				return m_pITCPNetworkEngine->SendData(dwSocketID,MDM_GP_USER_SERVICE,SUB_GP_TOUZHU_CQSSC_RET,&TouzhuRes,sizeof(TouzhuRes));
+			}
+
+
+			///////////////////////////////////////期数限制//////////////////////////////////////////////////////////////////////////////////////////////////////////
 			memcpy(TouzhuSSC.strQishu ,pTouzhu->strQishu,sizeof(TouzhuSSC.strQishu));
 			TouzhuSSC.cbPlatform = pTouzhu->cbPlatform;
 
@@ -1996,14 +2399,8 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 				strNowQihao = rule.GetNextExpect();
 
 				bCheDan = (strNowQihao==sQihao);
-				if(!bCheDan)
-				{
-					CString strLog;
-					strLog.Format(L"WRONGQIHAO now:%s,client:%s",strNowQihao,sQihao);
-					OutputDebugString(strLog);
-				}
 
-				if (secDiff <= 43 )
+				if (secDiff <= 33 )
 				{
 					bCheDan = false;
 				}
@@ -2015,15 +2412,35 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 				rule.SetTimeSpan(m_timespan);
 				strNowQihao = rule.GetNextExpect();
 				bCheDan = (strNowQihao==sQihao);
-				if(!bCheDan)
-				{
-					CString strLog;
-					strLog.Format(L"WRONGQIHAO now:%s,client:%s",strNowQihao,sQihao);
-					OutputDebugString(strLog);
-				}
 				long secDiff = rule.GetKjShjDiff(); 
 
-				if (secDiff <= 198 )
+				if (secDiff <= 138 )
+				{
+					bCheDan = false;
+				}
+			}
+			else if(nGameKind == CZ_TXfenfencai)
+			{
+				CTXFenFenCaiRule rule;
+				rule.SetTimeSpan(m_timespan);
+				strNowQihao = rule.GetNextExpect();
+				bCheDan = (strNowQihao==sQihao);
+				long secDiff = rule.GetKjShjDiff(); 
+
+				if (secDiff <= 0 )
+				{
+					bCheDan = false;
+				}
+			}
+			else if(nGameKind == CZ_QQfenfencai)
+			{
+				CQQFenFenCaiRule rule;
+				rule.SetTimeSpan(m_timespan);
+				strNowQihao = rule.GetNextExpect();
+				bCheDan = (strNowQihao==sQihao);
+				long secDiff = rule.GetKjShjDiff(); 
+
+				if (secDiff <= 0 )
 				{
 					bCheDan = false;
 				}
@@ -2035,12 +2452,6 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 				strNowQihao = rule.GetNextExpect();
 				bCheDan = (strNowQihao==sQihao);
 				long secDiff = rule.GetKjShjDiff(); 
-				if(!bCheDan)
-				{
-					CString strLog;
-					strLog.Format(L"WRONGQIHAO now:%s,client:%s,secDiff:%d",strNowQihao,sQihao,secDiff);
-					OutputDebugString(strLog);
-				}
 
 				if (secDiff < 58 )
 				{
@@ -2071,10 +2482,58 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 
 
  			}
+			else if(nGameKind == CZ_ErFenCai)
+			{
+				CErFenCaiRule rule;
+				rule.SetTimeSpan(m_timespan);
+				long secDiff = rule.GetKjShjDiff(); 
+	
+				if((secDiff)>13)
+				{
+					if((secDiff)>rule.GetQiSpan())
+						strNowQihao = rule.GetNextExpect(-1);
+					else
+						strNowQihao = rule.GetNextExpect();
+
+					bCheDan = (strNowQihao==sQihao);
+				}
+				else
+				{
+					bCheDan = false;
+				}
+
+
+			}
 			else if(nGameKind == CZ_HGYDWFC)
 			{
 				CHgydwfcRule rule;
 				rule.SetTimeSpan(m_timespan);
+				rule.SetQihaocha(m_nQihaocha);
+				long secDiff = rule.GetKjShjDiff(); 
+				if((secDiff)>3)
+				{
+					if((secDiff)>rule.GetQiSpan())
+						strNowQihao = rule.GetNextExpect(-1);
+					else
+						strNowQihao = rule.GetNextExpect();
+
+					CString strLog;
+					strLog.Format(L"secDiff:%d,span:%d,strNowQihao:%s,sQihao:%s",secDiff-3,rule.GetQiSpan(),strNowQihao,sQihao);
+					CTraceService::TraceString(strLog,TraceLevel_Exception);
+					bCheDan = (strNowQihao==sQihao);
+				}
+				else
+				{
+					bCheDan = false;
+				}
+
+
+			}
+			else if(nGameKind == CZ_JiaNaDaSSC)
+			{
+				CCanadaRule rule;
+				rule.SetTimeSpan(m_timespan);
+				rule.SetQihaoStart(m_nCanadaQihao,m_tCanadaStartTime);
 				long secDiff = rule.GetKjShjDiff(); 
 				if((secDiff)>3)
 				{
@@ -2117,7 +2576,43 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 					bCheDan = false;
 				}
 			}
- 			else if(nGameKind == CZGD11Xuan5)
+			else if(nGameKind == CZ_BJ5FC)
+			{
+				int nStartQihao = 0;
+				CTime tTime;
+				for (map<int ,tagMapLottery*>::iterator pos = mapLotteryStatus.begin();pos!=mapLotteryStatus.end();++pos)
+				{
+					if(pos->second->MapLottery.n_t_kindid == nGameKind)
+					{
+						nStartQihao = _ttoi(pos->second->MapLottery.s_t_expect);
+
+						CTime ctm(pos->second->MapLottery.n_t_shijian);
+						tTime = ctm;
+					}
+				}
+
+				CKuaiLe8RUle rule;
+				rule.SetStartQihao(nStartQihao,tTime);
+				rule.SetTimeSpan(m_timespan);
+				strNowQihao = rule.GetNextExpect();
+				bCheDan = (strNowQihao==sQihao);
+				if(!bCheDan)
+				{
+					CString strLog;
+					strLog.Format(L"WRONGQIHAO now:%s,client:%s",strNowQihao,sQihao);
+					OutputDebugString(strLog);
+				}
+				long secDiff = rule.GetKjShjDiff(); 
+
+				if (secDiff <= 58 )
+				{
+					CString strLog;
+					strLog.Format(L"WRONGQIHAO secDiff:%d",secDiff);
+					OutputDebugString(strLog);
+					bCheDan = false;
+				}
+			}
+			else if(nGameKind == CZGD11Xuan5)
  			{
  				CGD11X5Rule rule;
 				rule.SetTimeSpan(m_timespan);
@@ -2207,7 +2702,20 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
  			}
  			else if(nGameKind == CZ_PK10)
  			{
+				int nStartQihao = 0;
+				CTime tTime;
+				for (map<int ,tagMapLottery*>::iterator pos = mapLotteryStatus.begin();pos!=mapLotteryStatus.end();++pos)
+				{
+					if(pos->second->MapLottery.n_t_kindid == nGameKind)
+					{
+						nStartQihao = _ttoi(pos->second->MapLottery.s_t_expect);
+
+						CTime ctm(pos->second->MapLottery.n_t_shijian);
+						tTime = ctm;
+					}
+				}
  				CBJPK10Rule rule;
+				rule.SetStartQihao(nStartQihao,tTime);
 				rule.SetTimeSpan(m_timespan);
 				strNowQihao = rule.GetNextExpect();
 				bCheDan = (strNowQihao==sQihao);
@@ -2227,7 +2735,60 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 					bCheDan = false;
 				}
  			}
+			else if(nGameKind == CZ3D)
+			{
+				CTime tNow = ::GetCurrentTime();
 
+				tNow += m_timespan;
+				if(tNow.GetHour() == 21 && tNow.GetMinute()<=40)
+				{
+					bCheDan = false;
+				}
+			}
+			else if(nGameKind == CZPaiLie3)
+			{
+				CTime tNow = ::GetCurrentTime();
+
+				tNow += m_timespan;
+				if((tNow.GetHour() == 20)&&(tNow.GetMinute()>25&&tNow.GetMinute()<=40))
+				{
+					bCheDan = false;
+				}
+				else if((tNow.GetHour() > 20)||(tNow.GetHour() == 20)&&(tNow.GetMinute()>40))
+				{
+					DBO_GP_QueryLotResult Log;
+					ZeroMemory(&Log,sizeof(Log));
+					for( map<int ,tagLuckNum*>::iterator pos = m_AllLuckNum.begin(); pos!=m_AllLuckNum.end(); ++pos)
+					{
+						if(pos->first == nGameKind)
+						{
+							Log.wKindID = pos->first;
+							lstrcpyn(Log.wPeriod, pos->second->LuckNum[0].qihao,CountArray(Log.wPeriod));
+							lstrcpyn(Log.szLotNum,pos->second->LuckNum[0].haoma,CountArray(Log.szLotNum));
+							lstrcpyn(Log.szShijian,pos->second->LuckNum[0].shijian,CountArray(Log.szShijian));
+							break;
+						}
+					}
+
+					CString strTime;
+					strTime.Format(L"%s",Log.szShijian);
+					COleVariant vtime(strTime);
+					vtime.ChangeType(VT_DATE);
+					COleDateTime time4 = vtime;
+
+					SYSTEMTIME systime;
+					VariantTimeToSystemTime(time4, &systime);
+
+
+					CTime tLast(systime);
+
+					//CTimeSpan tSpan = tNow-tLast;
+					if(tNow.GetDay()!=tLast.GetDay())
+					{
+						bCheDan = false;
+					}
+				}
+			}
  			if (!bCheDan)
  			{
 				CMD_GR_TouzhuRes TouzhuRes;
@@ -2247,10 +2808,10 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 			TouzhuSSC.nIndex = pTouzhu->nIndex;
 			TouzhuSSC.dwClientAddr=(m_pBindParameter+LOWORD(dwSocketID))->dwClientAddr;
 
-			m_DataBaseEngineSink[1]->OnTouzhuCQSSCDan(dwSocketID,&TouzhuSSC,sizeof(TouzhuSSC));
+		//	m_DataBaseEngineSink[1]->OnTouzhuCQSSCDan(dwSocketID,&TouzhuSSC,sizeof(TouzhuSSC));
 
 			//投递请求
-		//	m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_TOUZHU_CQSSC_DAN,dwSocketID,pData,wDataSize);
+			m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_TOUZHU_CQSSC_DAN,dwSocketID,&TouzhuSSC,sizeof(TouzhuSSC));
 
 
 			return true;
@@ -2270,7 +2831,7 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 			ZeroMemory(&TouzhuSSC,sizeof(TouzhuSSC));
 
 			TouzhuSSC.dwUserID = pTouzhu->dwUserID;
-			for(int i = 0;i< 50;i++)
+			for(int i = 0;i< 100;i++)
 			{
 				TouzhuSSC.nBeitou[i] = pTouzhu->nBeitou[i];
 
@@ -2312,7 +2873,7 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 			ZeroMemory(&TouzhuSSC,sizeof(TouzhuSSC));
 
 			TouzhuSSC.dwUserID = pTouzhu->dwUserID;
-			for(int i = 0;i< 50;i++)
+			for(int i = 0;i< 100;i++)
 			{
 				TouzhuSSC.nBeitou[i] = pTouzhu->nBeitou[i];
 
@@ -2357,6 +2918,8 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 
 			LogCount.dwUserID = pLogCount->dwUserID;
 			LogCount.bTime = pLogCount->bTime;
+			LogCount.nCaiZhong = pLogCount->nCaiZhong;
+			LogCount.nStatus = pLogCount->nStatus;
 			lstrcpyn(LogCount.szTimeStart,pLogCount->szTimeStart,sizeof(LogCount.szTimeStart));
 			lstrcpyn(LogCount.szTimeEnd,pLogCount->szTimeEnd,sizeof(LogCount.szTimeEnd));
 
@@ -2491,7 +3054,8 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 
 			LogCount.n_t_type = pLogCount->n_t_type;
 			LogCount.n_t_user_id = pLogCount->n_t_user_id;
-
+			LogCount.n_t_caizhong = pLogCount->n_t_caizhong;
+			LogCount.n_t_status = pLogCount->n_t_status;
 			lstrcpyn(LogCount.s_t_account,pLogCount ->s_t_account,sizeof(LogCount.s_t_account));
 			LogCount.n_xj_id = pLogCount->n_xj_id;
 			LogCount.bTime = pLogCount->bTime;
@@ -2510,17 +3074,31 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 
 			DBR_GP_GetXJYKLogCount LogCount;
 			ZeroMemory(&LogCount,sizeof(LogCount));
+			DWORD dwTickCount = GetTickCount();
+
+			CString strLog;
+			strLog.Format(L"XIHYLOG tick6:%d",dwTickCount);
+			OutputDebugString(strLog);
+
 
 			LogCount.dwUserID = pLogCount->dwUserID;
 			LogCount.n_t_type = pLogCount->n_t_type;
 			LogCount.n_t_user_id = pLogCount->n_t_user_id;
 
-			lstrcpyn(LogCount.s_t_account,pLogCount->s_t_account,sizeof(LogCount.s_t_account));
+			CopyMemory(LogCount.s_t_account,pLogCount->s_t_account,sizeof(LogCount.s_t_account));
 			LogCount.bTime = pLogCount->bTime;
 			LogCount.nXiaJiaID = pLogCount->nXiaJiID;
-			lstrcpyn(LogCount.szTimeStart,pLogCount->szTimeStart,sizeof(LogCount.szTimeStart));
-			lstrcpyn(LogCount.szTimeEnd,pLogCount->szTimeEnd,sizeof(LogCount.szTimeEnd));
+			CopyMemory(LogCount.szTimeStart,pLogCount->szTimeStart,sizeof(LogCount.szTimeStart));
+			CopyMemory(LogCount.szTimeEnd,pLogCount->szTimeEnd,sizeof(LogCount.szTimeEnd));
 			LogCount.nType = pLogCount->nType;
+
+			dwTickCount = GetTickCount();
+			strLog.Format(L"XIHYLOG tick7:%d",dwTickCount);
+			OutputDebugString(strLog);
+
+// 			strLog.Format(L"XIHYLOG %d  %d   %d   %s   %d   %d   %d     %d   %s    %s ",GetXJYKLog.dwUserID,GetXJYKLog.n_t_type,GetXJYKLog.n_t_user_id,GetXJYKLog.s_t_account,GetXJYKLog.n_sort_type,GetXJYKLog.nPage,GetXJYKLog.nSize,GetXJYKLog.bByTime,GetXJYKLog.szTimeStart,GetXJYKLog.szTimeEnd );
+// 			OutputDebugString(strLog);
+
 			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_XJYK_LOG_COUNT,dwSocketID,&LogCount,sizeof(LogCount));
 
 		}
@@ -2624,22 +3202,9 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 
 			CMD_GP_GetLastYue* pLogCount = (CMD_GP_GetLastYue*)pData;
 			DWORD dwTickCount = GetTickCount();
-			if((dwTickCount-m_UserYue[pLogCount->dwUserID]) < 30000)
-			{
-				CString strLogFile;
-				strLogFile.Format(L"拦截%d SUB_GP_GET_LAST_YUE",pLogCount->dwUserID);
-				LogFile::instance().LogText(strLogFile);
-
-				return true;
-			}
 
 			m_UserYue[pLogCount->dwUserID] = dwTickCount;
-
-// 			DBR_GP_GetLastYue LogCount;
-// 			ZeroMemory(&LogCount,sizeof(LogCount));
-// 
-// 			LogCount.dwUserID = pLogCount->dwUserID;
-			return GetUserYueInfo(pLogCount->dwUserID,dwSocketID);//m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_GET_YUE_INFO,dwSocketID,&LogCount,sizeof(LogCount));
+			return GetUserYueInfo(pLogCount->dwUserID,dwSocketID);
 
 		}
 	case SUB_GP_GET_DAILI_HUIKUI:
@@ -2684,6 +3249,145 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_GET_MORE_RECORD,dwSocketID,&LogCount,sizeof(LogCount));
 
 
+		}
+	case SUB_GP_GET_QIHAO_CHA:
+		{
+			DWORD dwTickCount = GetTickCount();
+			if((dwTickCount-m_dwQihaoTick)>=3000)
+			{
+				m_dwQihaoTick = dwTickCount;
+				return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_GET_QIHAOCHA,dwSocketID,NULL,0);
+			}
+			else 
+			{
+				CMD_GP_GetQihaoCha GetQihaoCha;
+				ZeroMemory(&GetQihaoCha,sizeof(GetQihaoCha));
+
+				GetQihaoCha.n_t_qishu = m_nQihaocha;
+				return m_pITCPNetworkEngine->SendData(dwSocketID,MDM_GP_USER_SERVICE,SUB_GP_GET_QIHAO_CHA_RET,&GetQihaoCha,sizeof(GetQihaoCha));
+			}
+			return  true;
+		}
+	case SUB_GP_QUERY_STATUS_LOTTERY:
+		{
+			ASSERT(wDataSize == sizeof(CMD_GP_QueryStatusLottery));
+			if(wDataSize!= sizeof(CMD_GP_QueryStatusLottery)) return false;
+
+			CMD_GP_QueryStatusLottery* pQueryStatusLottery = (CMD_GP_QueryStatusLottery*)pData;
+
+			int nKindID = pQueryStatusLottery->n_t_kindid;
+			DWORD dwTickCount = GetTickCount();
+			if(mapLotteryStatus.find(nKindID) == mapLotteryStatus.end() || (m_dwLotteryStatus.find(nKindID) == m_dwLotteryStatus.end())||((dwTickCount-m_dwLotteryStatus[nKindID])>60000))
+			{
+				DBO_GP_QueryStatusLottery QueryStatusLottery;
+				ZeroMemory(&QueryStatusLottery,sizeof(QueryStatusLottery));
+				QueryStatusLottery.n_t_kindid = pQueryStatusLottery->n_t_kindid;
+
+				m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_QUERY_STATUS_LOTTERY,dwSocketID,&QueryStatusLottery,sizeof(QueryStatusLottery));
+			}
+			else
+			{
+				for (map<int ,tagMapLottery*>::iterator pos = mapLotteryStatus.begin();pos!=mapLotteryStatus.end();++pos)
+				{
+					if(pos->second->MapLottery.n_t_kindid == nKindID)
+					{
+						CMD_GP_QueryStatusLotteryRet QueryStatusLotteryRet;
+						ZeroMemory(&QueryStatusLotteryRet,sizeof(QueryStatusLotteryRet));
+
+						QueryStatusLotteryRet.n_t_kindid = pos->second->MapLottery.n_t_kindid;
+						CopyMemory(QueryStatusLotteryRet.s_t_expect,pos->second->MapLottery.s_t_expect,CountArray(QueryStatusLotteryRet.s_t_expect));
+						QueryStatusLotteryRet.n_t_shijian=pos->second->MapLottery.n_t_shijian;
+						QueryStatusLotteryRet.c_t_ifts = pos->second->MapLottery.c_t_ifts;
+
+
+						m_pITCPNetworkEngine->SendData(dwSocketID,MDM_GP_USER_SERVICE,SUB_GP_QUERY_STATUS_LOTTERY_RET,&QueryStatusLotteryRet,sizeof(QueryStatusLotteryRet));
+						return true;
+					}
+				}
+			}
+			return true;
+		}
+	case SUB_GP_GET_CANADA_START_QIHAO: //获取加拿大期号
+		{
+			DWORD dwTickCount = GetTickCount();
+			if(dwTickCount - m_dwCanadaQihaoTick < 60000)
+			{
+				CMD_GP_GetCanadaQihaoRet GetCanadaQihao;
+				GetCanadaQihao.n_t_start_qihao = m_nCanadaQihao;
+				GetCanadaQihao.n_t_start_time = m_tCanadaStartTime;
+
+				return m_pITCPNetworkEngine->SendData(dwSocketID,MDM_GP_USER_SERVICE,SUB_GP_GET_CANADA_START_QIHAO_RET,&GetCanadaQihao,sizeof(GetCanadaQihao));
+			}
+			else
+			{
+				m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_GET_CANADA_QIHAO,dwSocketID,NULL,NULL);
+				return true;
+
+			}
+		}	
+	case SUB_GP_GET_ZNX_COUNT:
+		{
+				ASSERT(wDataSize == sizeof(CMD_GP_GetZnxCount));
+				if(wDataSize!= sizeof(CMD_GP_GetZnxCount)) return false;
+				
+				CMD_GP_GetZnxCount* pLog = (CMD_GP_GetZnxCount*)pData;
+
+				DWORD dwTickCount = GetTickCount();
+				if((dwTickCount-m_dwTickZnx[pLog->n_t_userid])<300000)
+				{
+					CMD_GP_GetZnxCountRet LogRet;
+					ZeroMemory(&LogRet,sizeof(LogRet));
+
+					LogRet.n_t_count = m_dwTickZnxCount[pLog->n_t_userid];
+					return m_pITCPNetworkEngine->SendData(dwSocketID,MDM_GP_USER_SERVICE,SUB_GP_GET_ZNX_COUNT_RET,&LogRet,sizeof(LogRet));
+				}
+
+				m_dwTickZnx[pLog->n_t_userid] = dwTickCount;
+
+				DBR_GP_GetZnxCount Log;
+				ZeroMemory(&Log,sizeof(Log));
+
+				Log.n_t_userid = pLog->n_t_userid;
+
+				return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_GET_ZNX_COUNT,dwSocketID,&Log,sizeof(Log));
+			}
+	case SUB_GP_GET_NOTICE:
+		{
+			ASSERT(wDataSize == sizeof(CMD_GP_GetNotic));
+			if(wDataSize!= sizeof(CMD_GP_GetNotic)) return false;
+
+			DWORD dwTickCount = GetTickCount();
+			if((dwTickCount - m_dwNoticeTick)>300000)
+			{
+				m_dwNoticeTick = dwTickCount;
+				CMD_GP_GetNotic* pLog = (CMD_GP_GetNotic*)pData;
+
+				DBO_GP_GetNotic Log;
+				ZeroMemory(&Log,sizeof(Log));
+
+				Log.n_t_type = pLog->n_t_type;
+
+				return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_GET_NOTICE,dwSocketID,&Log,sizeof(Log));
+			}
+			else
+			{
+				CMD_GP_GetNoticRet LogRet[10];
+				ZeroMemory(&LogRet,sizeof(CMD_GP_GetNoticRet)*10);
+
+				int nIndex = 0;
+				for (map<int ,tagMapNotice*>::iterator pos = mapNotice.begin();pos != mapNotice.end()&&nIndex<10;++pos)
+				{
+					CopyMemory(LogRet[nIndex].s_t_content,pos->second->Notice.s_t_content,CountArray(LogRet[nIndex].s_t_content));
+					LogRet[nIndex].n_t_type = pos->second->Notice.n_t_type;
+					LogRet[nIndex].n_t_time = pos->second->Notice.n_t_time;
+
+					CopyMemory(LogRet[nIndex].s_t_title,pos->second->Notice.s_t_title,CountArray(LogRet[nIndex].s_t_title));
+					nIndex++;
+				}
+				return 	m_pITCPNetworkEngine->SendData(dwSocketID,MDM_GP_USER_SERVICE,SUB_GP_GET_NOTICE_RET,&LogRet,sizeof(CMD_GP_GetNoticRet)*nIndex);
+
+			}
+			return true;
 		}
 	case SUB_GP_QUIT_GAME:  //退出游戏
 		{
@@ -2763,6 +3467,21 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_DO_QUKUAN,dwSocketID,&LogCount,sizeof(LogCount));
 
 		}
+	case SUB_GP_GET_QUKUAN_LIMIT:
+		{
+			ASSERT(wDataSize == sizeof(CMD_GP_GetQukuanLimit));
+			if(wDataSize!= sizeof(CMD_GP_GetQukuanLimit)) return false;
+
+			CMD_GP_GetQukuanLimit* pGetQukuanLimit = (CMD_GP_GetQukuanLimit*)pData;
+
+			DBR_GP_GetQukuanLimit GetQukuanLimit;
+			ZeroMemory(&GetQukuanLimit,sizeof(GetQukuanLimit));
+
+			GetQukuanLimit.n_t_userid = pGetQukuanLimit->n_t_userid;
+
+			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_GET_QUKUAN_LIMIT,dwSocketID,&GetQukuanLimit,sizeof(GetQukuanLimit));
+
+		}
 	case SUB_GP_GET_TOUZHU_LOG:
 		{
 			ASSERT(wDataSize == sizeof(CMD_GP_GetTouzhuLog));
@@ -2775,10 +3494,86 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 			TouzhuLog.nPage = pLog->nPage;
 			TouzhuLog.nSize = pLog->nSize;
 			TouzhuLog.bByTime = pLog->bByTime;
+			TouzhuLog.nCaiZhong = pLog->nCaiZhong;
+			TouzhuLog.nStatus = pLog->nStatus;
 			lstrcpyn(TouzhuLog.szTimeStart,pLog->szTimeStart,sizeof(TouzhuLog.szTimeStart));
 			lstrcpyn(TouzhuLog.szTimeEnd,pLog->szTimeEnd,sizeof(TouzhuLog.szTimeEnd));
 
 			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_TOUZHU_LOG,dwSocketID,&TouzhuLog,sizeof(TouzhuLog));
+		}
+	case SUB_GP_GET_INBOX_MESSAGE:
+		{
+			ASSERT(wDataSize == sizeof(CMD_GP_GetInboxMessage));
+			if(wDataSize!= sizeof(CMD_GP_GetInboxMessage)) return false;
+
+			CMD_GP_GetInboxMessage* pLog = (CMD_GP_GetInboxMessage*)pData;
+
+			DBR_GP_GetInboxMessage Log;
+			Log.n_t_userid = pLog->n_t_userid;
+			Log.n_t_typeid = pLog->n_t_typeid;
+			Log.n_t_page = pLog->n_t_page;
+			Log.n_t_size = pLog->n_t_size;
+
+			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_GET_ZNX_INBOX,dwSocketID,&Log,sizeof(Log));
+		}
+	case SUB_GP_CHK_INBOX_MESSAGE:
+		{
+			ASSERT(wDataSize == sizeof(CMD_GP_ChkInboxMessage));
+			if(wDataSize!= sizeof(CMD_GP_ChkInboxMessage)) return false;
+
+			CMD_GP_ChkInboxMessage* pLog = (CMD_GP_ChkInboxMessage*)pData;
+
+			DBR_GP_ChkInboxMessage Log;
+			Log.n_t_userid = pLog->n_t_userid;
+			Log.n_t_id = pLog->n_t_id;
+
+			 m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_CHK_ZNX_INBOX,dwSocketID,&Log,sizeof(Log));
+			DBR_GP_GetZnxCount GetZnxCount;
+			ZeroMemory(&GetZnxCount,sizeof(GetZnxCount));
+
+			GetZnxCount.n_t_userid = pLog->n_t_userid;
+
+			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_GET_ZNX_COUNT,dwSocketID,&GetZnxCount,sizeof(GetZnxCount));
+
+		}
+	case SUB_GP_DEL_MESSAGE:
+		{
+			ASSERT(wDataSize == sizeof(CMD_GP_DelMessage));
+			if(wDataSize!= sizeof(CMD_GP_DelMessage)) return false;
+
+			CMD_GP_DelMessage* pLog = (CMD_GP_DelMessage*)pData;
+
+			DBR_GP_DelMessage Log;
+			Log.n_t_type = pLog->n_t_type;
+			Log.n_t_id = pLog->n_t_id;
+
+			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_DEL_MESSAGE,dwSocketID,&Log,sizeof(Log));
+		}
+	case SUB_GP_GET_ALL_USERINFO:
+		{
+			ASSERT(wDataSize == sizeof(CMD_GP_GetAllUserInfo));
+			if(wDataSize!= sizeof(CMD_GP_GetAllUserInfo)) return false;
+
+			CMD_GP_GetAllUserInfo* pLog = (CMD_GP_GetAllUserInfo*)pData;
+
+			DBR_GP_GetAllUserInfo Log;
+			Log.n_t_typeid = pLog->n_t_typeid;
+			Log.n_t_userid = pLog->n_t_userid;
+			Log.n_t_edittype = pLog->n_t_edittype;
+			Log.n_t_size = pLog->n_t_size;
+			CopyMemory(Log.s_t_search,pLog->s_t_search,CountArray(Log.s_t_search));
+			Log.n_t_count = pLog->n_t_count;
+			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_GET_ALL_USER_INFO,dwSocketID,&Log,sizeof(Log));
+
+		}
+	case SUB_GP_SEND_MESSAGE:
+		{
+			ASSERT(wDataSize == sizeof(CMD_GP_SendMessage));
+			if(wDataSize!= sizeof(CMD_GP_SendMessage)) return false;
+
+			//CMD_GP_SendMessage* pLog = (CMD_GP_SendMessage*)pData;
+			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_SEND_MESSAGE,dwSocketID,pData,wDataSize);
+
 		}
 	case SUB_GP_GET_XJCHZH_LOG:    //下级充值日志
 		{
@@ -2834,14 +3629,13 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 			GetXJYKLog.n_t_type = pLog->n_t_type;
 			GetXJYKLog.n_t_user_id = pLog->n_t_user_id;
 
-			lstrcpyn(GetXJYKLog.s_t_account,pLog->s_t_account,sizeof(GetXJYKLog.s_t_account));
+			lstrcpyn(GetXJYKLog.s_t_account,pLog->s_t_account,CountArray(GetXJYKLog.s_t_account));
 			GetXJYKLog.n_sort_type = pLog->n_sort_type;
 			GetXJYKLog.nPage = pLog->nPage;
 			GetXJYKLog.nSize = pLog->nSize;
 			GetXJYKLog.bByTime = pLog->bByTime;
-			lstrcpyn(GetXJYKLog.szTimeStart,pLog->szTimeStart,sizeof(GetXJYKLog.szTimeStart));
-			lstrcpyn(GetXJYKLog.szTimeEnd,pLog->szTimeEnd,sizeof(GetXJYKLog.szTimeEnd));
-
+			lstrcpyn(GetXJYKLog.szTimeStart,pLog->szTimeStart,CountArray(GetXJYKLog.szTimeStart));
+			lstrcpyn(GetXJYKLog.szTimeEnd,pLog->szTimeEnd,CountArray(GetXJYKLog.szTimeEnd));
 			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_GET_XJYK_LOG,dwSocketID,&GetXJYKLog,sizeof(GetXJYKLog));
 		}
 	case SUB_GP_GET_XJYK_TJ:    //获取下家盈亏日志
@@ -2953,146 +3747,19 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 			Log.nPage = pLog->nPage;
 			Log.nSize = pLog->nSize;
 			Log.bByTime = pLog->bByTime;
+			Log.n_t_caizhong = pLog->n_t_caizhong;
+			Log.n_t_status = pLog->n_t_status;
 			lstrcpyn(Log.szTimeStart,pLog->szTimeStart,sizeof(Log.szTimeStart));
 			lstrcpyn(Log.szTimeEnd,pLog->szTimeEnd,sizeof(Log.szTimeEnd));
 
 			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_CHKXJTZH_LOG,dwSocketID,&Log,sizeof(Log));
 		}
-	case SUB_GP_GET_XJTZH_LOG_BY_ID:
+	case SUB_GP_GET_QIPAI_KIND:
 		{
-			ASSERT(wDataSize == sizeof(CMD_GP_GetXJTZHLogByID));
-			if(wDataSize!= sizeof(CMD_GP_GetXJTZHLogByID)) return false;
+			ASSERT(wDataSize == sizeof(CMD_GP_GetQipaiKind));
+			if(wDataSize!= sizeof(CMD_GP_GetQipaiKind)) return false;
 
-			CMD_GP_GetXJTZHLogByID* pLog = (CMD_GP_GetXJTZHLogByID*)pData;
-
-			DBR_GP_GetXJTZHLogByID Log;
-			Log.dwUserID = pLog->dwUserID;
-			Log.nXiaJiID = pLog->nXiaJiID;
-			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_XJTZH_LOG_BY_ID,dwSocketID,&Log,sizeof(Log));
-		}
-	case SUB_GP_GET_XJTX_LOG_BY_ID:
-		{
-			ASSERT(wDataSize == sizeof(CMD_GP_GetXJTxLogByID));
-			if(wDataSize!= sizeof(CMD_GP_GetXJTxLogByID)) return false;
-
-			CMD_GP_GetXJTxLogByID* pLog = (CMD_GP_GetXJTxLogByID*)pData;
-
-			DBR_GP_GetXJTxLogByID Log;
-			Log.dwUserID = pLog->dwUserID;
-			Log.nXiaJiID = pLog->nXiaJiID;
-			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_XJTX_LOG_BY_ID,dwSocketID,&Log,sizeof(Log));
-		}
-	case SUB_GP_GET_XJTX_LOG_BY_ACT:
-		{
-			ASSERT(wDataSize == sizeof(CMD_GP_GetXJTxLogByAct));
-			if(wDataSize!= sizeof(CMD_GP_GetXJTxLogByAct)) return false;
-
-			CMD_GP_GetXJTxLogByAct* pLog = (CMD_GP_GetXJTxLogByAct*)pData;
-
-			DBR_GP_GetXJTxLogByAct Log;
-			Log.dwUserID = pLog->dwUserID;
-			lstrcpyn(Log.szAccount,pLog->szAccount,sizeof(Log.szAccount));
-			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_XJTX_LOG_BY_ACT,dwSocketID,&Log,sizeof(Log));
-		}
-	case SUB_GP_GET_XJYK_LOG_BY_ID:
-		{
-			ASSERT(wDataSize == sizeof(CMD_GP_GetXJYKLogByID));
-			if(wDataSize!= sizeof(CMD_GP_GetXJYKLogByID)) return false;
-
-			CMD_GP_GetXJYKLogByID* pLog = (CMD_GP_GetXJYKLogByID*)pData;
-
-			DBR_GP_GetXJYKLogByID Log;
-			Log.dwUserID = pLog->dwUserID;
-			Log.nXiaJiID = pLog->nXiaJiID;
-			Log.nSize = pLog->nSize;
-			Log.nPage = pLog->nPage;
-			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_XJYK_LOG_BY_ID,dwSocketID,&Log,sizeof(Log));
-		}
-	case SUB_GP_GET_XJTZH_LOG_BY_ACT:
-		{
-			ASSERT(wDataSize == sizeof(CMD_GP_GetXJTZHLogByAct));
-			if(wDataSize!= sizeof(CMD_GP_GetXJTZHLogByAct)) return false;
-
-			CMD_GP_GetXJTZHLogByAct* pLog = (CMD_GP_GetXJTZHLogByAct*)pData;
-
-			DBR_GP_GetXJTZHLogByAct Log;
-			Log.dwUserID = pLog->dwUserID;
-			lstrcpyn(Log.szAccount,pLog->szAccount,sizeof(Log.szAccount));
-			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_XJTZH_LOG_BY_ACT,dwSocketID,&Log,sizeof(Log));
-		}
-	case SUB_GP_GET_XJCHZH_LOG_BY_ID:    //通过ID查询下级充值日志
-		{
-			ASSERT(wDataSize == sizeof(CMD_GP_GetXJCHZHLogByID));
-			if(wDataSize!= sizeof(CMD_GP_GetXJCHZHLogByID)) return false;
-
-			CMD_GP_GetXJCHZHLogByID* pLog = (CMD_GP_GetXJCHZHLogByID*)pData;
-
-			DBR_GP_GetXJCHZHLogByID Log;
-			Log.dwUserID = pLog->dwUserID;
-			Log.nXiaJiID = pLog->nXiaJiID;
-			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_XJCHZH_LOG_BY_ID,dwSocketID,&Log,sizeof(Log));
-		}
-	case SUB_GP_GET_XJCHZH_LOG_BY_ACT:	//通过账号查询下级充值日志
-		{
-			ASSERT(wDataSize == sizeof(CMD_GP_GetXJCHZHLogByAct));
-			if(wDataSize!= sizeof(CMD_GP_GetXJCHZHLogByAct)) return false;
-
-			CMD_GP_GetXJCHZHLogByAct* pLog = (CMD_GP_GetXJCHZHLogByAct*)pData;
-
-			DBR_GP_GetXJCHZHLogByAct Log;
-			Log.dwUserID = pLog->dwUserID;
-			lstrcpyn(Log.szAccount,pLog->szAccount,sizeof(Log.szAccount));
-			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_XJCHZH_LOG_BY_ACT,dwSocketID,&Log,sizeof(Log));
-		}
-	case SUB_GP_GET_XJYK_TJ_BY_ID:
-		{
-			ASSERT(wDataSize == sizeof(CMD_GP_GetXJYKTjByID));
-			if(wDataSize!= sizeof(CMD_GP_GetXJYKTjByID)) return false;
-
-			CMD_GP_GetXJYKTjByID* pLog = (CMD_GP_GetXJYKTjByID*)pData;
-
-			DBR_GP_GetXJYKTjByID Log;
-			Log.dwUserID = pLog->dwUserID;
-			Log.nXiaJiID = pLog->nXiaJiID;
-			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_XJYK_TJ_BY_ID,dwSocketID,&Log,sizeof(Log));
-		}
-	case SUB_GP_GET_XJYK_TJ_BY_ACT:
-		{
-			ASSERT(wDataSize == sizeof(CMD_GP_GetXJYKTjByAct));
-			if(wDataSize!= sizeof(CMD_GP_GetXJYKTjByAct)) return false;
-
-			CMD_GP_GetXJYKTjByAct* pLog = (CMD_GP_GetXJYKTjByAct*)pData;
-
-			DBR_GP_GetXJYKTjByAct Log;
-			Log.dwUserID = pLog->dwUserID;
-			lstrcpyn(Log.szAccount,pLog->szAccount,sizeof(Log.szAccount));
-			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_XJYK_TJ_BY_ACT,dwSocketID,&Log,sizeof(Log));
-		}
-	case SUB_GP_GET_XJYK_LOG_BY_ACT:
-		{
-			ASSERT(wDataSize == sizeof(CMD_GP_GetXJYKLogByAct));
-			if(wDataSize!= sizeof(CMD_GP_GetXJYKLogByAct)) return false;
-
-			CMD_GP_GetXJYKLogByAct* pLog = (CMD_GP_GetXJYKLogByAct*)pData;
-
-			DBR_GP_GetXJYKLogByAct Log;
-			Log.dwUserID = pLog->dwUserID;
-			lstrcpyn(Log.szAccount,pLog->szAccount,sizeof(Log.szAccount));
-			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_XJYK_LOG_BY_ACT,dwSocketID,&Log,sizeof(Log));
-		}
-	case SUB_GP_CHK_XJTZH_LOG_BY_ID:
-		{
-			ASSERT(wDataSize == sizeof(CMD_GP_CHKXJTZHLogByID));
-			if(wDataSize!= sizeof(CMD_GP_CHKXJTZHLogByID)) return false;
-
-			CMD_GP_CHKXJTZHLogByID* pLog = (CMD_GP_CHKXJTZHLogByID*)pData;
-
-			DBR_GP_CHKXJTZHLogByID Log;
-			Log.dwUserID = pLog->dwUserID;
-			Log.nXiaJiID = pLog->nXiaJiID;
-			Log.nPage = pLog->nPage;
-			Log.nSize = pLog->nSize;
-			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_CHKXJTZH_LOG_BY_ID,dwSocketID,&Log,sizeof(Log));
+			return m_pIDataBaseEngine->PostDataBaseRequest(DBO_GP_GET_QIPAIKIND,dwSocketID,pData,wDataSize);
 		}
 	case SUB_GP_GET_HYSHJ: //获取会员数据
 		{
@@ -3109,25 +3776,6 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 			lstrcpyn(Log.szTimeEnd,pLog->szTimeEnd,sizeof(Log.szTimeEnd));
 
 			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_GET_HYSHJ,dwSocketID,&Log,sizeof(Log));
-		}
-	case SUB_GP_CHK_XJTZH_LOG_BY_ACT:
-		{
-			ASSERT(wDataSize == sizeof(CMD_GP_CHKXJTZHLogByAct));
-			if(wDataSize!= sizeof(CMD_GP_CHKXJTZHLogByAct)) return false;
-
-			CMD_GP_CHKXJTZHLogByAct* pLog = (CMD_GP_CHKXJTZHLogByAct*)pData;
-
-			DBR_GP_CHKXJTZHLogByAct Log;
-			Log.dwUserID = pLog->dwUserID;
-			lstrcpyn(Log.szAccount,pLog->szAccount,sizeof(Log.szAccount));
-			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_CHKXJTZH_LOG_BY_ACT,dwSocketID,&Log,sizeof(Log));
-		}
-	case SUB_GP_GET_HYXX_LIST:
-		{
-			ASSERT(wDataSize == sizeof(CMD_GP_GetHYXXLog));
-			if(wDataSize!= sizeof(CMD_GP_GetHYXXLog)) return false;
-
-			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_HYXX_LIST,dwSocketID,pData,wDataSize);
 		}
 	case SUB_GP_GET_HYXX_LOG:
 		{
@@ -3151,32 +3799,6 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 			Log.nOnline = pLog->nOnline;
 			Log.nYue = pLog->nYue;
 			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_HYXX_LOG,dwSocketID,&Log,sizeof(Log));
-		}
-	case SUB_GP_GET_HYXX_LOG_BY_ID:
-		{
-			ASSERT(wDataSize == sizeof(CMD_GP_GetHYXXLogByID));
-			if(wDataSize!= sizeof(CMD_GP_GetHYXXLogByID)) return false;
-
-			CMD_GP_GetHYXXLogByID* pLog = (CMD_GP_GetHYXXLogByID*)pData;
-
-			DBR_GP_GetHYXXLogByID Log;
-			Log.dwUserID = pLog->dwUserID;
-			Log.nXiaJiID = pLog->nXiaJiID;
-
-			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_HYXX_LOG_BY_ID,dwSocketID,&Log,sizeof(Log));
-		}
-	case SUB_GP_GET_HYXX_LOG_BY_ACT:
-		{
-			ASSERT(wDataSize == sizeof(CMD_GP_GetHYXXLogByAct));
-			if(wDataSize!= sizeof(CMD_GP_GetHYXXLogByAct)) return false;
-
-			CMD_GP_GetHYXXLogByAct* pLog = (CMD_GP_GetHYXXLogByAct*)pData;
-
-			DBR_GP_GetHYXXLogByAct Log;
-			Log.dwUserID = pLog->dwUserID;
-			lstrcpyn(Log.szAccount,pLog->szAccount,sizeof(Log.szAccount));
-
-			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_HYXX_LOG_BY_ACT,dwSocketID,&Log,sizeof(Log));
 		}
 	case SUB_GP_XG_HY_FANDIAN:
 		{
@@ -3216,6 +3838,7 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 			DBR_GP_HYXX_ZhuanZhang Log;
 			Log.n_t_user_id = pLog->n_t_user_id;
 			Log.n_t_target_id = pLog->n_t_target_id;
+			Log.n_t_type = pLog->n_t_type;
 			Log.f_t_jine = pLog->f_t_jine;
 			CopyMemory(Log.s_t_password,pLog->s_t_password,CountArray(Log.s_t_password));
 			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_HYXX_ZHUANZHANG,dwSocketID,&Log,sizeof(Log));
@@ -3245,8 +3868,36 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 			Log.n_t_peie1 = pLog->n_t_peie1;
 			Log.n_t_peie2 = pLog->n_t_peie2;
 			Log.n_t_peie3 = pLog->n_t_peie3;
+			Log.n_t_peie4 = pLog->n_t_peie4;
+			Log.n_t_peie5 = pLog->n_t_peie5;
 
 			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_HYXX_SET_XJPEIE,dwSocketID,&Log,sizeof(Log));
+		}
+	case SUB_GP_GET_PARENT:			//设置下级配额
+		{
+			ASSERT(wDataSize == sizeof(CMD_GetParent));
+			if(wDataSize!= sizeof(CMD_GetParent)) return false;
+
+			CMD_GetParent* pLog = (CMD_GetParent*)pData;
+
+			DBO_GetParent Log;
+			Log.n_t_userid = pLog->n_t_userid;
+			Log.n_t_xj_id = pLog->n_t_xj_id;
+
+			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_GET_PARENT,dwSocketID,&Log,sizeof(Log));
+		}
+	case SUB_GP_GET_PHONE_TRASFER_FENHONG:			//设置下级配额
+		{
+			ASSERT(wDataSize == sizeof(CMD_GP_GetPhoneTransferFenhong));
+			if(wDataSize!= sizeof(CMD_GP_GetPhoneTransferFenhong)) return false;
+
+// 			CMD_GP_GetPhoneTransferFenhong* pLog = (CMD_GP_GetPhoneTransferFenhong*)pData;
+// 
+// 			DBO_GetParent Log;
+// 			Log.n_t_userid = pLog->n_t_userid;
+// 			Log.n_t_xj_id = pLog->n_t_xj_id;
+
+			return m_pIDataBaseEngine->PostDataBaseRequest(DBO_GP_GETTANSFERVERIFY,dwSocketID,pData,wDataSize);
 		}
 	case SUB_GP_GET_TIXIAN_LOG:
 		{
@@ -3315,14 +3966,16 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 			CMD_GP_GetQiPaiYingkui* pLog = (CMD_GP_GetQiPaiYingkui*)pData;
 
 			DBR_GP_GetQiPaiYingkui YingkuiMx;
-			YingkuiMx.dwUserID = pLog->dwUserID;
+			YingkuiMx.n_t_userid = pLog->n_t_userid;
+			YingkuiMx.n_t_xjid = pLog->n_t_xjid;
+			lstrcpyn(YingkuiMx.s_t_account,pLog->s_t_account,sizeof(YingkuiMx.s_t_account));
 			YingkuiMx.bByTime = pLog->bByTime;
 			YingkuiMx.nPage = pLog->nPage;
 			YingkuiMx.nSize = pLog->nSize;
 
 			lstrcpyn(YingkuiMx.szTimeStart,pLog->szTimeStart,sizeof(YingkuiMx.szTimeStart));
 			lstrcpyn(YingkuiMx.szTimeEnd,pLog->szTimeEnd,sizeof(YingkuiMx.szTimeEnd));
-			
+			YingkuiMx.nKindID = pLog->nKindID;
 			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_QP_YINGKUI,dwSocketID,&YingkuiMx,sizeof(YingkuiMx));
 		}
 	case SUB_GP_GET_REG_URL:
@@ -3375,15 +4028,62 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 				rule.SetTimeSpan(m_timespan);
 				bCheDan = rule.IsCanCancel(sQihao);
 			}
+			else if(nGameKind == CZ_TXfenfencai)
+			{
+				CTXFenFenCaiRule rule;
+				rule.SetTimeSpan(m_timespan);
+				bCheDan = rule.IsCanCancel(sQihao);
+			}
+			else if(nGameKind == CZ_QQfenfencai)
+			{
+				CQQFenFenCaiRule rule;
+				rule.SetTimeSpan(m_timespan);
+				bCheDan = rule.IsCanCancel(sQihao);
+			}
+			else if(nGameKind == CZ_ErFenCai)
+			{
+				CErFenCaiRule rule;
+				rule.SetTimeSpan(m_timespan);
+				bCheDan = rule.IsCanCancel(sQihao);
+			}
 			else if(nGameKind == CZ_HGYDWFC)
 			{
 				CHgydwfcRule rule;
 				rule.SetTimeSpan(m_timespan);
+				rule.SetQihaocha(m_nQihaocha);
+				bCheDan = rule.IsCanCancel(sQihao);
+			}
+			else if(nGameKind == CZ_JiaNaDaSSC)
+			{
+				CCanadaRule rule;
+				rule.SetTimeSpan(m_timespan);
+				rule.SetQihaoStart(m_nCanadaQihao,m_tCanadaStartTime);
 				bCheDan = rule.IsCanCancel(sQihao);
 			}
 			else if(nGameKind == CZ_WUFEN_CAI)
 			{
 				CWuFenCaiRule rule;
+				rule.SetTimeSpan(m_timespan);
+				bCheDan = rule.IsCanCancel(sQihao);
+			}
+			else if(nGameKind == CZ_BJ5FC)
+			{
+				int nStartQihao = 0;
+				CTime tTime;
+				for (map<int ,tagMapLottery*>::iterator pos = mapLotteryStatus.begin();pos!=mapLotteryStatus.end();++pos)
+				{
+					if(pos->second->MapLottery.n_t_kindid == nGameKind)
+					{
+						nStartQihao = _ttoi(pos->second->MapLottery.s_t_expect);
+
+						CTime ctm(pos->second->MapLottery.n_t_shijian);
+						tTime = ctm;
+					}
+				}
+
+				CKuaiLe8RUle rule;
+				rule.SetStartQihao(nStartQihao,tTime);
+	
 				rule.SetTimeSpan(m_timespan);
 				bCheDan = rule.IsCanCancel(sQihao);
 			}
@@ -3413,11 +4113,34 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 			}
 			else if(nGameKind == CZ_PK10)
 			{
+				int nStartQihao = 0;
+				CTime tTime;
+				for (map<int ,tagMapLottery*>::iterator pos = mapLotteryStatus.begin();pos!=mapLotteryStatus.end();++pos)
+				{
+					if(pos->second->MapLottery.n_t_kindid == nGameKind)
+					{
+						nStartQihao = _ttoi(pos->second->MapLottery.s_t_expect);
+
+						CTime ctm(pos->second->MapLottery.n_t_shijian);
+						tTime = ctm;
+					}
+				}
 				CBJPK10Rule rule;
+				rule.SetStartQihao(nStartQihao,tTime);
 				rule.SetTimeSpan(m_timespan);
 				bCheDan = rule.IsCanCancel(sQihao);
 			}
+			else if(nGameKind == CZ3D)
+			{
+				CTime tNow = ::GetCurrentTime();
 
+				tNow += m_timespan;
+				if(tNow.GetHour() == 21 && tNow.GetMinute()<=40)
+				{
+					bCheDan = false;
+				}
+
+			}
 			if (!bCheDan)
 			{
 				CString strLog;
@@ -3532,17 +4255,17 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 			ASSERT(wDataSize == sizeof(CMD_GP_GetNews));
 			if(wDataSize!= sizeof(CMD_GP_GetNews)) return false;
 
- 			CMD_GP_GetNewsRet GetNewsRet[5];
+ 			CMD_GP_GetNewsRet GetNewsRet[10];
  			ZeroMemory(GetNewsRet,sizeof(GetNewsRet));
  
  			CMD_GP_GetNews* pNews = (CMD_GP_GetNews*)pData;
  			int i = 0;
- 			for ( i = 0; i<5;i++)
+ 			for ( i = 0; i<10;i++)
  			{
  				if(m_mapNews[i].IsEmpty())
  					break;
  				CString strLog;
- 				strLog.Format(L"GETNEWS1 SUB_GP_GET_NEWS %s",m_mapNews[i]);
+ 				strLog.Format(L"CONGRATULATIONS SUB_GP_GET_NEWS %s",m_mapNews[i]);
  				OutputDebugString(strLog);
  
  				lstrcpyn(GetNewsRet[i].s_t_news,m_mapNews[i].GetBuffer(),CountArray(GetNewsRet[i].s_t_news));
@@ -3635,6 +4358,30 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 			LockMachine.cbLock = pLockMachine->cbLock;
 
 			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_LOCK_MACHINE,dwSocketID,&LockMachine,sizeof(LockMachine));
+
+		}
+	case SUB_GP_BIND_PHONE:
+		{
+			ASSERT(wDataSize == sizeof(CMD_GP_BindPhone));
+			if(wDataSize!= sizeof(CMD_GP_BindPhone)) return false;
+
+			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_BIND_PHONE,dwSocketID,pData,wDataSize);
+
+		}
+	case SUB_GP_BIND_PHONE_INFO:
+		{
+			ASSERT(wDataSize == sizeof(CMD_GP_SetBindPhoneInfo));
+			if(wDataSize!= sizeof(CMD_GP_SetBindPhoneInfo)) return false;
+
+			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_SET_PHONE_VERIFY,dwSocketID,pData,wDataSize);
+
+		}
+	case SUB_GP_UNBIND_PHONE:
+		{
+			ASSERT(wDataSize == sizeof(CMD_GP_UnBindPhone));
+			if(wDataSize!= sizeof(CMD_GP_UnBindPhone)) return false;
+
+			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_UNBIND_PHONE,dwSocketID,pData,wDataSize);
 
 		}
 	case SUB_GP_SET_QUKUAN_PROTECT:
@@ -3822,85 +4569,18 @@ bool CAttemperEngineSink::OnTCPNetworkSubPCLogonAccounts(VOID * pData, WORD wDat
 	pLogonAccounts->szPassword[CountArray(pLogonAccounts->szPassword)-1]=0;
 	pLogonAccounts->szMachineID[CountArray(pLogonAccounts->szMachineID)-1]=0;
 
-	CString strAccount;
-	strAccount.Format(L"%s",pLogonAccounts->szAccounts);
-
-	DWORD dwTickCount = GetTickCount();
-	if(m_UserLogonBlackList[strAccount] > 5)
-	{
-		//一小时后解除黑名单
-		if((dwTickCount - m_UserLogonTickCount[strAccount])>5*1000)
-		{
-			m_UserLogonBlackList[strAccount] = 0;
-			CString strLog;
-			strLog.Format(L"[%s] 已解除黑名单,可以正常登陆",pLogonAccounts->szAccounts);
-			LogFile::instance().LogText(strLog);
-
-		}
-	}
-
-
-	if(m_UserLogonBlackList[strAccount] > 5)
-	{
-		CString strLog;
-		strLog.Format(L"[%s] 已加入黑名单,关闭Socket",pLogonAccounts->szAccounts);
-		LogFile::instance().LogText(strLog);
-		//变量定义
-		CMD_GP_LogonFailure LogonFailure;
-		ZeroMemory(&LogonFailure,sizeof(LogonFailure));
-
-		//构造数据
-		LogonFailure.lResultCode=0;
-		lstrcpyn(LogonFailure.szDescribeString,_T("由于你登录过于频繁，系统已暂时停止你5分钟的登录权限"),CountArray(LogonFailure.szDescribeString));
-
-		//发送数据
-		WORD wStringSize=CountStringBuffer(LogonFailure.szDescribeString);
-		WORD wSendSize=sizeof(LogonFailure)-sizeof(LogonFailure.szDescribeString)+wStringSize;
-		bool bSuccess = m_pITCPNetworkEngine->SendData(dwSocketID,MDM_GP_LOGON,SUB_GP_LOGON_FAILURE,&LogonFailure,wSendSize);
-		//	if(bSuccess)
-		{
-			//关闭连接
-			m_pITCPNetworkEngine->ShutDownSocket(dwSocketID);
-		}
-
-		//m_pITCPNetworkEngine->ShutDownSocket(dwSocketID);
-		return true;
-	}
-	if((dwTickCount - m_UserLogonTickCount[strAccount])<3000)
-	{
-		m_UserLogonTickCount[strAccount] = dwTickCount;
-		m_UserLogonBlackList[strAccount] ++;
-		CString strLog;
-		strLog.Format(L"[%s] 连续%d次三秒内登陆,关闭Socket",pLogonAccounts->szAccounts,m_UserLogonBlackList[strAccount]);
-		LogFile::instance().LogText(strLog);
-		//变量定义
-		CMD_GP_LogonFailure LogonFailure;
-		ZeroMemory(&LogonFailure,sizeof(LogonFailure));
-
-		//构造数据
-		LogonFailure.lResultCode=0;
-		lstrcpyn(LogonFailure.szDescribeString,_T("由于你登录过于频繁，系统已暂时停止你的本次登录。"),CountArray(LogonFailure.szDescribeString));
-
-		//发送数据
-		WORD wStringSize=CountStringBuffer(LogonFailure.szDescribeString);
-		WORD wSendSize=sizeof(LogonFailure)-sizeof(LogonFailure.szDescribeString)+wStringSize;
-		bool bSuccess = m_pITCPNetworkEngine->SendData(dwSocketID,MDM_GP_LOGON,SUB_GP_LOGON_FAILURE,&LogonFailure,wSendSize);
-		//	if(bSuccess)
-		{
-			//关闭连接
-			m_pITCPNetworkEngine->ShutDownSocket(dwSocketID);
-		}
-
-		return true;
-	}
-	m_UserLogonTickCount[strAccount] = dwTickCount;
+	CString strLength ;
+	strLength.Format(L"%s",pLogonAccounts->szMachineID);
 
 	//设置连接
 	pBindParameter->cbClientKind=CLIENT_KIND_COMPUTER;
 	pBindParameter->dwPlazaVersion=pLogonAccounts->dwPlazaVersion;
 
 	//版本判断
-	if (CheckPlazaVersion(pLogonAccounts->dwPlazaVersion,dwSocketID)==false) return true;
+	if(strLength.GetLength()>=20)
+	{
+		if (CheckPlazaVersion(pLogonAccounts->dwPlazaVersion,dwSocketID)==false) return true;
+	}
 
 	//变量定义
 	DBR_GP_LogonAccounts LogonAccounts;
@@ -4185,6 +4865,47 @@ bool CAttemperEngineSink::OnGetMyUserMapBonus(DWORD dwContextID, VOID * pData, W
 	return true;
 }
 
+//查询彩种状态
+bool CAttemperEngineSink::OnQueryStatusLotteryRet(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	//效验参数
+	ASSERT(wDataSize==sizeof(DBR_GP_QueryStatusLotteryRet));
+	if ((wDataSize!=sizeof(DBR_GP_QueryStatusLotteryRet))) return false;
+
+	DBR_GP_QueryStatusLotteryRet* pLotteryRet = (DBR_GP_QueryStatusLotteryRet*)pData;
+
+	int nKindID = pLotteryRet->n_t_kindid;
+
+	if(mapLotteryStatus.find(nKindID)==mapLotteryStatus.end())
+	{
+		tagMapLottery *pMapLottery = new tagMapLottery();
+		pMapLottery->MapLottery.n_t_kindid = pLotteryRet->n_t_kindid;
+		CopyMemory(pMapLottery->MapLottery.s_t_expect,pLotteryRet->s_t_expect,CountArray(pMapLottery->MapLottery.s_t_expect));
+		pMapLottery->MapLottery.n_t_shijian = pLotteryRet->n_t_shijian;
+		pMapLottery->MapLottery.c_t_ifts = pLotteryRet->c_t_ifts;
+		mapLotteryStatus[nKindID] = pMapLottery;
+	}
+	else
+	{
+		tagMapLottery *pMapLottery =mapLotteryStatus[nKindID];
+		pMapLottery->MapLottery.n_t_kindid = pLotteryRet->n_t_kindid;
+		CopyMemory(pMapLottery->MapLottery.s_t_expect,pLotteryRet->s_t_expect,CountArray(pMapLottery->MapLottery.s_t_expect));
+		pMapLottery->MapLottery.n_t_shijian = pLotteryRet->n_t_shijian;
+		pMapLottery->MapLottery.c_t_ifts = pLotteryRet->c_t_ifts;
+
+		mapLotteryStatus[nKindID] = pMapLottery;
+	}
+
+	for (map<int ,tagMapLottery*>::iterator pos = mapLotteryStatus.begin();pos!=mapLotteryStatus.end();++pos)
+	{
+		CString strLog;
+		strLog.Format(L"MAPLOTTERY [%d]  %s    %d",pos->second->MapLottery.n_t_kindid,pos->second->MapLottery.s_t_expect,pos->second->MapLottery.c_t_ifts);
+		OutputDebugString(strLog);
+	}
+
+	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_QUERY_STATUS_LOTTERY_RET,pData,wDataSize);
+	return true;
+}
 
 //获取彩票用户返点信息
 bool CAttemperEngineSink::OnGetUserFandianRet(DWORD dwContextID, VOID * pData, WORD wDataSize)
@@ -4192,53 +4913,6 @@ bool CAttemperEngineSink::OnGetUserFandianRet(DWORD dwContextID, VOID * pData, W
 	//效验参数
 	ASSERT(wDataSize%sizeof(DBO_GR_GetUserFandianRet)==0);
 	if ((wDataSize%sizeof(DBO_GR_GetUserFandianRet))!=0) return false;
-
-// 	int nCount = (wDataSize/sizeof(DBO_GR_GetUserFandianRet));
-// 
-// 	CMD_GR_GetUserFandianRet GetUserFandianRet[200];
-// 	ZeroMemory(GetUserFandianRet,sizeof(CMD_GR_GetUserFandianRet)*200);
-// 	for(int i = 0;i < nCount;i++)
-// 	{
-// 		DBO_GR_GetUserFandianRet* pUserData = ((DBO_GR_GetUserFandianRet*)pData+i);
-// 
-// 		GetUserFandianRet[i].n_t_kindid = pUserData->n_t_kindid;
-// 		GetUserFandianRet[i].f_t_bonus = pUserData->f_t_bonus;
-// 		GetUserFandianRet[i].f_t_bonusPercent = pUserData->f_t_bonusPercent;
-// 		GetUserFandianRet[i].f_t_fandian = pUserData->f_t_fandian;
-// 
-// 		if(mapUserBonusInfo.find(pUserData->n_t_userid) == mapUserBonusInfo.end())
-// 		{
-// 			tagUserBonusInfo* pUserBonusInfo = new tagUserBonusInfo();
-// 			ZeroMemory(pUserBonusInfo->UserFandian,sizeof(DBO_GR_GetUserFandianRet)*2000);
-// 
-// 			pUserBonusInfo->UserFandian[0].n_t_userid = pUserData->n_t_userid;
-// 			pUserBonusInfo->UserFandian[0].n_t_typeid = pUserData->n_t_typeid;
-// 			pUserBonusInfo->UserFandian[0].n_t_kindid = pUserData->n_t_kindid;
-// 			pUserBonusInfo->UserFandian[0].f_t_bonus = pUserData->f_t_bonus;
-// 			pUserBonusInfo->UserFandian[0].f_t_bonusPercent = pUserData->f_t_bonusPercent;
-// 			pUserBonusInfo->UserFandian[0].f_t_fandian = pUserData->f_t_fandian;
-// 
-// 			mapUserBonusInfo[pUserData->n_t_userid] = pUserBonusInfo;
-// 		}
-// 		else
-// 		{
-//  			int n=0;
-//   			for( n=0; n<sizeof(mapUserBonusInfo[pUserData->n_t_userid]->UserFandian)/sizeof(DBO_GR_GetUserFandianRet); n++)
-//   			{
-//   				int ntypeid = mapUserBonusInfo[pUserData->n_t_userid]->UserFandian[n].n_t_typeid;
-//   				if(ntypeid == 0)
-//   					break;
-//   			}
-// 
-// 			mapUserBonusInfo[pUserData->n_t_userid]->UserFandian[n].n_t_userid = pUserData->n_t_userid;
-// 			mapUserBonusInfo[pUserData->n_t_userid]->UserFandian[n].n_t_typeid = pUserData->n_t_typeid;
-// 			mapUserBonusInfo[pUserData->n_t_userid]->UserFandian[n].n_t_kindid = pUserData->n_t_kindid;
-// 			mapUserBonusInfo[pUserData->n_t_userid]->UserFandian[n].f_t_bonus = pUserData->f_t_bonus;
-// 			mapUserBonusInfo[pUserData->n_t_userid]->UserFandian[n].f_t_bonusPercent = pUserData->f_t_bonusPercent;
-// 			mapUserBonusInfo[pUserData->n_t_userid]->UserFandian[n].f_t_fandian = pUserData->f_t_fandian;
-// 
-// 		}
-// 	}
 
 	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_GET_USER_FANDIAN_RET,pData,wDataSize);
 	return true;
@@ -4295,7 +4969,9 @@ bool CAttemperEngineSink::OnDBPCLogonSuccess(DWORD dwContextID, VOID * pData, WO
 	pCMDLogonSuccess->f_yue = pDBOLogonSuccess->f_yue;
 	pCMDLogonSuccess->f_dongjie = pDBOLogonSuccess->f_dongjie;
 	lstrcpyn(pCMDLogonSuccess->szAccounts,pDBOLogonSuccess->szAccounts,CountArray(pCMDLogonSuccess->szAccounts));
-	lstrcpyn(pCMDLogonSuccess->szNickName,pDBOLogonSuccess->szNickName,CountArray(pCMDLogonSuccess->szNickName));
+//	lstrcpyn(pCMDLogonSuccess->szNickName,pDBOLogonSuccess->szNickName,CountArray(pCMDLogonSuccess->szNickName));
+	pCMDLogonSuccess->cIsYanZheng = pDBOLogonSuccess->cIsYanZheng;
+	lstrcpyn(pCMDLogonSuccess->szPhoneNum,pDBOLogonSuccess->szPhoneNum,CountArray(pCMDLogonSuccess->szPhoneNum));
 	lstrcpyn(pCMDLogonSuccess->szAddrDescribe,pDBOLogonSuccess->szAddrDescribe,CountArray(pCMDLogonSuccess->szAddrDescribe));
 	WORD wBindIndex=LOWORD(dwContextID);
 
@@ -4321,7 +4997,7 @@ bool CAttemperEngineSink::OnDBPCLogonSuccess(DWORD dwContextID, VOID * pData, WO
 
 	SendGameTypeInfo(dwContextID);
 	SendGameKindInfo(dwContextID);
-	SendGameServerInfo(dwContextID);
+	SendGameServerInfo(dwContextID,pDBOLogonSuccess->wServerID);
 	bSuccess = m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_SERVER_LIST,SUB_GP_LIST_FINISH);
 
  	//登录完成
@@ -4329,36 +5005,49 @@ bool CAttemperEngineSink::OnDBPCLogonSuccess(DWORD dwContextID, VOID * pData, WO
  	ZeroMemory(&LogonFinish,sizeof(LogonFinish));
  	LogonFinish.wIntermitTime=m_pInitParameter->m_wIntermitTime;
  	LogonFinish.wOnLineCountTime=m_pInitParameter->m_wOnLineCountTime;
+	wstring strDesc = pDBOLogonSuccess->szDescribeString;
+	size_t sz_pos =strDesc.find(TEXT("|")); 
+	if(sz_pos == wstring::npos)
+		_sntprintf(LogonFinish.szReserved1, CountArray(LogonFinish.szReserved1), pDBOLogonSuccess->szDescribeString);
+	else
+	{
+		_sntprintf(LogonFinish.szReserved1, CountArray(LogonFinish.szReserved1), strDesc.substr(0, sz_pos).c_str());
+		_sntprintf(LogonFinish.szReserved2, CountArray(LogonFinish.szReserved2), strDesc.substr(sz_pos+1, strDesc.size() - sz_pos -1).c_str());
+	}
  	bSuccess = m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_LOGON,SUB_GP_LOGON_FINISH,&LogonFinish,sizeof(LogonFinish));
 
 
-
-	if(m_UserSocketID[pCMDLogonSuccess->dwUserID]!=0)
+	if(pCMDLogonSuccess->cIsYanZheng == 0)
 	{
-		CMD_GP_KillSocket MyKillSocket;
-		ZeroMemory(&MyKillSocket,sizeof(MyKillSocket));
-		MyKillSocket.cbResult = 1;
-		_sntprintf(MyKillSocket.szMessage,CountArray(MyKillSocket.szMessage),TEXT("您的账号已在别处登录，您被强制下线！"));
-		m_pITCPNetworkEngine->SendData(m_UserSocketID[pCMDLogonSuccess->dwUserID],MDM_GP_USER_SERVICE,SUB_GP_KILL_SOCKET,&MyKillSocket,sizeof(MyKillSocket));
-		m_pITCPNetworkEngine->ShutDownSocket(m_UserSocketID[pCMDLogonSuccess->dwUserID]);
+		if(m_UserSocketID[pCMDLogonSuccess->dwUserID]!=0)
+		{
+			CMD_GP_KillSocket MyKillSocket;
+			ZeroMemory(&MyKillSocket,sizeof(MyKillSocket));
+			MyKillSocket.cbResult = 1;
+			_sntprintf(MyKillSocket.szMessage,CountArray(MyKillSocket.szMessage),TEXT("您的账号已在别处登录，您被强制下线！"));
+			m_pITCPNetworkEngine->SendData(m_UserSocketID[pCMDLogonSuccess->dwUserID],MDM_GP_USER_SERVICE,SUB_GP_KILL_SOCKET,&MyKillSocket,sizeof(MyKillSocket));
+			m_pITCPNetworkEngine->ShutDownSocket(m_UserSocketID[pCMDLogonSuccess->dwUserID]);
+
+		}
+		else
+		{
+			//变量定义
+			CMD_CS_C_CheckUserOnline CheckUserOnline;
+			ZeroMemory(&CheckUserOnline,sizeof(CheckUserOnline));
+
+			CheckUserOnline.dwUserID = pCMDLogonSuccess->dwUserID;
+			//发送数据
+			m_pITCPSocketService->SendData(MDM_CS_REGISTER,SUB_CS_C_CHECK_USER_ONLINE,&CheckUserOnline,sizeof(CheckUserOnline));
+
+		}
+
+		m_UserSocketID[pCMDLogonSuccess->dwUserID] = dwContextID;
 
 	}
-	else
-	{
-		//变量定义
-		CMD_CS_C_CheckUserOnline CheckUserOnline;
-		ZeroMemory(&CheckUserOnline,sizeof(CheckUserOnline));
-
-		CheckUserOnline.dwUserID = pCMDLogonSuccess->dwUserID;
-		//发送数据
-		m_pITCPSocketService->SendData(MDM_CS_REGISTER,SUB_CS_C_CHECK_USER_ONLINE,&CheckUserOnline,sizeof(CheckUserOnline));
-
-	}
-
-	m_UserSocketID[pCMDLogonSuccess->dwUserID] = dwContextID;
+	m_UserSocketIDhc[pCMDLogonSuccess->dwUserID] = dwContextID;
 	//m_pITCPNetworkEngine->ShutDownSocket(dwContextID);
 	CString strLog;
-	strLog.Format(L"登陆成功！Nick:%s，m_UserSocketID：%d,dwContextID:%d", pCMDLogonSuccess->szNickName,m_UserSocketID[pCMDLogonSuccess->dwUserID],dwContextID);
+	strLog.Format(L"登陆成功！Nick:%s，m_UserSocketID：%d,dwContextID:%d", pCMDLogonSuccess->szAccounts,m_UserSocketID[pCMDLogonSuccess->dwUserID],dwContextID);
 	CTraceService::TraceString(strLog,TraceLevel_Normal);
 
 	return true;
@@ -4670,6 +5359,16 @@ bool CAttemperEngineSink::OnDBMBLogonSuccess(DWORD dwContextID, VOID * pData, WO
 	return true;
 }
 //查询游戏结果返回
+bool CAttemperEngineSink::OnDBQueryMobileOpenResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	//效验参数
+	ASSERT(wDataSize==sizeof(DBO_GP_QueryLotResult));
+	if (wDataSize!=sizeof(DBO_GP_QueryLotResult)) return false;
+
+	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_QUERY_GAME_RET,pData,wDataSize);
+	return true;
+}
+//查询游戏结果返回
 bool CAttemperEngineSink::OnDBQueryOpenResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
 {
 	//效验参数
@@ -4700,7 +5399,7 @@ bool CAttemperEngineSink::OnDBQueryOpenResult(DWORD dwContextID, VOID * pData, W
 		lstrcpyn(m_MyLuckNum[nFirstTypeID].LuckNum[nIndex].shijian,pQueryLotResult->szShijian,CountArray(m_MyLuckNum[nFirstTypeID].LuckNum[nIndex].shijian));
 
 		nIndex++;
-		if (nIndex >= 5)
+		if (nIndex >= 5&&nFirstTypeID!=CZXingYun28)
 		{
 			nIndex = 0;
 		}
@@ -4753,25 +5452,35 @@ bool CAttemperEngineSink::OnDBQueryRegUrlResult(DWORD dwContextID, VOID * pData,
 	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GR_GET_REG_URL_RET,pData,wDataSize);
 	return true;
 }
+//查询短信验证返回
+bool CAttemperEngineSink::OnDBGetTransVerifyResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	//效验参数
+	ASSERT(wDataSize==sizeof(DBO_GR_GetPhoneTransferFenhongRet));
+	if (wDataSize!=sizeof(DBO_GR_GetPhoneTransferFenhongRet)) return false;
+
+	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_GET_PHONE_TRASFER_FENHONG_RET,pData,wDataSize);
+	return true;
+}
+//获取上级返回
+bool CAttemperEngineSink::OnDBGetParentResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	//效验参数
+	ASSERT(wDataSize==sizeof(DBR_GetParentRet));
+	if (wDataSize!=sizeof(DBR_GetParentRet)) return false;
+
+	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GR_GET_PARENT_RET,pData,wDataSize);
+	return true;
+}
 //获取配额返回
 bool CAttemperEngineSink::OnDBQueryPeieResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
 {
 	//效验参数
 	ASSERT(wDataSize== sizeof(DBR_GetPeieRet));
 	if (wDataSize!=sizeof(DBR_GetPeieRet)) return false;
-	DBR_GetPeieRet *pLogRet = (DBR_GetPeieRet*)pData;
-
-	CMD_GetPeieRet LogRet;
-	ZeroMemory(&LogRet,sizeof(LogRet));
-	LogRet.n_t_peie_1 = pLogRet->n_t_peie_1;
-	LogRet.n_t_peie_2 = pLogRet->n_t_peie_2;
-	LogRet.n_t_peie_3 = pLogRet->n_t_peie_3;
-	LogRet.n_t_peie_s_1 = pLogRet->n_t_peie_s_1;
-	LogRet.n_t_peie_s_2 = pLogRet->n_t_peie_s_2;
-	LogRet.n_t_peie_s_3 = pLogRet->n_t_peie_s_3;
 
 
-	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GR_GET_Peie_RET,&LogRet,sizeof(LogRet));
+	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GR_GET_Peie_RET,pData,wDataSize);
 	return true;
 }
 //获取下级配额返回
@@ -4780,19 +5489,8 @@ bool CAttemperEngineSink::OnDBQueryXjPeieResult(DWORD dwContextID, VOID * pData,
 	//效验参数
 	ASSERT(wDataSize== sizeof(DBO_GetXjPeieRet));
 	if (wDataSize!=sizeof(DBO_GetXjPeieRet)) return false;
-	DBO_GetXjPeieRet *pLogRet = (DBO_GetXjPeieRet*)pData;
 
-	CMD_GetXjPeieRet LogRet;
-	ZeroMemory(&LogRet,sizeof(LogRet));
-	LogRet.n_t_peie_1 = pLogRet->n_t_peie_1;
-	LogRet.n_t_peie_2 = pLogRet->n_t_peie_2;
-	LogRet.n_t_peie_3 = pLogRet->n_t_peie_3;
-	LogRet.n_t_peie_s_1 = pLogRet->n_t_peie_s_1;
-	LogRet.n_t_peie_s_2 = pLogRet->n_t_peie_s_2;
-	LogRet.n_t_peie_s_3 = pLogRet->n_t_peie_s_3;
-
-
-	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GR_GET_XJ_Peie_RET,&LogRet,sizeof(LogRet));
+	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GR_GET_XJ_Peie_RET,pData,wDataSize);
 	return true;
 }
 //设置下级配额返回
@@ -5009,6 +5707,18 @@ bool CAttemperEngineSink::OnDBGetDailiHuikuiResult(DWORD dwContextID, VOID * pDa
 	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_GET_DAILI_HUIKUI_RET,pData,wDataSize);
 	return true;
 }
+//期号差返回
+bool CAttemperEngineSink::OnDBGetQihaochaResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	ASSERT(wDataSize == sizeof(DBO_GP_GetQihaoCha));
+	if(wDataSize != sizeof(DBO_GP_GetQihaoCha)) return false;
+	DBO_GP_GetQihaoCha *pGetQihaocha = (DBO_GP_GetQihaoCha*)pData;
+
+	m_nQihaocha = pGetQihaocha->n_t_qishu;
+
+	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_GET_QIHAO_CHA_RET,pData,wDataSize);
+	return true;
+}
 //代理领奖返回
 bool CAttemperEngineSink::OnDBDailiLingjiangResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
 {
@@ -5029,6 +5739,114 @@ bool CAttemperEngineSink::OnDBDailiLingjiangResult(DWORD dwContextID, VOID * pDa
 
 	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_DAILI_LJ_RET,&DailiLingjiangRet,sizeof(DailiLingjiangRet));
 	return true;
+}
+//获取站内信数量返回
+bool CAttemperEngineSink::OnDBGetZnxCountResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	ASSERT(wDataSize == sizeof(DBO_GP_GetZnxCountRet));
+	if(wDataSize != sizeof(DBO_GP_GetZnxCountRet)) return false;
+
+	DBO_GP_GetZnxCountRet* pLogRet = (DBO_GP_GetZnxCountRet*)pData;
+	m_dwTickZnxCount[pLogRet->n_t_userid]=pLogRet->n_t_count;
+
+	CMD_GP_GetZnxCountRet LogRet;
+	ZeroMemory(&LogRet,sizeof(LogRet));
+	LogRet.n_t_count=pLogRet->n_t_count;
+
+	return m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_GET_ZNX_COUNT_RET,&LogRet,sizeof(LogRet));
+}
+//发送信息返回
+bool CAttemperEngineSink::OnDBSendMessageResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	ASSERT(wDataSize == sizeof(DBO_GP_SendMessageRet));
+	if(wDataSize != sizeof(DBO_GP_SendMessageRet)) return false;
+
+	return m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_SEND_MESSAGE_RET,pData,wDataSize);
+}
+//删除信息返回
+bool CAttemperEngineSink::OnDBDelMessageResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	ASSERT(wDataSize == sizeof(DBO_GP_DelMessageRet));
+	if(wDataSize != sizeof(DBO_GP_DelMessageRet)) return false;
+
+	return m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_DEL_MESSAGE_RET,pData,wDataSize);
+}
+//获取站内信数量返回
+bool CAttemperEngineSink::OnDBGetZnxAllCountResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	ASSERT(wDataSize % sizeof(DBO_GP_GetAllZnxCountRet)==0);
+	if((wDataSize % sizeof(DBO_GP_GetAllZnxCountRet))!=0) return false;
+
+	int nCount = wDataSize/sizeof(DBO_GP_GetAllZnxCountRet);
+	for(int i = 0;i < nCount;i++)
+	{
+		DBO_GP_GetAllZnxCountRet* pLogRet = (DBO_GP_GetAllZnxCountRet*)pData+i;
+		int n_t_userid = pLogRet->n_t_userid;
+
+		CString strLog;
+		strLog.Format(L"ALLZNXCOUNT user:%d,cnt:%d,socket:%d",pLogRet->n_t_userid,pLogRet->n_t_count,m_UserSocketID[n_t_userid]);
+		OutputDebugString(strLog);
+		if(m_UserSocketID.find(n_t_userid) != m_UserSocketID.end())
+		{
+			strLog.Format(L"ALLZNXCOUNT send user:%d,cnt:%d",pLogRet->n_t_userid,pLogRet->n_t_count);
+			OutputDebugString(strLog);
+			CMD_GP_GetZnxCountRet LogRet;
+			ZeroMemory(&LogRet,sizeof(LogRet));
+			LogRet.n_t_count=pLogRet->n_t_count;
+
+			m_pITCPNetworkEngine->SendData(m_UserSocketID[n_t_userid],MDM_GP_USER_SERVICE,SUB_GP_GET_ZNX_COUNT_RET,&LogRet,sizeof(LogRet));
+			continue;
+		}
+
+	}
+
+	return m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_GET_ZNX_COUNT_RET,pData,wDataSize);
+}
+//获取上下级信息返回
+bool CAttemperEngineSink::OnDBGetAllUserInfoRet(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	ASSERT(wDataSize % sizeof(DBO_GP_GetAllUserInfoRet)==0);
+	if(wDataSize % sizeof(DBO_GP_GetAllUserInfoRet)!=0) return false;
+
+	return m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_GET_ALL_USERINFO_RET,pData,wDataSize);
+
+}
+//代理领奖返回
+bool CAttemperEngineSink::OnDBGetNoticeRet(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	ASSERT(wDataSize % sizeof(DBR_GP_GetNoticRet)==0);
+	if(wDataSize % sizeof(DBR_GP_GetNoticRet)!=0) return false;
+
+	int nCount = wDataSize/sizeof(DBR_GP_GetNoticRet);
+
+	CMD_GP_GetNoticRet LogRet[10];
+	ZeroMemory(&LogRet,sizeof(CMD_GP_GetNoticRet)*10);
+	nCount = min(nCount,10);
+	int i = 0;
+	mapNotice.clear();
+	for(i = 0;i < nCount;i++)
+	{
+		DBR_GP_GetNoticRet* pLogRet = ((DBR_GP_GetNoticRet*)pData+i);
+		if(pLogRet!=NULL)
+		{
+			CopyMemory(LogRet[i].s_t_content,pLogRet->s_t_content,CountArray(LogRet[i].s_t_content));
+			LogRet[i].n_t_time = pLogRet->n_t_time;
+			LogRet[i].n_t_type = pLogRet->n_t_type;
+			CopyMemory(LogRet[i].s_t_title,pLogRet->s_t_title,CountArray(LogRet[i].s_t_title));
+
+			CopyMemory(m_MyNotice[i].Notice.s_t_content,pLogRet->s_t_content,CountArray(m_MyNotice[i].Notice.s_t_content));
+			m_MyNotice[i].Notice.n_t_time = pLogRet->n_t_time;
+			m_MyNotice[i].Notice.n_t_type = pLogRet->n_t_type;
+			CopyMemory(m_MyNotice[i].Notice.s_t_title,pLogRet->s_t_title,CountArray(m_MyNotice[i].Notice.s_t_title));
+
+			int nSize = mapNotice.size();
+			mapNotice.insert(make_pair(nSize,&m_MyNotice[i]));
+		}
+	}
+
+	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_GET_NOTICE_RET,&LogRet,sizeof(CMD_GP_GetNoticRet)*i);
+	return true;
+	
 }
 //取款信息返回
 bool CAttemperEngineSink::OnDBGetQukuanInfoResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
@@ -5145,10 +5963,20 @@ bool CAttemperEngineSink::OnDBDoQukuanResult(DWORD dwContextID, VOID * pData, WO
 
 	CMD_GP_DoQukuanRet LogRet;
 	ZeroMemory(&LogRet,sizeof(LogRet));
+	int nUserID = pLogRet->nUserID;
+	GetUserYueInfo(nUserID,dwContextID);
 
 	lstrcpyn(LogRet.szDesc,pLogRet->szDesc,sizeof(LogRet.szDesc));
 	LogRet.nResult = pLogRet->nResult;
 	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_DO_QU_KUAN_RET,&LogRet,sizeof(LogRet));
+	return true;
+}
+//取款限制返回
+bool CAttemperEngineSink::OnDBDoQukuanLimitResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	ASSERT(wDataSize == sizeof(DBO_GP_GetQukuanLimitRet));
+	if(wDataSize != sizeof(DBO_GP_GetQukuanLimitRet)) return false;
+	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_GET_QUKUAN_LIMIT_RET,pData,wDataSize);
 	return true;
 }
 //查询下注日志
@@ -5161,6 +5989,16 @@ bool CAttemperEngineSink::OnDBGetTouzhuLogResult(DWORD dwContextID, VOID * pData
 
 	return true;
 }
+//查询站内信返回
+bool CAttemperEngineSink::OnDBGetZnxInboxResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	ASSERT(wDataSize % sizeof(DBO_GP_GetInboxMessageRet)==0);
+	if(wDataSize % sizeof(DBO_GP_GetInboxMessageRet)!=0) return false;
+
+	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_GET_INBOX_MESSAGE_RET,pData, wDataSize);
+
+	return true;
+}
 //查询新闻
 bool CAttemperEngineSink::OnDBGetNewsResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
 {
@@ -5169,64 +6007,33 @@ bool CAttemperEngineSink::OnDBGetNewsResult(DWORD dwContextID, VOID * pData, WOR
  	CString strLog;
  
 
-	CMD_GP_GetNewsRet GetNewsRet[5];
-	ZeroMemory(&GetNewsRet,sizeof(GetNewsRet));
+ 	CMD_GP_GetNewsRet GetNewsRet[10];
+ 	ZeroMemory(&GetNewsRet,sizeof(GetNewsRet));
 	CString str ;
 
 	int i = 0;
  	int nCount = (wDataSize / sizeof(DBO_GP_GetNewsRet));
+	nCount = min(nCount,10);
+	m_mapNews.clear();
  	for( i = 0;i < nCount;i++)
  	{
  		DBO_GP_GetNewsRet* pGetNews = ((DBO_GP_GetNewsRet*)pData+i);
 
-		lstrcpyn(GetNewsRet[i].s_t_news,pGetNews->s_t_news,sizeof(GetNewsRet[i].s_t_news));
+// 		lstrcpyn(GetNewsRet[i].s_t_account,pGetNews->s_t_account,sizeof(GetNewsRet[i].s_t_account));
+// 		lstrcpyn(GetNewsRet[i].s_t_TypeName,pGetNews->s_t_TypeName,sizeof(GetNewsRet[i].s_t_TypeName));
+// 		lstrcpyn(GetNewsRet[i].s_t_qihao,pGetNews->s_t_qihao,sizeof(GetNewsRet[i].s_t_qihao));
+// 		GetNewsRet[i].f_t_yingkui = pGetNews->f_t_yingkui;
+		CString strNick;
+		strNick.Format(L"%s",pGetNews->s_t_account);
+		CString strLog;
+		strLog.Format(L"恭喜【%s***】%s第%s期喜中%.0lf元大奖！",strNick.Left(5),pGetNews->s_t_TypeName,pGetNews->s_t_qihao,	pGetNews->f_t_yingkui);
 
- 		CString strNews;
- 		strNews.Format(L"%s",pGetNews->s_t_news);
- 		m_mapNews[i] = strNews;
- 
-		str.Format(_T("%02d-%02d-%02d %02d:%02d:%02d"), pGetNews->s_t_time.wYear,pGetNews->s_t_time.wMonth,
-			pGetNews->s_t_time.wDay, pGetNews->s_t_time.wHour, pGetNews->s_t_time.wMinute, pGetNews->s_t_time.wSecond);
+		m_mapNews[i] = strLog;
 
 
- 	//	CString strLog;
  	}
+	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_GET_NEWS_RET,&GetNewsRet, sizeof(CMD_GP_GetNewsRet)*nCount);
 
-	bool bSendToUser = false;
-	if (m_strNewsTime.IsEmpty())
-	{
-		m_strNewsTime = str;
-		bSendToUser = true;
-	}
-	else if(m_strNewsTime != str)
-	{
-		bSendToUser = true;
-		m_strNewsTime = str;
-	}
-	strLog.Format(L"GETNEWS RESULT %s,bSendToUser:%d,m_strNewsTime:%s,str:%s",m_mapNews[i],bSendToUser,m_strNewsTime,str);
-	OutputDebugString(strLog);
-
-	if(bSendToUser)
-	{
-		map<int,DWORD>::iterator it;
-		for(it=m_UserSocketID.begin();it!=m_UserSocketID.end();++it)
-		{
-			CMD_GP_GetNewsRet GetNewsRet[20];
-			ZeroMemory(GetNewsRet,sizeof(GetNewsRet));
-
-			for( i = 0;i < nCount;i++)
-			{
-				lstrcpyn(GetNewsRet[i].s_t_news,m_mapNews[i],sizeof(GetNewsRet[i].s_t_news));
-				strLog.Format(L"GETNEWS Send %d %s ,user:%d",i,GetNewsRet[i].s_t_news,it->first);
-				OutputDebugString(strLog);
-
-			}
-
-			m_pITCPNetworkEngine->SendData(it->second,MDM_GP_USER_SERVICE,SUB_GP_GET_NEWS_RET,&GetNewsRet, sizeof(CMD_GP_GetNewsRet)*i);
-		}
-	}
- 
-	//m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_GET_NEWS_RET,&GetNewsRet, sizeof(CMD_GP_GetNewsRet)*i);
 
 	return true;
 }
@@ -5290,13 +6097,6 @@ bool CAttemperEngineSink::OnGetMapBonusRet(DWORD dwContextID, VOID * pData, WORD
 
 			pMapBonus->MapBonus.n_t_bonustype = pGetMapBonusRet->n_t_bonustype;
 			mapMapBonus[nMap+i] = pMapBonus;
-
-// 		//	int nMap = mapMapBonus.size();
-// 			mapMapBonus[nMap]->MapBonus.f_t_bonus = pGetMapBonusRet->f_t_bonus;
-// 			mapMapBonus[nMap]->MapBonus.n_t_kind_id = pGetMapBonusRet->n_t_kind_id;
-// 			mapMapBonus[nMap]->MapBonus.n_t_type_id = pGetMapBonusRet->n_t_type_id;
-// 			mapMapBonus[nMap++]->MapBonus.n_t_bonustype = pGetMapBonusRet->n_t_bonustype;
-
 		}
 
 		if(mapMapBonus[nMap+i]->MapBonus.n_t_kind_id == 66 && mapMapBonus[nMap+i]->MapBonus.n_t_type_id == 1)
@@ -5348,6 +6148,51 @@ bool CAttemperEngineSink::OnGetWinUserIDRet(DWORD dwContextID, VOID * pData, WOR
 	}
 	return true;
 }
+bool CAttemperEngineSink::OnGetCanadaQiHaoRet(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	ASSERT(wDataSize % sizeof(DBO_GR_GetCanadaQihaoRet)==0);
+	if(wDataSize % sizeof(DBO_GR_GetCanadaQihaoRet)!=0) return false;
+	int nCount = wDataSize/sizeof(DBO_GR_GetCanadaQihaoRet);
+	if(nCount <=1)
+	{
+		m_nCanadaQihao = 0;
+		m_tCanadaStartTime = ::GetCurrentTime();
+		return true;
+	}
+
+	int nQihao[2] = {0};
+	CTime nStartTime[2];
+
+	for(int i = 0;i < nCount;i++)
+	{
+		DBO_GR_GetCanadaQihaoRet* pLogret = ((DBO_GR_GetCanadaQihaoRet *)pData+i);
+		if(pLogret!=NULL)
+		{
+			nQihao[i] = _ttoi(pLogret->s_t_qihao);
+			CTime t(pLogret->n_t_open_time);
+			nStartTime[i] = t;
+
+		}
+	}
+
+	m_nCanadaQihao = nQihao[0];
+	m_tCanadaStartTime = nStartTime[0];
+
+	CTimeSpan tSpan = nStartTime[1]-nStartTime[0];
+	if(tSpan.GetMinutes() == 4)
+	{
+		m_tCanadaStartTime += CTimeSpan(0,0,0,30);
+	}
+
+	CMD_GP_GetCanadaQihaoRet GetCanadaQihao;
+	GetCanadaQihao.n_t_start_qihao = m_nCanadaQihao;
+	GetCanadaQihao.n_t_start_time = m_tCanadaStartTime;
+
+	return m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_GET_CANADA_START_QIHAO_RET,&GetCanadaQihao,sizeof(GetCanadaQihao));
+
+
+	return true;
+}
 //获取系统时间
 bool CAttemperEngineSink::OnGetSysTimeRet(DWORD dwContextID, VOID * pData, WORD wDataSize)
 {
@@ -5396,6 +6241,16 @@ bool CAttemperEngineSink::OnDBGetXJTxLogResult(DWORD dwContextID, VOID * pData, 
 	if(wDataSize % sizeof(DBO_GR_GetXJTxLogRet)!=0) return false;
 
 	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_GET_XJTX_LOG_RET,pData, wDataSize);
+
+	return true;
+}
+//获取棋牌游戏返回
+bool CAttemperEngineSink::OnDBGetQipaiKindResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	ASSERT(wDataSize % sizeof(DBO_GR_GetQipaiKindRet)==0);
+	if(wDataSize % sizeof(DBO_GR_GetQipaiKindRet)!=0) return false;
+
+	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_GET_QIPAI_KIND_RET,pData, wDataSize);
 
 	return true;
 }
@@ -5657,6 +6512,36 @@ bool CAttemperEngineSink::OnDBLockMachineResult(DWORD dwContextID, VOID * pData,
 
 	return true;
 }
+//绑定手机返回
+bool CAttemperEngineSink::OnDBBindPhoneResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	ASSERT(wDataSize==sizeof(DBO_GR_BindPhone_RET));
+	if (wDataSize!=sizeof(DBO_GR_BindPhone_RET)) return false;
+
+	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GR_BIND_PHONE_RET,pData, wDataSize);
+
+	return true;
+}
+//设置验证返回
+bool CAttemperEngineSink::OnDBSetPhoneInfoResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	ASSERT(wDataSize==sizeof(DBO_GR_BindPhoneInfo_RET));
+	if (wDataSize!=sizeof(DBO_GR_BindPhoneInfo_RET)) return false;
+
+	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GR_BIND_PHONE_INFO_RET,pData, wDataSize);
+
+	return true;
+}
+//解除绑定返回
+bool CAttemperEngineSink::OnDBSetUnBindPhoneResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	ASSERT(wDataSize==sizeof(DBO_GR_UnBindPhone_RET));
+	if (wDataSize!=sizeof(DBO_GR_UnBindPhone_RET)) return false;
+
+	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GR_UNBIND_PHONE_RET,pData, wDataSize);
+
+	return true;
+}
 //修改取款密码返回
 bool CAttemperEngineSink::OnDBXGQukuanPassResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
 {
@@ -5664,6 +6549,67 @@ bool CAttemperEngineSink::OnDBXGQukuanPassResult(DWORD dwContextID, VOID * pData
 	if (wDataSize%sizeof(DBO_GR_XG_Qukuanpass_RET)!=0) return false;
 
 	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GR_XG_QUKUAN_PASS_RET,pData, wDataSize);
+
+	return true;
+}
+//数据库检测验证码返回
+bool CAttemperEngineSink::OnDBCheckYzmTransResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	ASSERT(wDataSize==sizeof(DBO_GR_SendYanZhengmaRet));
+	if (wDataSize!=sizeof(DBO_GR_SendYanZhengmaRet)) return false;
+
+	DBO_GR_SendYanZhengmaRet* pSendYanZhengma = (DBO_GR_SendYanZhengmaRet*)pData;
+
+	CMD_GR_SendYanZhengmaRet SendYanZhengmaRet;
+	ZeroMemory(&SendYanZhengmaRet,sizeof(SendYanZhengmaRet));
+	SendYanZhengmaRet.nResult = pSendYanZhengma->nResult;
+	lstrcpyn(SendYanZhengmaRet.sDesc,pSendYanZhengma->sDesc,CountArray(SendYanZhengmaRet.sDesc));
+
+	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_SEND_CHECKYANZHENGMA_TRANS_RET,&SendYanZhengmaRet, sizeof(SendYanZhengmaRet));
+
+	return true;
+}
+//数据库检测验证码返回
+bool CAttemperEngineSink::OnDBCheckYzmResult(DWORD dwContextID, VOID * pData, WORD wDataSize)
+{
+	ASSERT(wDataSize==sizeof(DBO_GR_SendYanZhengmaRet));
+	if (wDataSize!=sizeof(DBO_GR_SendYanZhengmaRet)) return false;
+
+	DBO_GR_SendYanZhengmaRet* pCheckYanzheng = (DBO_GR_SendYanZhengmaRet*)pData;
+
+	if(pCheckYanzheng->nResult == 0)
+	{
+		if(m_UserSocketID[pCheckYanzheng->n_t_userid]!=0)
+		{
+			CMD_GP_KillSocket MyKillSocket;
+			ZeroMemory(&MyKillSocket,sizeof(MyKillSocket));
+			MyKillSocket.cbResult = 1;
+			_sntprintf(MyKillSocket.szMessage,CountArray(MyKillSocket.szMessage),TEXT("您的账号已在别处登录，您被强制下线！"));
+			m_pITCPNetworkEngine->SendData(m_UserSocketID[pCheckYanzheng->n_t_userid],MDM_GP_USER_SERVICE,SUB_GP_KILL_SOCKET,&MyKillSocket,sizeof(MyKillSocket));
+			m_pITCPNetworkEngine->ShutDownSocket(m_UserSocketID[pCheckYanzheng->n_t_userid]);
+
+		}
+		else
+		{
+			//变量定义
+			CMD_CS_C_CheckUserOnline CheckUserOnline;
+			ZeroMemory(&CheckUserOnline,sizeof(CheckUserOnline));
+
+			CheckUserOnline.dwUserID = pCheckYanzheng->n_t_userid;
+			//发送数据
+			m_pITCPSocketService->SendData(MDM_CS_REGISTER,SUB_CS_C_CHECK_USER_ONLINE,&CheckUserOnline,sizeof(CheckUserOnline));
+
+		}
+
+		m_UserSocketID[pCheckYanzheng->n_t_userid] = m_UserSocketIDhc[pCheckYanzheng->n_t_userid];
+	//	m_UserSocketIDhc[pCheckYanzheng->n_t_userid] = dwContextID;
+
+	}
+	CMD_GR_SendYanZhengmaRet SendYanZhengmaRet;
+	ZeroMemory(&SendYanZhengmaRet,sizeof(SendYanZhengmaRet));
+	SendYanZhengmaRet.nResult = pCheckYanzheng->nResult;
+	CopyMemory(SendYanZhengmaRet.sDesc,pCheckYanzheng->sDesc,CountArray(SendYanZhengmaRet.sDesc));
+	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_SEND_CHECKYANZHENGMA_RET,&SendYanZhengmaRet, sizeof(SendYanZhengmaRet));
 
 	return true;
 }
@@ -6035,16 +6981,16 @@ bool CAttemperEngineSink::CheckPlazaVersion(DWORD dwPlazaVersion, DWORD dwSocket
 
 	CString strLog;
 	strLog.Format(L"BANBENHAO GetSubVer(dwPlazaVersion) = %d,GetSubVer(VERSION_PLAZA) = %d",GetSubVer(dwPlazaVersion),m_pInitParameter->m_dwSubVer);
-	OutputDebugString(strLog);
+//	OutputDebugString(strLog);
 	strLog.Format(L"BANBENHAO GetMainVer(dwPlazaVersion) = %d,GetMainVer(VERSION_PLAZA) = %d",GetMainVer(dwPlazaVersion),m_pInitParameter->m_dwMainVer);
-	OutputDebugString(strLog);
+//	OutputDebugString(strLog);
 	strLog.Format(L"BANBENHAO GetProductVer(dwPlazaVersion) = %d,GetProductVer(VERSION_PLAZA) = %d",GetProductVer(dwPlazaVersion),m_pInitParameter->m_dwProductVer);
-	OutputDebugString(strLog);
-	strLog.Format(L"BANBENHAO bAdviceUpdate = %d,bMustUpdate = %d",bAdviceUpdate,bMustUpdate);
-	OutputDebugString(strLog);
 	//升级判断
 	if ((bMustUpdate==true)||(bAdviceUpdate==true))
 	{
+	OutputDebugString(strLog);
+	strLog.Format(L"BANBENHAO bAdviceUpdate = %d,bMustUpdate = %d",bAdviceUpdate,bMustUpdate);
+	OutputDebugString(strLog);
 		//变量定义
 		CMD_GP_UpdateNotify UpdateNotify;
 		ZeroMemory(&UpdateNotify,sizeof(UpdateNotify));
@@ -6052,7 +6998,7 @@ bool CAttemperEngineSink::CheckPlazaVersion(DWORD dwPlazaVersion, DWORD dwSocket
 		//变量定义
 		UpdateNotify.cbMustUpdate=bMustUpdate;
 		UpdateNotify.cbAdviceUpdate=bAdviceUpdate;
-		UpdateNotify.dwCurrentVersion=VERSION_PLAZA;
+		UpdateNotify.dwCurrentVersion=PROCESS_VERSION(m_pInitParameter->m_dwMainVer,m_pInitParameter->m_dwSubVer,m_pInitParameter->m_dwProductVer);
 
 		//发送消息
 		m_pITCPNetworkEngine->SendData(dwSocketID,MDM_GP_LOGON,SUB_GP_UPDATE_NOTIFY,&UpdateNotify,sizeof(UpdateNotify));
@@ -6151,7 +7097,7 @@ VOID CAttemperEngineSink::SendGameKindInfo(DWORD dwSocketID)
 }
 
 //发送房间
-VOID CAttemperEngineSink::SendGameServerInfo(DWORD dwSocketID)
+VOID CAttemperEngineSink::SendGameServerInfo(DWORD dwSocketID,WORD wServerID)
 {
 	//网络数据
 	WORD wSendSize=0;
@@ -6183,6 +7129,12 @@ VOID CAttemperEngineSink::SendGameServerInfo(DWORD dwSocketID)
 	//发送剩余
 	if (wSendSize>0) m_pITCPNetworkEngine->SendData(dwSocketID,MDM_GP_SERVER_LIST,SUB_GP_LIST_SERVER,cbDataBuffer,wSendSize);
 
+	CMD_GP_KaXianServerID KaXianServerID;
+	ZeroMemory(&KaXianServerID,sizeof(KaXianServerID));
+
+	KaXianServerID.n_t_serverid = wServerID;
+
+	m_pITCPNetworkEngine->SendData(dwSocketID,MDM_GP_SERVER_LIST,SUB_GP_KAXIAN_SERVERID,&KaXianServerID,sizeof(KaXianServerID));
 	return;
 }
 

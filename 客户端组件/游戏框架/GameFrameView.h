@@ -6,8 +6,7 @@
 #include "GameFrameHead.h"
 #include "DlgInsureGame.h"
 //#include "DlgMatchAwards.h"
-#include <vector>
-using namespace std;
+
 //////////////////////////////////////////////////////////////////////////////////
 
 //сно╥йсм╪

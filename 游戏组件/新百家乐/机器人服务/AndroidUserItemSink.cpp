@@ -81,6 +81,8 @@ CAndroidUserItemSink::CAndroidUserItemSink()
 	m_RobotInfo.nAreaChance[5] = 0;
 	m_RobotInfo.nAreaChance[6] = 0;
 	m_RobotInfo.nAreaChance[7] = 0;
+
+
 	return;
 }
 
@@ -175,6 +177,7 @@ bool CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
 		}
 	case IDI_CHECK_BANKER:		//检查上庄
 		{
+
 			m_pIAndroidUserItem->KillGameTimer(nTimerID);
 
 			if (m_wCurrentBanker == m_pIAndroidUserItem->GetChairID())
@@ -183,9 +186,8 @@ bool CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
 			int nMinCount = m_nRobotApplyBanker;
 			if ( m_nRobotApplyBanker > m_nRobotListMinCount)
 				nMinCount = (rand()%(m_nRobotApplyBanker - m_nRobotListMinCount)) + m_nRobotListMinCount;
-
 			
-	//		if (m_wCurrentBanker == INVALID_CHAIR)
+		if (m_wCurrentBanker == INVALID_CHAIR)
 			{
 				//空庄
 				m_nWaitBanker++;
@@ -204,6 +206,7 @@ bool CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
 					IServerUserItem *pIUserItemBanker = m_pIAndroidUserItem->GetMeUserItem();
 					if (pIUserItemBanker->GetUserScore() > m_lBankerCondition) 
 					{
+				
 						//机器人上庄
 						m_nBankerCount = 0;
 						m_stlApplyBanker++;
@@ -211,11 +214,11 @@ bool CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
 					}
 				}
 			}
-		//	else if ( m_wCurrentBanker != INVALID_CHAIR )
-		//	{
+			else if ( m_wCurrentBanker != INVALID_CHAIR )
+			{
 				//其他人坐庄
-		//		m_nWaitBanker = 0;
-		//	}
+				m_nWaitBanker = 0;
+			}
 
 			return false;
 		}
@@ -280,6 +283,7 @@ bool CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
 				if (nACTotal <= 0)	return false;
 				do {
 					nRandNum = (rand()+wMyID+nStFluc*3) % nACTotal;
+
 					for (int i = 0; i < AREA_COUNT; i++)
 					{
 						nRandNum -= m_RobotInfo.nAreaChance[i];
@@ -291,7 +295,6 @@ bool CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
 					}
 				}
 				while (m_lAreaChip[nChipArea] < m_RobotInfo.nChip[m_nChipLimit[0]]);
-
 				LONGLONG lLeaveScore = 0;
 				lLeaveScore = (m_lMaxChipBanker-m_lAreaChip1[nChipArea]);
 
@@ -323,11 +326,10 @@ bool CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
 							break;
 						}
 					}
-
 					//随机下注
 					nRandNum = (rand()+wMyID) % (nCurJetLmt[1]-nCurJetLmt[0]+1);
-					nCurChip = nCurJetLmt[0] + nRandNum;
 
+					nCurChip = nCurJetLmt[0] + nRandNum;
 					//多下控制 (当庄家金币较少时会尽量保证下足次数)
 					if (m_nChipTimeCount < m_nChipTime)
 					{
@@ -344,7 +346,6 @@ bool CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
 
 				//变量定义
 				CMD_C_PlaceBet PlaceBet = {};
-
 				//构造变量
 				PlaceBet.cbBetArea = nChipArea;		//区域宏从1开始
 				PlaceBet.lBetScore = m_RobotInfo.nChip[nCurChip];
@@ -534,17 +535,19 @@ bool CAndroidUserItemSink::OnSubGameFree(const void * pBuffer, WORD wDataSize)
 		m_nBankerCount++;
 		if ( m_nBankerCount >= m_nRobotBankerCount )
 		{
-			//机器人走庄
+			//机器人做庄
 			m_nBankerCount = 0;
 			m_pIAndroidUserItem->SetGameTimer(IDI_GIVEUP_BANKER, rand()%2 + 1);
 
 			bMeGiveUp = true;
 		}
 	}
-
+	
+	
 	//检查上庄
 	if (m_wCurrentBanker != m_pIAndroidUserItem->GetChairID() || bMeGiveUp)
 	{
+		
 		m_cbTimeLeave = pGameFree->cbTimeLeave - 3;
 		m_pIAndroidUserItem->SetGameTimer(IDI_CHECK_BANKER, 3);
 	}
@@ -603,6 +606,7 @@ bool CAndroidUserItemSink::OnSubGameStart(const void * pBuffer, WORD wDataSize)
 		m_nChipTime = m_nRobotBetTimeLimit[0];
 	else
 		m_nChipTime = (rand()+wMyID)%(m_nRobotBetTimeLimit[1]-m_nRobotBetTimeLimit[0]+1) + m_nRobotBetTimeLimit[0];
+
 	ASSERT(m_nChipTime>=0);		
 	if (m_nChipTime <= 0)	return false;								//的确,2个都带等于
 	if (m_nChipTime > MAX_CHIP_TIME)	m_nChipTime = MAX_CHIP_TIME;	//限定MAX_CHIP次下注
@@ -619,6 +623,13 @@ bool CAndroidUserItemSink::OnSubGameStart(const void * pBuffer, WORD wDataSize)
 		nElapse = 2 + (nTimeGrid*i)/1000 + ( (rand()+wMyID)%(nRandRage*2) - (nRandRage-1) );
 		ASSERT(nElapse>=2&&nElapse<=pGameStart->cbTimeLeave);
 		if (nElapse < 2 || nElapse > pGameStart->cbTimeLeave)	continue;
+
+	
+
+		if (nElapse>3)
+		{
+			nElapse = 3;//机器人之多在多少秒之内全部下完
+		}
 		
 		m_pIAndroidUserItem->SetGameTimer(IDI_PLACE_JETTON+i+1, nElapse);
 	}
@@ -629,7 +640,7 @@ bool CAndroidUserItemSink::OnSubGameStart(const void * pBuffer, WORD wDataSize)
 	return true;
 }
 
-//用户加注
+//用户下注
 bool CAndroidUserItemSink::OnSubPlaceBet(const void * pBuffer, WORD wDataSize)
 {
 	//效验数据
@@ -642,9 +653,7 @@ bool CAndroidUserItemSink::OnSubPlaceBet(const void * pBuffer, WORD wDataSize)
 	//设置变量
 //	m_lMaxChipBanker -= pPlaceBet->lBetScore;
 
-//	CString strLog;
 
-	m_lAreaChip[pPlaceBet->cbBetArea-1] -= pPlaceBet->lBetScore;
 	m_lAreaChip1[pPlaceBet->cbBetArea-1] += pPlaceBet->lBetScore;
 	if (pPlaceBet->wChairID == m_pIAndroidUserItem->GetChairID())
 		m_lMaxChipUser -= pPlaceBet->lBetScore;
@@ -758,8 +767,8 @@ void CAndroidUserItemSink::ReadConfigInformation(TCHAR szFileName[], TCHAR szRoo
 	if (m_lRobotBetLimit[1] < m_lRobotBetLimit[0])	m_lRobotBetLimit[1] = m_lRobotBetLimit[0];
 
 	//次数限制
-	m_nRobotBetTimeLimit[0] = GetPrivateProfileInt(szRoomName, TEXT("RobotMinBetTime"), 4, szConfigFileName);;
-	m_nRobotBetTimeLimit[1] = GetPrivateProfileInt(szRoomName, TEXT("RobotMaxBetTime"), 8, szConfigFileName);;
+	m_nRobotBetTimeLimit[0] = GetPrivateProfileInt(szRoomName, TEXT("RobotMinBetTime"), 1, szConfigFileName);;
+	m_nRobotBetTimeLimit[1] = GetPrivateProfileInt(szRoomName, TEXT("RobotMaxBetTime"), 3, szConfigFileName);;
 
 	if (m_nRobotBetTimeLimit[0] < 0)							m_nRobotBetTimeLimit[0] = 0;
 	if (m_nRobotBetTimeLimit[1] < m_nRobotBetTimeLimit[0])		m_nRobotBetTimeLimit[1] = m_nRobotBetTimeLimit[0];

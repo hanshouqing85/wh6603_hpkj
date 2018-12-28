@@ -468,41 +468,41 @@ VOID CGameClientView::RectifyControl(int nWidth, int nHeight)
 	m_ArrayBetArea[AREA_ZHUANG_TIAN].Add(rectArea);
 
 	//³ïÂëÊý×Ö
-	m_ptBetNumber[AREA_XIAN].SetPoint( ptBenchmark.x + 244, ptBenchmark.y + 334 );
-	m_ptBetNumber[AREA_XIAN_TIAN].SetPoint( ptBenchmark.x + 214, ptBenchmark.y + 477 );
-	m_ptBetNumber[AREA_XIAN_DUI].SetPoint( ptBenchmark.x + 280, ptBenchmark.y + 195 );
+	m_ptBetNumber[AREA_XIAN].SetPoint( ptBenchmark.x + 244, ptBenchmark.y + 334 + 20 -15);
+	m_ptBetNumber[AREA_XIAN_TIAN].SetPoint( ptBenchmark.x + 214, ptBenchmark.y + 477 + 20-15 );
+	m_ptBetNumber[AREA_XIAN_DUI].SetPoint( ptBenchmark.x + 280, ptBenchmark.y + 195 + 20-15 );
 
-	m_ptBetNumber[AREA_ZHUANG].SetPoint( ptBenchmark.x + 940 - 244, ptBenchmark.y + 334 );
-	m_ptBetNumber[AREA_ZHUANG_TIAN].SetPoint( ptBenchmark.x + 940 - 214, ptBenchmark.y + 477 );
-	m_ptBetNumber[AREA_ZHUANG_DUI].SetPoint( ptBenchmark.x + 940 - 280, ptBenchmark.y + 195 );
+	m_ptBetNumber[AREA_ZHUANG].SetPoint( ptBenchmark.x + 940 - 244, ptBenchmark.y + 334 + 20 -15);
+	m_ptBetNumber[AREA_ZHUANG_TIAN].SetPoint( ptBenchmark.x + 940 - 214, ptBenchmark.y + 477 + 20-15 );
+	m_ptBetNumber[AREA_ZHUANG_DUI].SetPoint( ptBenchmark.x + 940 - 280, ptBenchmark.y + 195 + 20-15 );
 
-	m_ptBetNumber[AREA_PING].SetPoint( ptBenchmark.x + 470, ptBenchmark.y + 334 );
-	m_ptBetNumber[AREA_TONG_DUI].SetPoint( ptBenchmark.x + 470, ptBenchmark.y + 477 );
+	m_ptBetNumber[AREA_PING].SetPoint( ptBenchmark.x + 470, ptBenchmark.y + 334 + 20-15 );
+	m_ptBetNumber[AREA_TONG_DUI].SetPoint( ptBenchmark.x + 470, ptBenchmark.y + 477 + 20-15 );
 
 	//×Ü³ïÂëÊý×Ö
-	m_ptAllBetNumber[AREA_XIAN].SetPoint( ptBenchmark.x + 244, ptBenchmark.y + 440 );
-	m_ptAllBetNumber[AREA_XIAN_TIAN].SetPoint( ptBenchmark.x + 214, ptBenchmark.y + 522 );
-	m_ptAllBetNumber[AREA_XIAN_DUI].SetPoint( ptBenchmark.x + 280, ptBenchmark.y + 234 );
+	m_ptAllBetNumber[AREA_XIAN].SetPoint( ptBenchmark.x + 244, ptBenchmark.y + 440 + 20 -15);
+	m_ptAllBetNumber[AREA_XIAN_TIAN].SetPoint( ptBenchmark.x + 214, ptBenchmark.y + 522 + 20-15 );
+	m_ptAllBetNumber[AREA_XIAN_DUI].SetPoint( ptBenchmark.x + 280, ptBenchmark.y + 234 + 20-15 );
 
-	m_ptAllBetNumber[AREA_ZHUANG].SetPoint( ptBenchmark.x + 940 - 244, ptBenchmark.y + 440 );
-	m_ptAllBetNumber[AREA_ZHUANG_TIAN].SetPoint( ptBenchmark.x + 940 - 214, ptBenchmark.y + 522 );
-	m_ptAllBetNumber[AREA_ZHUANG_DUI].SetPoint( ptBenchmark.x + 940 - 280, ptBenchmark.y + 234 );
+	m_ptAllBetNumber[AREA_ZHUANG].SetPoint( ptBenchmark.x + 940 - 244, ptBenchmark.y + 440 + 20-15 );
+	m_ptAllBetNumber[AREA_ZHUANG_TIAN].SetPoint( ptBenchmark.x + 940 - 214, ptBenchmark.y + 522 + 20-15 );
+	m_ptAllBetNumber[AREA_ZHUANG_DUI].SetPoint( ptBenchmark.x + 940 - 280, ptBenchmark.y + 234 + 20 -15);
 
-	m_ptAllBetNumber[AREA_PING].SetPoint( ptBenchmark.x + 470, ptBenchmark.y + 440 );
-	m_ptAllBetNumber[AREA_TONG_DUI].SetPoint( ptBenchmark.x + 470, ptBenchmark.y + 532 );
+	m_ptAllBetNumber[AREA_PING].SetPoint( ptBenchmark.x + 470, ptBenchmark.y + 440 + 20 -15);
+	m_ptAllBetNumber[AREA_TONG_DUI].SetPoint( ptBenchmark.x + 470, ptBenchmark.y + 532 + 20 -15);
 
 
 	//ÉÁ¶¯¿òÎ»ÖÃ
-	m_ptBetFrame[AREA_XIAN].SetPoint( ptBenchmark.x + 95, ptBenchmark.y + 247 );
-	m_ptBetFrame[AREA_XIAN_TIAN].SetPoint( ptBenchmark.x + 94, ptBenchmark.y + 453 );
-	m_ptBetFrame[AREA_XIAN_DUI].SetPoint( ptBenchmark.x + 94, ptBenchmark.y + 166 );
+	m_ptBetFrame[AREA_XIAN].SetPoint( ptBenchmark.x + 95, ptBenchmark.y + 247 + 20-15 );
+	m_ptBetFrame[AREA_XIAN_TIAN].SetPoint( ptBenchmark.x + 94, ptBenchmark.y + 453 + 20-15 );
+	m_ptBetFrame[AREA_XIAN_DUI].SetPoint( ptBenchmark.x + 94, ptBenchmark.y + 166 + 20-15 );
 
-	m_ptBetFrame[AREA_ZHUANG].SetPoint( ptBenchmark.x + 573, ptBenchmark.y + 247 );
-	m_ptBetFrame[AREA_ZHUANG_TIAN].SetPoint( ptBenchmark.x + 582, ptBenchmark.y + 453 );
-	m_ptBetFrame[AREA_ZHUANG_DUI].SetPoint( ptBenchmark.x + 570, ptBenchmark.y + 165 );
+	m_ptBetFrame[AREA_ZHUANG].SetPoint( ptBenchmark.x + 573, ptBenchmark.y + 247 + 20 -15);
+	m_ptBetFrame[AREA_ZHUANG_TIAN].SetPoint( ptBenchmark.x + 582, ptBenchmark.y + 453 + 20-15 );
+	m_ptBetFrame[AREA_ZHUANG_DUI].SetPoint( ptBenchmark.x + 570, ptBenchmark.y + 165 + 20 -15);
 
-	m_ptBetFrame[AREA_PING].SetPoint( ptBenchmark.x + 364, ptBenchmark.y + 247 );
-	m_ptBetFrame[AREA_TONG_DUI].SetPoint( ptBenchmark.x + 359, ptBenchmark.y + 453 );
+	m_ptBetFrame[AREA_PING].SetPoint( ptBenchmark.x + 364, ptBenchmark.y + 247 + 20-15);
+	m_ptBetFrame[AREA_TONG_DUI].SetPoint( ptBenchmark.x + 359, ptBenchmark.y + 453 + 20-15 );
 
 	
 	//ÆË¿Ë¿Ø¼þ
@@ -528,7 +528,7 @@ VOID CGameClientView::RectifyControl(int nWidth, int nHeight)
 	CRect rcBet;
 	m_btBet100.GetWindowRect(&rcBet);
 	int nSpace = 7;
-	int nYPos = nHeight - 155;
+	int nYPos = nHeight - 155 - 10 + 15 + 5;
 	int nXPos = nWidth/2 - (rcBet.Width()*7 + nSpace*6)/2;
 	DeferWindowPos(hDwp,m_btBet1,NULL,nXPos,nYPos,0,0,uFlags|SWP_NOSIZE);
 	DeferWindowPos(hDwp,m_btBet3,NULL,nXPos + nSpace + rcBet.Width(),nYPos,0,0,uFlags|SWP_NOSIZE);
@@ -549,12 +549,12 @@ VOID CGameClientView::RectifyControl(int nWidth, int nHeight)
 	DeferWindowPos(hDwp,m_btNext,NULL,nXPos + nSpace * 6 + rcBet.Width() * 7+5,nYPos+114,0,0,uFlags|SWP_NOSIZE);
 
 	//ÉÏ×¯°´Å¥
-	DeferWindowPos(hDwp,m_btApplyBanker, NULL, nWidth/2 + 759/2 - 110, 15, 0, 0, uFlags|SWP_NOSIZE);
-	DeferWindowPos(hDwp,m_btCancelBanker,NULL, nWidth/2 + 759/2 - 110, 15, 0, 0, uFlags|SWP_NOSIZE);
+	DeferWindowPos(hDwp,m_btApplyBanker, NULL, nWidth/2 + 759/2 - 110 + 18, 15, 0, 0, uFlags|SWP_NOSIZE);
+	DeferWindowPos(hDwp,m_btCancelBanker,NULL, nWidth/2 + 759/2 - 110 + 18, 15, 0, 0, uFlags|SWP_NOSIZE);
 
 	//ÀúÊ·¼ÇÂ¼
-	DeferWindowPos(hDwp,m_btScoreMoveL, NULL, nWidth/2-285 , nHeight - 73,0,0,uFlags|SWP_NOSIZE);
-	DeferWindowPos(hDwp,m_btScoreMoveR, NULL, nWidth/2 + 224,  nHeight - 73,0,0,uFlags|SWP_NOSIZE);
+	DeferWindowPos(hDwp,m_btScoreMoveL, NULL, nWidth/2-285-30-20 , nHeight - 73,0,0,uFlags|SWP_NOSIZE);
+	DeferWindowPos(hDwp,m_btScoreMoveR, NULL, nWidth/2 + 224-30,  nHeight - 73,0,0,uFlags|SWP_NOSIZE);
 
 
 	//½áÊøÒÆ¶¯
@@ -589,12 +589,12 @@ void CGameClientView::DrawGameView(CDC * pDC, int nWidth, int nHeight)
 	//»æ»­±³¾°
 	DrawViewImage(pDC,m_ImageViewFill,DRAW_MODE_SPREAD);
 
-	m_ImageViewBack.DrawImage( pDC, nWidth/2 - m_ImageViewBack.GetWidth()/2, nHeight/2 - 360);
+	m_ImageViewBack.DrawImage( pDC, nWidth/2 - m_ImageViewBack.GetWidth()/2, nHeight/2 - 340-15);
 // 	for( int nY = nHeight/2 - 380 + m_ImageViewBack.GetHeight(); nY <= nHeight; nY += m_ImageViewBackJB.GetHeight() )
 // 	{
 // 		m_ImageViewBackJB.DrawImage( pDC, nWidth/2 - m_ImageViewBackJB.GetWidth()/2, nY);
 // 	}
-	m_ImageBrandBoxRight.DrawImage( pDC, nWidth/2 + 759/2 - m_ImageBrandBoxRight.GetWidth(), 60);
+	m_ImageBrandBoxRight.DrawImage( pDC, nWidth/2 + 759/2 - m_ImageBrandBoxRight.GetWidth(), 60+20);
 
 	//Ê¤Àû±ß¿ò
 	DrawFlashFrame(pDC,nWidth,nHeight);
@@ -629,7 +629,7 @@ void CGameClientView::DrawGameView(CDC * pDC, int nWidth, int nHeight)
 		{
 			TCHAR szScore[128] = {0};
 			_sntprintf(szScore,CountArray(szScore),TEXT("%s"), AddComma(lScoreCount));
-			DrawNumber(pDC, &m_ImageScoreNumber,TEXT(",0123456789"), szScore, m_ptAllBetNumber[i].x + m_ImageScoreBack.GetWidth()/2, m_ptAllBetNumber[i].y - m_ImageScoreNumber.GetHeight() / 2, DT_CENTER);
+			DrawNumber(pDC, &m_ImageScoreNumber,TEXT(",0123456789"), szScore, m_ptAllBetNumber[i].x + m_ImageScoreBack.GetWidth()/2, m_ptAllBetNumber[i].y - m_ImageScoreNumber.GetHeight() / 2 , DT_CENTER);
 			m_ImageScoreBack.DrawImage(pDC, m_ptAllBetNumber[i].x - (INT)(((DOUBLE)(lstrlen(szScore)) / 2.0) * (m_ImageScoreNumber.GetWidth() / 11)) - m_ImageScoreBack.GetWidth()/2 - 3, m_ptAllBetNumber[i].y  - m_ImageScoreBack.GetHeight() / 2 );
 		
 		}
@@ -641,7 +641,7 @@ void CGameClientView::DrawGameView(CDC * pDC, int nWidth, int nHeight)
 		if ( m_lPlayBet[i] == 0 )
 			continue;
 
-		m_ImageMeScoreBack.DrawImage(pDC, m_ptBetNumber[i].x  - m_ImageMeScoreBack.GetWidth()/2, m_ptBetNumber[i].y - m_ImageMeScoreBack.GetHeight()/2);
+		m_ImageMeScoreBack.DrawImage(pDC, m_ptBetNumber[i].x  - m_ImageMeScoreBack.GetWidth()/2, m_ptBetNumber[i].y - m_ImageMeScoreBack.GetHeight()/2 );
 		DrawNumber(pDC,&m_ImageMeScoreNumber, TEXT(",0123456789"), AddComma(m_lPlayBet[i]),m_ptBetNumber[i].x,m_ptBetNumber[i].y - m_ImageMeScoreNumber.GetHeight()/2, DT_CENTER);
 	}
 
@@ -818,6 +818,10 @@ void CGameClientView::DrawTopInfo(CDC *pDC, int nWidth, int nHeight)
 	else if( m_bEnableSysBanker )
 	{
 		strBankName = TEXT("ÏµÍ³×ø×¯");
+		//add by zrh 20160809
+		lBankerWinScore = m_lBankerWinScore;
+		wBankerTime	= m_wBankerTime;
+		lBankerScore = m_lBankerScore + lBankerWinScore;
 
 		CGlobalUnits * pGlobalUnits = CGlobalUnits::GetInstance();
 		if ( pGlobalUnits )
@@ -966,7 +970,7 @@ void CGameClientView::DrawBottomInfo(CDC *pDC, int nWidth, int nHeight)
 {
 	// »æ»­Î»ÖÃ
 	int nDrawWidth = m_ImagePlayLeft.GetWidth() + m_ImagePlayMiddle.GetWidth()/**3*/ + m_ImagePlayRight.GetWidth();
-	CRect rectDraw( nWidth/2 - nDrawWidth/2/*-100*/, nHeight - m_ImagePlayLeft.GetHeight(), /*nWidth/2 +*/ nDrawWidth, nHeight);
+	CRect rectDraw( nWidth/2 - nDrawWidth/2-15-30, nHeight - m_ImagePlayLeft.GetHeight(), /*nWidth/2 +*/ nDrawWidth, nHeight);
 
 	// µ×²¿±³¾°
 	CPoint ptBegin( rectDraw.left, rectDraw.top );
@@ -1057,8 +1061,8 @@ void CGameClientView::DrawBottomInfo(CDC *pDC, int nWidth, int nHeight)
 		int nYPos = 0;
 		if ( m_GameRecordArrary[nIndex].cbBankerCount > m_GameRecordArrary[nIndex].cbPlayerCount ) nYPos = rectDraw.bottom - 73;
 		else if (m_GameRecordArrary[nIndex].cbBankerCount < m_GameRecordArrary[nIndex].cbPlayerCount ) nYPos = rectDraw.bottom - 46;
-		else nYPos = rectDraw.bottom - 19;
-		int nXPos = rectDraw.right - 237 + ((nIndex - m_nScoreHead + MAX_SCORE_HISTORY) % MAX_SCORE_HISTORY) * 23;
+		else nYPos = rectDraw.bottom - 19-50 ;
+		int nXPos = rectDraw.right - 237-50 +5+ ((nIndex - m_nScoreHead + MAX_SCORE_HISTORY) % MAX_SCORE_HISTORY) * 23;
 
 		int nFlagsIndex = 2;
 		if ( m_GameRecordArrary[nIndex].enOperateFlags == enOperateResult_NULL ) nFlagsIndex = 2;
@@ -1084,7 +1088,7 @@ void CGameClientView::DrawBottomInfo(CDC *pDC, int nWidth, int nHeight)
 		nIndex = (nIndex+1) % MAX_SCORE_HISTORY;
 	}
 
-	CRect rect(rectDraw.left +m_ImagePlayLeft.GetWidth()+m_ImagePlayMiddle.GetWidth()+5, rectDraw.bottom - 87, rectDraw.left +m_ImagePlayLeft.GetWidth()+m_ImagePlayMiddle.GetWidth()+5 + 20, rectDraw.bottom - 62);
+	CRect rect(rectDraw.left +m_ImagePlayLeft.GetWidth()+m_ImagePlayMiddle.GetWidth()+5 -15-15 , rectDraw.bottom - 87, rectDraw.left +m_ImagePlayLeft.GetWidth()+m_ImagePlayMiddle.GetWidth()+5 + 55  , rectDraw.bottom - 62);
 	DrawTextStringE( pDC, AddComma(nBankerCount), RGB(205,173,80), RGB(39,27,1), rect, DT_END_ELLIPSIS|DT_CENTER|DT_VCENTER|DT_SINGLELINE);
 	
 	rect.OffsetRect(0, 26);
