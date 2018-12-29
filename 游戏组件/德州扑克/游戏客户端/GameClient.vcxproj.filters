@@ -1,0 +1,276 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CardControl.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="GameClient.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="GameClientEngine.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="GameClientView.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLogic.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="GameOption.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="GoldControl.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="GoldView.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Prompt.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ScoreView.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ShowHand.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SmallCardControl.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Stdafx.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CardControl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\消息定义\CMD_DZShowHand.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GameClient.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GameClientEngine.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GameClientView.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLogic.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GameOption.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GoldControl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GoldView.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Prompt.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ScoreView.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ShowHand.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SmallCardControl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Stdafx.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Res\AUTO_START_FALSE .bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\AUTO_START_FALSE.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\AUTO_START_TRUE.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\BT_ADD.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\BT_CANCEL.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\BT_EXIT.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\BT_FOLLOW.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\BT_GIVEUP.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\BT_MAX.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\BT_MIN.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\BT_NO1.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\BT_OK.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\BT_OPEN_CARD.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\BT_PASS.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\Bt_pass_card.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Bt_pass_card.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\BT_SHOWHAND.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\BT_SITDOWN.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\BT_START.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\BT_YES1.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\CARD.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\CARD_MASK.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\D.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\FRAME.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\GAME_LOGO.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\GAME_WIN.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\GameClient.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\human.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\LEFT.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\LEFT_TIME.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\MAX.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\MID.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\NUMBER.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\RIGHT.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\RIGHT_TIME.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\SCORE.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\SHOWHAND_COMFIRE.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\SMALL_CARD.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\TIME_ARROWHEAD.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\TITLE.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\VIEW_BACK.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\VIEW_FILL.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Res\CARD.png" />
+    <Image Include="Res\CARD_MASK.png" />
+    <Image Include="Res\D.png" />
+    <Image Include="Res\MAX.png" />
+    <Image Include="Res\SCORE.png" />
+    <Image Include="Res\SMALL_CARD.png" />
+    <Image Include="Res\TIME_ARROWHEAD.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Res\CARD_CUR.cur">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="res\GameClient.rc2">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="Res\wave2.bin">
+      <Filter>资源文件</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="GameClient.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="Res\Add_score.wav" />
+    <Media Include="Res\FOLLOW.wav" />
+    <Media Include="Res\Game_end.wav" />
+    <Media Include="Res\GAME_LOST.wav" />
+    <Media Include="Res\Game_start.wav" />
+    <Media Include="Res\Game_warn.wav" />
+    <Media Include="Res\GAME_WIN.wav" />
+    <Media Include="Res\GIVE_UP.wav" />
+    <Media Include="Res\NO_ADD.wav" />
+    <Media Include="Res\PASS_CARD.wav" />
+    <Media Include="Res\SEND_CARD.wav" />
+    <Media Include="Res\SHOW_HAND.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="res\GameClient.manifest" />
+  </ItemGroup>
+</Project>
