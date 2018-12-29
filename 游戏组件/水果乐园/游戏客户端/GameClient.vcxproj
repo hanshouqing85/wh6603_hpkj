@@ -1,0 +1,383 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug_Unicode|Win32">
+      <Configuration>Debug_Unicode</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_Unicode|Win32">
+      <Configuration>Release_Unicode</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>水果乐园游戏客户端</ProjectName>
+    <ProjectGuid>{F2D70F30-23FC-4973-A798-AED329359B33}</ProjectGuid>
+    <RootNamespace>水果转转游戏</RootNamespace>
+    <Keyword>MFCProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Unicode|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Unicode|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Unicode|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_Unicode|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>11.0.50727.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>Debug\</OutDir>
+    <IntDir>Debug\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>Release\</OutDir>
+    <IntDir>Release\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Unicode|Win32'">
+    <OutDir>$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Unicode|Win32'">
+    <OutDir>$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>E:\V5游戏平台\开发库\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0804</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <OutputFile>../../../运行/Debug/ansi/SGDZ_CLIENT.exe</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AssemblyDebug>true</AssemblyDebug>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapExports>true</MapExports>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+    </Midl>
+    <ClCompile>
+      <AdditionalIncludeDirectories>E:\V5游戏平台\开发库\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0804</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <OutputFile>../../../运行/Release/SGDZ_CLIENT.exe</OutputFile>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_Unicode|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+    </Midl>
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\..\..\DX9SDK\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0804</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <OutputFile>../../../运行/ClientReleaseUnicode/SGDZ_CLIENT.exe</OutputFile>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Command />
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Unicode|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+    </Midl>
+    <ClCompile>
+      <AdditionalIncludeDirectories>../../../DX9SDK/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_UNICODE;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0804</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <OutputFile>../../../运行/ClientDebugUnicode/SGDZ_CLIENTD.exe</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="AdminClientDlg.cpp" />
+    <ClCompile Include="ExchangeDlg.cpp" />
+    <ClCompile Include="GameClient.cpp" />
+    <ClCompile Include="GameClientDlg.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4244;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="GameClientView.cpp" />
+    <ClCompile Include="MySkinScrollBar.cpp" />
+    <ClCompile Include="PlayerList.cpp" />
+    <ClCompile Include="RecordGameList.cpp" />
+    <ClCompile Include="Stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Unicode|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_Unicode|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AdminClientDlg.h" />
+    <ClInclude Include="..\消息定义\CMD_SGZZ.h" />
+    <ClInclude Include="ExchangeDlg.h" />
+    <ClInclude Include="GameClient.h" />
+    <ClInclude Include="GameClientDlg.h" />
+    <ClInclude Include="GameClientView.h" />
+    <ClInclude Include="MySkinScrollBar.h" />
+    <ClInclude Include="PlayerList.h" />
+    <ClInclude Include="RecordGameList.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="Stdafx.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Res\ADDSTEP1.bmp" />
+    <Image Include="Res\ADDSTEP10.bmp" />
+    <Image Include="Res\ADDSTEP100.bmp" />
+    <Image Include="Res\ADDSTEP100_H.bmp" />
+    <Image Include="Res\ADDSTEP10_H.bmp" />
+    <Image Include="Res\ADDSTEP1_H.bmp" />
+    <Image Include="Res\BANK.bmp" />
+    <Image Include="Res\BANKER_DOWN.bmp" />
+    <Image Include="Res\BANKER_UP.bmp" />
+    <Image Include="Res\BET_BIG.bmp" />
+    <Image Include="Res\BET_LAST.bmp" />
+    <Image Include="Res\BET_LAST2.bmp" />
+    <Image Include="Res\BET_SMALL.bmp" />
+    <Image Include="Res\BIG_SMALL_NUMBER.bmp" />
+    <Image Include="Res\BT_APPLY_BANKER.bmp" />
+    <Image Include="Res\Bt_cancel_apply.bmp" />
+    <Image Include="Res\BT_CANCEL_BANKER.bmp" />
+    <Image Include="Res\BT_CHIP_100.bmp" />
+    <Image Include="Res\BT_CHIP_1000.bmp" />
+    <Image Include="Res\BT_CHIP_10000.bmp" />
+    <Image Include="Res\BT_CHIP_CLOSE.bmp" />
+    <Image Include="Res\BT_CHIP_CLOSE_X.bmp" />
+    <Image Include="Res\BT_CHIP_EMPTY.bmp" />
+    <Image Include="Res\BT_CHIP_MAX.bmp" />
+    <Image Include="Res\BT_CHIP_OK.bmp" />
+    <Image Include="Res\BT_SCORE_MOVE_L.bmp" />
+    <Image Include="Res\BT_SCORE_MOVE_R.bmp" />
+    <Image Include="Res\CHIP_BACK.bmp" />
+    <Image Include="Res\GAME_LOGO.bmp" />
+    <Image Include="Res\GameClient.ico" />
+    <Image Include="Res\GoodLuck_Flash1.bmp" />
+    <Image Include="Res\GoodLuck_Flash2.bmp" />
+    <Image Include="Res\HISTORY_RECORD.bmp" />
+    <Image Include="Res\ME_SCORE_NUMBER.bmp" />
+    <Image Include="Res\pngApplyList.BMP" />
+    <Image Include="Res\pngApplyList_H.BMP" />
+    <Image Include="Res\pngPlayerList.BMP" />
+    <Image Include="Res\pngPlayerList_H.BMP" />
+    <Image Include="Res\SCORE_NUMBER.bmp" />
+    <Image Include="Res\scrollbar.bmp" />
+    <Image Include="Res\VIEW_BACK.bmp" />
+    <Image Include="Res\VIEW_FILL.bmp" />
+    <Image Include="Res\ADDSTEP1.png" />
+    <Image Include="Res\ADDSTEP10.png" />
+    <Image Include="Res\ADDSTEP100.png" />
+    <Image Include="Res\APPLE.png" />
+    <Image Include="Res\APPLE2.png" />
+    <Image Include="Res\APPLE_FOUR.png" />
+    <Image Include="Res\BAR.png" />
+    <Image Include="Res\BAR2.png" />
+    <Image Include="Res\BELL.png" />
+    <Image Include="Res\BELL2.png" />
+    <Image Include="Res\BET_BIG_SMALL_NUMBER.png" />
+    <Image Include="Res\BET_JETTON_NUMBER.png" />
+    <Image Include="Res\BIG_THREE.png" />
+    <Image Include="Res\BIGSMALL_LOSE.png" />
+    <Image Include="Res\BIGSMALL_WIN.png" />
+    <Image Include="Res\BITSMALLTIME.png" />
+    <Image Include="Res\Bt_chip_close_x.png" />
+    <Image Include="Res\CARDS_CARTOON.png" />
+    <Image Include="Res\CARDS_CARTOON2.png" />
+    <Image Include="Res\CHIP_BACK.png" />
+    <Image Include="Res\D_SEVEN.png" />
+    <Image Include="Res\D_SEVEN2.png" />
+    <Image Include="Res\D_STAR.png" />
+    <Image Include="Res\D_STAR2.png" />
+    <Image Include="Res\FREETIME.png" />
+    <Image Include="Res\JETTONTIME.png" />
+    <Image Include="Res\LOGO.png" />
+    <Image Include="Res\LUCKY_LOST.png" />
+    <Image Include="Res\ORANGE.png" />
+    <Image Include="Res\ORANGE2.png" />
+    <Image Include="Res\PAWPAW.png" />
+    <Image Include="Res\PAWPAW2.png" />
+    <Image Include="Res\png_jettonback.png" />
+    <Image Include="Res\png_jettonbutton.png" />
+    <Image Include="Res\png_line.png" />
+    <Image Include="Res\png_move.png" />
+    <Image Include="Res\pngRecordTip.png" />
+    <Image Include="Res\RUN_TRAIN.png" />
+    <Image Include="Res\RUNTIME.png" />
+    <Image Include="Res\SMALL_THREE.png" />
+    <Image Include="Res\WATERMELON.png" />
+    <Image Include="Res\WATERMELON2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Res\cursor1.cur" />
+    <None Include="Res\Cursor_1.cur" />
+    <None Include="Res\Cursor_2.cur" />
+    <None Include="Res\Cursor_3.cur" />
+    <None Include="res\GameClient.rc2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="GameClient.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="Res\Sound\areaAPPLE.wav" />
+    <Media Include="Res\Sound\areaBAR.wav" />
+    <Media Include="Res\Sound\areaBELL.wav" />
+    <Media Include="Res\Sound\areaD_SEVEN.wav" />
+    <Media Include="Res\Sound\areaD_STAR.wav" />
+    <Media Include="Res\Sound\areaORANGE.wav" />
+    <Media Include="Res\Sound\areaPAWPAW.wav" />
+    <Media Include="Res\Sound\areaWATERMELON.wav" />
+    <Media Include="Res\Sound\BACK_GROUND.wav" />
+    <Media Include="Res\Sound\DISPATCH_CARD.wav" />
+    <Media Include="Res\Sound\DU_LOSE.wav" />
+    <Media Include="Res\Sound\DU_WIN.wav" />
+    <Media Include="Res\Sound\GAME_START.wav" />
+    <Media Include="Res\Sound\KEY_SOUND_1.wav" />
+    <Media Include="Res\Sound\KEY_SOUND_2.wav" />
+    <Media Include="Res\Sound\KEY_SOUND_3.wav" />
+    <Media Include="Res\Sound\KEY_SOUND_4.wav" />
+    <Media Include="Res\Sound\KEY_SOUND_5.wav" />
+    <Media Include="Res\Sound\KEY_SOUND_6.wav" />
+    <Media Include="Res\Sound\KEY_SOUND_7.wav" />
+    <Media Include="Res\Sound\KEY_SOUND_8.wav" />
+    <Media Include="Res\Sound\LUCKY_FLASH.wav" />
+    <Media Include="Res\Sound\LUCKY_HIT.wav" />
+    <Media Include="Res\Sound\Rand0.wav" />
+    <Media Include="Res\Sound\Rand1.wav" />
+    <Media Include="Res\Sound\Rand2.wav" />
+    <Media Include="Res\Sound\STOP_JETTON.wav" />
+    <Media Include="Res\Sound\TIME_WARIMG.wav" />
+    <Media Include="Res\Sound\TURN_START.wav" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="GameClient.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>
