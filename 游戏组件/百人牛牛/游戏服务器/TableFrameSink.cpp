@@ -297,7 +297,7 @@ bool  CTableFrameSink::OnEventGameConclude(WORD wChairID, IServerUserItem * pISe
 					DispatchTableCard();
 					lBankerWinScore=CalculateScore();
 					CTime tm=CTime::GetCurrentTime();
-					bool bValid = m_list.HpTest(m_nTotalWin, m_nTotalPay, tm.GetMinute(), 10);
+					bool bValid =true;// m_list.HpTest(m_nTotalWin, m_nTotalPay, tm.GetMinute(), 10);
 					if(bValid)
 						break;
 				}	
@@ -305,10 +305,11 @@ bool  CTableFrameSink::OnEventGameConclude(WORD wChairID, IServerUserItem * pISe
 
 				CTime tm=CTime::GetCurrentTime();
 				m_list.HpGetResult(m_nTotalWin, m_nTotalPay, tm.GetMinute(), 0);
+#if 0
 				CString strLog;
 				strLog.Format(L"%I64d - %I64d: %ld \n", m_list.GetWinSum(), m_list.GetTotalSum(), m_list.GetWinRate());
 				OutputDebugString(strLog);		
-
+#endif
 				GameCheat();
 			}
 			lBankerWinScore=CalculateScore();
