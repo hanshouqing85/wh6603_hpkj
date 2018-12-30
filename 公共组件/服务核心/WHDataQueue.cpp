@@ -251,6 +251,13 @@ bool CWHDataQueue::RectifyBuffer(DWORD dwNeedSize)
 
 		//缓冲判断
 		if ((m_dwInsertPos<m_dwTerminalPos)&&((m_dwInsertPos+dwNeedSize)>m_dwDataQueryPos)) throw 0;
+
+		//头追上尾或尾追上头  
+		if (m_dwInsertPos + dwNeedSize > m_dwDataQueryPos && m_dwDataQueryPos >= m_dwInsertPos)  
+		{  
+			//尾追上头  
+			if (m_dwDataSize > 0) throw 0;  
+		}  
 	}
 	catch (...)
 	{

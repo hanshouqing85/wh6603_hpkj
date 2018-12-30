@@ -10,12 +10,13 @@
 
 //链接文件
 #ifndef _DEBUG
-	#pragma comment(lib,"Version")
-	#pragma comment(lib,"Compress\\ZLib.lib")
-	//#pragma comment(lib,"Compress\\Plataform.lib")
+#pragma comment(lib,"Version")
+#pragma comment(lib,"Compress\\ZLib.lib")
+#pragma comment(lib,"Compress\\Plataform.lib")
 #else
-	#pragma comment(lib,"Version")
-	#pragma comment(lib,"Compress\\ZLibD.lib")
+#pragma comment(lib,"Version")
+#pragma comment(lib,"Compress\\ZLibD.lib")
+#pragma comment(lib,"Compress\\PlataformD.lib")
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -292,7 +293,6 @@ unsigned char prop[5] = {0};
 //压缩数据
 ULONG CWHService::LZCompressData(LPBYTE pcbSourceData, ULONG lSourceSize, BYTE cbResultData[], ULONG lResultSize)
 {
-#if 0
 	//压缩数据
 	CString strLog;
 	size_t sizeProp = 5;
@@ -315,7 +315,7 @@ ULONG CWHService::LZCompressData(LPBYTE pcbSourceData, ULONG lSourceSize, BYTE c
 // 		OutputDebugString(strLog);
 // 
 // 	}
-#endif
+
 
 	return 0L;
 }
@@ -323,7 +323,6 @@ ULONG CWHService::LZCompressData(LPBYTE pcbSourceData, ULONG lSourceSize, BYTE c
 //解压数据
 ULONG CWHService::LZUnCompressData(LPBYTE pcbSourceData, ULONG lSourceSize, BYTE cbResultData[], ULONG lResultSize)
 {
-#if 0
 	//unsigned char prop[5] = {0};
 	//注意：解压缩时props参数要使用压缩时生成的outProps，这样才能正常解压缩
 	size_t Size1 = lResultSize;
@@ -333,10 +332,9 @@ ULONG CWHService::LZUnCompressData(LPBYTE pcbSourceData, ULONG lSourceSize, BYTE
 		return Size1;
 	}
 
+
+
 	return Size1;
-#else
-	return 0;
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////////
