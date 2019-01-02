@@ -29,10 +29,10 @@
     <ClCompile Include="AndroidUserItemSink.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\游戏服务器\GameLogic.cpp">
+    <ClCompile Include="Stdafx.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Stdafx.cpp">
+    <ClCompile Include="GameLogic.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -46,13 +46,13 @@
     <ClInclude Include="..\消息定义\CMD_OxBattle.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\游戏服务器\GameLogic.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Stdafx.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLogic.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

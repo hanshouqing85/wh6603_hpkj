@@ -1,16 +1,17 @@
 #include "StdAfx.h"
 #include "GameLogic.h"
-
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
 
 //扑克数据
-const BYTE CGameLogic::m_cbCardListData[CARD_COUNT*2]=
+const BYTE CGameLogic::m_cbCardListData[CARD_COUNT]=
 {
-	2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,\
-		2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,\
-		2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32
+	0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,	//方块 A - K
+	0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1A,0x1B,0x1C,0x1D,	//梅花 A - K
+	0x21,0x22,0x23,0x24,0x25,0x26,0x27,0x28,0x29,0x2A,0x2B,0x2C,0x2D,	//红桃 A - K
+	0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38,0x39,0x3A,0x3B,0x3C,0x3D,	//黑桃 A - K
+	0x41,0x42,
 };
 //////////////////////////////////////////////////////////////////////////
 
@@ -208,12 +209,51 @@ void CGameLogic::SortCardList(BYTE cbCardData[], BYTE cbCardCount, BYTE cbSortTy
 	return;
 }
 
+//取[nMin,nMax]之间的随机整数
+int	CGameLogic::GetRand(const int nMin,const int nMax)
+{
+	if ( nMin > nMax)
+		return nMin;
+	return rand()%(nMax-nMin+1)+nMin;
+}
 
-//
-//事件：游戏代码6602转6603，使原来6602的游戏可以在6603上使用
-//作者：王少江
-//时间：2012.03.04 
-//Q Q ：349126394
-//QQ群：101494119
-//邮箱：shaojiang216@163.com
-//博客：http://shaojiang216.blog.163.com/ 
+//根据概率选择，返回true的概率为p
+bool CGameLogic::SelectBoolByProb(float p)
+{
+	if(p>=1)
+		return true;
+	if(p<=0)
+		return false;
+	int P=(int)(p*1000+0.5); 
+	int randNum = GetRand(0,1000);
+	if(randNum<P)
+		return true;
+	return false;
+}
+
+//根据概率选择
+int CGameLogic::SelectByProb(int arr[],int arrProb[],int count,int total/*=0*/)
+{
+	if(total==0)
+	{
+		for(int i=0;i<count;i++)
+		{
+			total+=arrProb[i];
+		}
+	}
+	int kind=0;
+	int iRand =rand()%total;
+	for(int i=0;i<count;i++)
+	{
+		if (iRand < arrProb[i])
+		{
+			kind=arr[i];
+			break;
+		}
+		else
+		{
+			iRand -= arrProb[i];
+		}
+	}
+	return kind;
+} 

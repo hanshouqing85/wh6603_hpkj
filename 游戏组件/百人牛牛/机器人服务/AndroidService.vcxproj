@@ -237,7 +237,9 @@ copy /y ..\..\..\..\运行\Debug\Unicode\$(TargetFileName) ..\..\..\发布组件
   <ItemGroup>
     <ClCompile Include="AndroidServiceManager.cpp" />
     <ClCompile Include="AndroidUserItemSink.cpp" />
-    <ClCompile Include="..\游戏服务器\GameLogic.cpp" />
+    <ClCompile Include="GameLogic.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_Unicode|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_Unicode|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -249,7 +251,7 @@ copy /y ..\..\..\..\运行\Debug\Unicode\$(TargetFileName) ..\..\..\发布组件
     <ClInclude Include="AndroidServiceManager.h" />
     <ClInclude Include="AndroidUserItemSink.h" />
     <ClInclude Include="..\消息定义\CMD_OxBattle.h" />
-    <ClInclude Include="..\游戏服务器\GameLogic.h" />
+    <ClInclude Include="GameLogic.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Stdafx.h" />
   </ItemGroup>

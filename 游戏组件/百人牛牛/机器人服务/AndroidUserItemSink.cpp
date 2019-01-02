@@ -1,7 +1,6 @@
 #include "Stdafx.h"
 #include "AndroidUserItemSink.h"
 #include "math.h"
-
 //////////////////////////////////////////////////////////////////////////
 //得到当前程序所在的路径 最后一个字符无 '\'
 string GetAppPath()
@@ -389,10 +388,6 @@ bool  CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
 				int nRandNum = 0, nChipArea = 0, nCurChip = 0, nACTotal = 0, nCurJetLmt[2] = {};
 				LONGLONG lMaxChipLmt = __min(m_lMaxChipBanker, m_lMaxChipUser);			//最大可下注值
 				WORD wMyID = m_pIAndroidUserItem->GetChairID();
-				for (int i = 0; i < AREA_COUNT; i++)
-					nACTotal += m_RobotInfo.nAreaChance[i];
-
-		
 
 				//统计次数
 				m_nChipTimeCount++;
@@ -406,23 +401,15 @@ bool  CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
 				}
 
 				//下注区域
+				for (int i = 0; i < AREA_COUNT; i++)
+					nACTotal += m_RobotInfo.nAreaChance[i];
 				ASSERT(nACTotal>0);
-				static int nStFluc = 1;				//随机辅助
-				if (nACTotal <= 0)	return false;
-				do {
-					nRandNum = (rand()+wMyID+nStFluc*3) % nACTotal;
-					for (int i = 0; i < AREA_COUNT; i++)
-					{
-						nRandNum -= m_RobotInfo.nAreaChance[i];
-						if (nRandNum < 0)
-						{
-							nChipArea = i;
-							break;
-						}
-					}
+				static int chip_area_arr[AREA_COUNT] = {0,1,2,3};
+				do
+				{
+					nChipArea=CGameLogic::SelectByProb(chip_area_arr,m_RobotInfo.nAreaChance,AREA_COUNT,nACTotal);
 				}
 				while (m_lAreaChip[nChipArea] < m_RobotInfo.nChip[m_nChipLimit[0]]);
-				nStFluc = nStFluc%3 + 1;
 
 				//下注大小
 				if (m_nChipLimit[0] == m_nChipLimit[1])
@@ -954,8 +941,8 @@ void CAndroidUserItemSink::ReadConfigInformation(TCHAR szFileName[], TCHAR szRoo
 	printLog(("读取ini配置 筹码限制m_lRobotJettonLimit=[%I64d,%I64d],下注次数限制m_lRobotJettonLimit=[%d,%d],是否坐庄m_bRobotBanker=%d,坐庄次数=m_nRobotBankerCount=%d,空盘重申m_nRobotWaitBanker=%d,上庄个数m_nRobotApplyBanker=%d,降低限制m_bReduceJettonLimit=%d"),  \
 		m_lRobotJettonLimit[0],  \
 		m_lRobotJettonLimit[1], \
-		m_nRobotBetTimeLimit,  \
-		m_nRobotBetTimeLimit,  \
+		m_nRobotBetTimeLimit[0],  \
+		m_nRobotBetTimeLimit[1],  \
 		m_bRobotBanker,  \
 		m_nRobotBankerCount,  \
 		m_nRobotWaitBanker,  \
@@ -967,6 +954,16 @@ void CAndroidUserItemSink::ReadConfigInformation(TCHAR szFileName[], TCHAR szRoo
 //计算范围	(返回值表示是否可以通过下降下限达到下注)
 bool CAndroidUserItemSink::CalcJettonRange(LONGLONG lMaxScore, LONGLONG lChipLmt[], int & nChipTime, int lJetLmt[])
 {
+
+	printLog(("CalcJettonRange step1 lMaxScore=%I64d,lChipLmt=[%I64d,%I64d],nChipTime=%d,lJetLmt=[%d,%d]"),  \
+		lMaxScore,  \
+		lChipLmt[0],  \
+		lChipLmt[1],  \
+		nChipTime, \
+		lJetLmt[0],  \
+		lJetLmt[1]  \
+		);
+
 	//定义变量
 	bool bHaveSetMinChip = false;
 
@@ -985,6 +982,15 @@ bool CAndroidUserItemSink::CalcJettonRange(LONGLONG lMaxScore, LONGLONG lChipLmt
 			lJetLmt[1] = i;
 	}
 	if (lJetLmt[0] > lJetLmt[1])	lJetLmt[0] = lJetLmt[1];
+
+	printLog(("CalcJettonRange step2 lMaxScore=%I64d,lChipLmt=[%I64d,%I64d],nChipTime=%d,lJetLmt=[%d,%d]"),  \
+		lMaxScore,  \
+		lChipLmt[0],  \
+		lChipLmt[1],  \
+		nChipTime, \
+		lJetLmt[0],  \
+		lJetLmt[1]  \
+		);
 
 	//是否降低下限
 	if (m_bReduceJettonLimit)
@@ -1007,6 +1013,14 @@ bool CAndroidUserItemSink::CalcJettonRange(LONGLONG lMaxScore, LONGLONG lChipLmt
 					ASSERT(lJetLmt[0]>=0);
 				}
 			}
+			printLog(("CalcJettonRange step3 lMaxScore=%I64d,lChipLmt=[%I64d,%I64d],nChipTime=%d,lJetLmt=[%d,%d]"),  \
+				lMaxScore,  \
+				lChipLmt[0],  \
+				lChipLmt[1],  \
+				nChipTime, \
+				lJetLmt[0],  \
+				lJetLmt[1]  \
+				);
 		}
 	}
 
