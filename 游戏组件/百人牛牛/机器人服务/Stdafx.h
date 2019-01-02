@@ -92,4 +92,10 @@
 
 //组件头文件
 #include "..\消息定义\CMD_OxBattle.h"
-//
+#define USE_RS_PRINT
+#include<cstdlib>
+#include<ctime>
+#include<fstream>
+#include<iostream>
+#include<string>
+using namespace std;

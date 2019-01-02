@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 #include "AndroidUserItem.h"
-
+#include "AndroidUserManager.h"
 //////////////////////////////////////////////////////////////////////////////////
 
 //静态变量
@@ -347,6 +347,12 @@ bool CAndroidUserItem::OnSocketRead(WORD wMainCmdID, WORD wSubCmdID, VOID * pDat
 		return OnSocketSubSystemMessage(pData,wDataSize);
 	}
 
+	//框架消息通知机器人组件
+	if (m_pIAndroidUserItemSink!=NULL)
+	{
+		m_pIAndroidUserItemSink->OnEventFrameMessage(MAKEWORD(wMainCmdID,wSubCmdID),pData,wDataSize);
+	}
+
 	return true;
 }
 
@@ -422,6 +428,21 @@ bool CAndroidUserItem::OnSocketSubLogonFinish(VOID * pData, WORD wDataSize)
 	if (m_pIServerUserItem->GetTableID()!=INVALID_TABLE)
 	{
 		StartGameClient();
+	}
+
+	//框架消息通知机器人组件
+	if (m_pIAndroidUserItemSink!=NULL)
+	{
+		CAndroidUserManager *p=dynamic_cast<CAndroidUserManager *>(m_pIAndroidUserManager);
+		if(p)
+		{
+		    tagAndroidUserParameter obj;
+			ZeroMemory(&obj,sizeof(obj));
+			obj.pGameParameter=p->GetGameParameter();
+			obj.pGameServiceAttrib=p->GetGameServiceAttrib();
+			obj.pGameServiceOption=p->GetGameServiceOption();
+			m_pIAndroidUserItemSink->OnEventFrameMessage(MAKEWORD(MDM_GR_LOGON,SUB_GR_LOGON_FINISH),&obj,sizeof(obj));
+		}
 	}
 
 	return true;

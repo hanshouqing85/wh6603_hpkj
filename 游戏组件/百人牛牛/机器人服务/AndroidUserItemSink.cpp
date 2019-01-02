@@ -3,6 +3,130 @@
 #include "math.h"
 
 //////////////////////////////////////////////////////////////////////////
+//得到当前程序所在的路径 最后一个字符无 '\'
+string GetAppPath()
+{
+	HINSTANCE hInst=NULL;
+	hInst=(HINSTANCE)GetModuleHandleA(NULL);
+
+	CHAR path_buffer[_MAX_PATH];
+	GetModuleFileNameA(hInst,path_buffer,sizeof(path_buffer));//得到exe文件的全路径 
+	string strPath;
+
+	strPath=path_buffer;
+
+	//只提出文件的路径，不要文件名
+	int pos=strPath.find_last_of("\\");
+
+	strPath=strPath.substr(0,pos);
+
+
+	return strPath;
+}
+
+// 创建目录
+int create_dir(wchar_t* pszDirName, int iDirNameLen)
+{
+	if(!pszDirName || 0==iDirNameLen)
+		return 10;	// 目录名是空值或者长度不正确
+
+	int iResult = 0;
+	int iFlag = 0;
+	DWORD dwError = 0;
+
+	// iMode 值的含义：
+	//	00 Existence only
+	//	02  Write-only
+	//	04 Read-only
+	//	06 Read and write
+	int iMode = 4;
+
+	// 判断目录存在否
+	iFlag = _waccess(pszDirName, iMode);
+
+	if(0==iFlag)	// 存在该目录
+	{
+		return 0;
+	}	
+	else	// 没有该目录
+	{
+		iFlag = _wmkdir(pszDirName);
+		if(0==iFlag)	// 建好了
+		{
+		}
+		else	// 创建失败
+		{
+			dwError = GetLastError();
+			iResult = 30;	// 创建失败
+		}
+	}
+
+	return 0;
+}
+
+string ws2s(const wstring& ws)
+{
+	string curLocale = setlocale(LC_ALL, NULL); // curLocale = "C";
+
+	setlocale(LC_ALL, "chs"); 
+
+	const wchar_t* _Source = ws.c_str();
+	size_t _Dsize = 2 * ws.size() + 1;
+	char *_Dest = new char[_Dsize];
+	memset(_Dest,0,_Dsize);
+	wcstombs(_Dest,_Source,_Dsize);
+	string result = _Dest;
+	delete []_Dest;
+
+	setlocale(LC_ALL, curLocale.c_str());
+
+	return result;
+}
+
+wstring s2ws(const string& s)
+{
+	setlocale(LC_ALL, "chs"); 
+
+	const char* _Source = s.c_str();
+	size_t _Dsize = s.size() + 1;
+	wchar_t *_Dest = new wchar_t[_Dsize];
+	wmemset(_Dest, 0, _Dsize);
+	mbstowcs(_Dest,_Source,_Dsize);
+	wstring result = _Dest;
+	delete []_Dest;
+
+	setlocale(LC_ALL, "C");
+
+	return result;
+}
+
+#if 0//另外一种写法
+template<class T>  
+T Trim(const T& str)  
+{  
+	int length = str.size();  
+	int i = 0,j = length -1;  
+	// vc的isspace实现> 256就崩溃
+	while(i < length && isspace(str[i] & 0xFF)){i++;}  
+	while(j >= 0 && isspace(str[j] & 0xFF)){j--;}  
+	if(j<i) return T();  
+	return str.substr(i,j-i+1);  
+}  
+#else
+template<typename E,typename TR,typename AL>
+inline std::basic_string<E, TR, AL> Trim(const std::basic_string<E, TR, AL>&theString) 
+{
+	int aStartPos=0;
+	while(aStartPos<(int)theString.length() && isspace(theString[aStartPos]))
+		aStartPos++;
+	int anEndPos=theString.length()-1;
+	while(anEndPos>=0 && isspace(theString[anEndPos]))
+		anEndPos--;
+	return theString.substr(aStartPos,anEndPos-aStartPos+1);
+}
+#endif
+
+//////////////////////////////////////////////////////////////////////////
 
 //时间标识
 #define IDI_PLACE_JETTON1			103									//下注定时
@@ -81,6 +205,86 @@ bool CAndroidUserItemSink::Initialization(IUnknownEx * pIUnknownEx)
 	return true;
 }
 
+void CAndroidUserItemSink::createLogFile(tagAndroidUserParameter * pAndroidUserParameter)
+{
+	tagAndroidService *pAndroidService = m_pIAndroidUserItem->GetAndroidService();
+	tagAndroidParameter *pAndroidParameter = m_pIAndroidUserItem->GetAndroidParameter();
+	IServerUserItem *pMeUserItem = m_pIAndroidUserItem->GetMeUserItem();
+	if(pMeUserItem && pAndroidUserParameter)
+	{
+		DWORD chairId=pMeUserItem->GetChairID();
+		DWORD uid=pMeUserItem->GetUserID();//uid的值是对的
+		WORD tableId=pMeUserItem->GetTableID();
+		wstring wstr=pMeUserItem->GetNickName();
+		wstr=Trim(wstr);
+		string str=ws2s(wstr);
+		WORD wKindID=pAndroidUserParameter->pGameServiceAttrib->wKindID;
+		WORD wServerKind=pAndroidUserParameter->pGameServiceAttrib->wServerKind;
+		WORD wServerID=pAndroidUserParameter->pGameServiceOption->wServerID;
+		wstring szServerName=pAndroidUserParameter->pGameServiceOption->szServerName;
+#ifdef USE_RS_PRINT
+		wchar_t g_wcDirName[256]={0};
+		wchar_t g_wcFileName[256]={0};
+		wstring wstrPath=s2ws(GetAppPath());
+		//wsprintfW(g_wcDirName,L"%s\\%s_%d_第%d桌", 
+		//	wstrPath.c_str(),
+		//	szServerName.c_str(),
+		//	wServerID,
+		//	tableId
+		//	);
+		wsprintfW(g_wcDirName,L"%s\\%s_%d", 
+			wstrPath.c_str(),
+			szServerName.c_str(),
+			wServerID
+			);
+		wsprintfW(g_wcFileName,L"\\%s_%d.txt", 
+			wstr.c_str(),
+			uid
+			);
+		m_strLogFile=g_wcDirName;
+		m_strLogFile+=g_wcFileName;
+		int ret=create_dir(g_wcDirName,wcslen(g_wcDirName));
+#endif
+	}
+}
+
+void CAndroidUserItemSink::printLog(char *szBuff,...)
+{
+#ifdef USE_RS_PRINT
+	if(m_strLogFile!=L"")
+	{
+		SYSTEMTIME timeCreateFile={0};	// 建档的时间
+		GetSystemTime(&timeCreateFile);	// 获得当前时间
+		char timeFormat[256]={0};
+		sprintf(timeFormat,"【%04d-%02d-%02d %02d:%02d:%02d %03d】", 
+			timeCreateFile.wYear,
+			timeCreateFile.wMonth,
+			timeCreateFile.wDay,
+			timeCreateFile.wHour+8,	// 加8是对齐北京时间
+			timeCreateFile.wMinute,
+			timeCreateFile.wSecond,
+			timeCreateFile.wMilliseconds
+			);
+
+		char buf[1024]={0};
+		va_list ap;
+		va_start(ap,szBuff);
+		vsprintf(buf,szBuff,ap);
+		va_end(ap);
+
+		//CTraceService::TraceString(CA2T(buf),TraceLevel_Normal);
+		OutputDebugString(CA2T(buf));
+		ofstream outf(m_strLogFile.c_str(),ios::app); 
+		outf<<timeFormat<<buf<<endl;
+	}
+#endif
+}
+
+void CAndroidUserItemSink::printLog(CString& str)
+{
+	printLog((LPSTR)CT2A(str));
+}
+
 //重置接口
 bool CAndroidUserItemSink::RepositionSink()
 {
@@ -124,17 +328,15 @@ bool  CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
 			if ( m_nRobotApplyBanker > m_nRobotListMinCount)
 				nMinCount = (rand()%(m_nRobotApplyBanker - m_nRobotListMinCount)) + m_nRobotListMinCount;
 
-			CString str;
-			str.Format(L"BBB 当前上庄人数为%I64d,随机出来的最少人数为%d",m_nListUserCount,nMinCount);
-			OutputDebugString(str);
+			printLog("检查上庄 当前上庄人数m_nListUserCount=%I64d,随机出来的最少人数nMinCount=%d",m_nListUserCount,nMinCount);
 
 			if (m_wCurrentBanker == INVALID_CHAIR||m_nListUserCount<nMinCount)
 			{
 				//空庄
 				m_nWaitBanker++;
-
-				//MyDebug(_T("机器人上庄(End) %d [%d %d] [%d %d]"), m_pIAndroidUserItem->GetChairID(), m_nWaitBanker, 
-				//	m_nRobotWaitBanker, m_stlApplyBanker, m_nRobotApplyBanker);
+							
+				WORD chairId0=m_pIAndroidUserItem->GetChairID();
+				printLog(("机器人上庄(End) chairId0=%d [空几盘m_nWaitBanker=%d 空盘重申m_nRobotWaitBanker=%d] [申请数m_stlApplyBanker=%d 上庄个数m_nRobotApplyBanker=%d"), chairId0,m_nWaitBanker, m_nRobotWaitBanker, m_stlApplyBanker, m_nRobotApplyBanker);
 
 				//机器人上庄
 				if ( m_bRobotBanker && m_nWaitBanker >= m_nRobotWaitBanker )
@@ -257,8 +459,18 @@ bool  CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
 					}
 				}
 
-				/*ASSERT( MyDebug(_T("机器人下注 %d 下注次数 [%d/%d] 下注 [%d %d] 范围 [%d %d] 限制 [%I64d %I64d %I64d]"), wMyID, nTimerID-IDI_PLACE_JETTON, m_nChipTime, 
-					nChipArea, m_RobotInfo.nChip[nCurChip], m_nChipLimit[0], m_nChipLimit[1], m_lMaxChipBanker, m_lMaxChipUser, lMaxChipLmt) );*/
+				printLog(("机器人下注 wMyID=%d 下注次数[%d/%d] 下注[nChipArea=%d,nChip=%d] 范围m_nChipLimit=[%d,%d] 限制=[最大下注(庄家)=%I64d,最大下注(个人)=%I64d,lMaxChipLmt=%I64d]"), \
+					wMyID, \
+					nTimerID-IDI_PLACE_JETTON, \
+					m_nChipTime, \
+					nChipArea, \
+					m_RobotInfo.nChip[nCurChip], \
+					m_nChipLimit[0], \
+					m_nChipLimit[1], \
+					m_lMaxChipBanker, \
+					m_lMaxChipUser, \
+					lMaxChipLmt \
+					);
 
 				//变量定义
 				CMD_C_PlaceJetton PlaceJetton = {};
@@ -327,9 +539,32 @@ bool  CAndroidUserItemSink::OnEventGameMessage(WORD wSubCmdID, void * pBuffer, W
 	return true;
 }
 
-//游戏消息
-bool  CAndroidUserItemSink::OnEventFrameMessage(WORD wSubCmdID, void * pData, WORD wDataSize)
+bool  CAndroidUserItemSink::OnEventFrameMessage(WORD wCmdID, void * pData, WORD wDataSize)
 {
+	BYTE mid=LOBYTE(wCmdID);
+	BYTE sid=HIBYTE(wCmdID);
+
+	//登录完成
+	if ((mid==MDM_GR_LOGON)&&(sid==SUB_GR_LOGON_FINISH))
+	{
+		//变量定义
+		tagAndroidUserParameter * pAndroidUserParameter=(tagAndroidUserParameter *)pData;
+		createLogFile(pAndroidUserParameter);
+		IServerUserItem *pMeUserItem = m_pIAndroidUserItem->GetMeUserItem();
+		if(pMeUserItem)
+		{
+			WORD chairId0=m_pIAndroidUserItem->GetChairID();
+			WORD uid0=m_pIAndroidUserItem->GetUserID();//uid0的值是错的
+			WORD tableId0=m_pIAndroidUserItem->GetTableID();
+			DWORD chairId=pMeUserItem->GetChairID();
+			DWORD uid=pMeUserItem->GetUserID();//uid的值是对的
+			WORD tableId=pMeUserItem->GetTableID();
+			printLog("登录完成chairId0=%d,uid0=%d,tableId0=%d,chairId=%d,uid=%d,tableId=%d",chairId0,uid0,tableId0,chairId,uid,tableId);
+		}
+		return true;
+	}
+
+
 	return true;
 }
 
@@ -355,8 +590,8 @@ bool  CAndroidUserItemSink::OnEventSceneMessage(BYTE cbGameStatus, bool bLookonO
 
 			ReadConfigInformation(m_RobotInfo.szCfgFileName, m_szRoomName, true);
 
-			//MyDebug(_T("机器人上庄(Free) %d [%d %d] [%d %d]"), m_pIAndroidUserItem->GetChairID(), m_nWaitBanker, 
-			//	m_nRobotWaitBanker, m_stlApplyBanker, m_nRobotApplyBanker);
+			WORD chairId0=m_pIAndroidUserItem->GetChairID();
+			printLog(("机器人上庄(Free) chairId0=%d [空几盘m_nWaitBanker=%d 空盘重申m_nRobotWaitBanker=%d] [申请数m_stlApplyBanker=%d 上庄个数m_nRobotApplyBanker=%d"), chairId0,m_nWaitBanker, m_nRobotWaitBanker, m_stlApplyBanker, m_nRobotApplyBanker);
 
 			//上庄处理
 			if (pStatusFree->wBankerUser == INVALID_CHAIR)
@@ -546,8 +781,17 @@ bool CAndroidUserItemSink::OnSubGameStart(const void * pBuffer, WORD wDataSize)
 		m_pIAndroidUserItem->SetGameTimer(IDI_PLACE_JETTON+i+1, nElapse);
 	}
 
-	//ASSERT( MyDebug(_T("机器人 %d 下注次数 %d 范围 [%d %d] 总人数 %d 限制 [%I64d %I64d] 上庄 [%d %d]"), wMyID, m_nChipTime, m_nChipLimit[0], m_nChipLimit[1], 
-	//	pGameStart->nChipRobotCount, m_lMaxChipBanker, m_lMaxChipUser, m_stlApplyBanker, m_nRobotApplyBanker) );
+	printLog(("机器人 wMyID=%d 下注次数m_nChipTime=%d 下注范围m_nChipLimit=[%d,%d] 总人数nChipRobotCount=%d 限制[最大下注(庄家)m_lMaxChipBanker=%I64d,最大下注 (个人)m_lMaxChipUser=%I64d] 上庄[申请数m_stlApplyBanker=%d,上庄个数m_nRobotApplyBanker=%d]"),  \
+		wMyID,  \
+		m_nChipTime,  \
+		m_nChipLimit[0],  \
+		m_nChipLimit[1],  \
+		pGameStart->nChipRobotCount, \
+		m_lMaxChipBanker,  \
+		m_lMaxChipUser,  \
+		m_stlApplyBanker,  \
+		m_nRobotApplyBanker \
+		);
 
 	return true;
 }
@@ -707,8 +951,17 @@ void CAndroidUserItemSink::ReadConfigInformation(TCHAR szFileName[], TCHAR szRoo
 	m_RobotInfo.nAreaChance[2] = GetPrivateProfileInt(szRoomName, TEXT("AreaChance3"), 3, szConfigFileName);
 	m_RobotInfo.nAreaChance[3] = GetPrivateProfileInt(szRoomName, TEXT("AreaChance4"), 1, szConfigFileName);
 
-	//MyDebug(_T("机器人 读取配置 [%I64d %I64d %d %d] %d [%d %d %d] 下注 %d 下降 %d"), m_lRobotJettonLimit[0], m_lRobotJettonLimit[1],
-	//	m_nRobotBetTimeLimit, m_nRobotBetTimeLimit, m_bRobotBanker, m_nRobotBankerCount, m_nRobotWaitBanker, m_nRobotApplyBanker, m_bReduceJettonLimit);
+	printLog(("读取ini配置 筹码限制m_lRobotJettonLimit=[%I64d,%I64d],下注次数限制m_lRobotJettonLimit=[%d,%d],是否坐庄m_bRobotBanker=%d,坐庄次数=m_nRobotBankerCount=%d,空盘重申m_nRobotWaitBanker=%d,上庄个数m_nRobotApplyBanker=%d,降低限制m_bReduceJettonLimit=%d"),  \
+		m_lRobotJettonLimit[0],  \
+		m_lRobotJettonLimit[1], \
+		m_nRobotBetTimeLimit,  \
+		m_nRobotBetTimeLimit,  \
+		m_bRobotBanker,  \
+		m_nRobotBankerCount,  \
+		m_nRobotWaitBanker,  \
+		m_nRobotApplyBanker,  \
+		m_bReduceJettonLimit \
+		);
 }
 
 //计算范围	(返回值表示是否可以通过下降下限达到下注)

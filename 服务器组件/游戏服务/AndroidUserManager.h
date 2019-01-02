@@ -112,6 +112,14 @@ protected:
 	CAndroidUserItem * GetAndroidUserItem(WORD wIndex);
 	//激活对象
 	CAndroidUserItem * ActiveAndroidUserItem(tagAndroidParameter & AndroidParameter);
+
+public:
+	//获取配置参数
+	tagGameParameter *	GetGameParameter();
+	//获取服务属性
+	tagGameServiceAttrib *	GetGameServiceAttrib();	
+	//获取服务配置
+	tagGameServiceOption *	GetGameServiceOption();				
 };
 
 //////////////////////////////////////////////////////////////////////////////////

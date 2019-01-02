@@ -64,6 +64,7 @@ protected:
 protected:
 	CGameLogic						m_GameLogic;						//游戏逻辑
 	IAndroidUserItem *				m_pIAndroidUserItem;				//用户接口
+	wstring                         m_strLogFile;                       //日志文件
 
 	//函数定义
 public:
@@ -99,8 +100,12 @@ public:
 	virtual bool  OnEventTimer(UINT nTimerID);
 	//游戏消息
 	virtual bool  OnEventGameMessage(WORD wSubCmdID, void * pData, WORD wDataSize);
-	//游戏消息
-	virtual bool  OnEventFrameMessage(WORD wSubCmdID, void * pData, WORD wDataSize);
+	/*
+		框架消息
+		wCmdID=低字节mid+高字节sid
+		考虑兼容性，复用此虚方法
+	*/
+	virtual bool  OnEventFrameMessage(WORD wCmdID, void * pData, WORD wDataSize);
 	//场景消息
 	virtual bool  OnEventSceneMessage(BYTE cbGameStatus, bool bLookonOther, void * pData, WORD wDataSize);
 
@@ -142,6 +147,12 @@ public:
 	void ReadConfigInformation(TCHAR szFileName[], TCHAR szRoomName[], bool bReadFresh);
 	//计算范围
 	bool CalcJettonRange(LONGLONG lMaxScore, LONGLONG lChipLmt[], int & nChipTime, int lJetLmt[]);
+
+	//生成日志
+	void createLogFile(tagAndroidUserParameter * pAndroidUserParameter);
+	//打印日志
+	void printLog(char *szBuff,...);
+	void printLog(CString& str);
 };
 
 //////////////////////////////////////////////////////////////////////////

@@ -1241,8 +1241,12 @@ public:
 	virtual bool OnEventTimer(UINT nTimerID)=NULL;
 	//游戏消息
 	virtual bool OnEventGameMessage(WORD wSubCmdID, VOID * pData, WORD wDataSize)=NULL;
-	//游戏消息
-	virtual bool OnEventFrameMessage(WORD wSubCmdID, VOID * pData, WORD wDataSize)=NULL;
+	/*
+		框架消息
+		wCmdID=低字节mid+高字节sid
+		考虑兼容性，复用此虚方法
+	*/
+	virtual bool OnEventFrameMessage(WORD wCmdID, VOID * pData, WORD wDataSize)=NULL;
 	//场景消息
 	virtual bool OnEventSceneMessage(BYTE cbGameStatus, bool bLookonOther, VOID * pData, WORD wDataSize)=NULL;
 

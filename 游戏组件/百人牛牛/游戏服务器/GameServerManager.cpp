@@ -28,8 +28,8 @@ CGameServiceManager::CGameServiceManager(void)
 	lstrcpyn(m_GameServiceAttrib.szGameName,GAME_NAME,CountArray(m_GameServiceAttrib.szGameName));
 	lstrcpyn(m_GameServiceAttrib.szDataBaseName,szTreasureDB,CountArray(m_GameServiceAttrib.szDataBaseName));
 
-	lstrcpyn(m_GameServiceAttrib.szClientEXEName,TEXT("OxBattle.EXE"),CountArray(m_GameServiceAttrib.szClientEXEName));
-	lstrcpyn(m_GameServiceAttrib.szServerDLLName,TEXT("OxBattleServer.DLL"),CountArray(m_GameServiceAttrib.szServerDLLName));
+	lstrcpyn(m_GameServiceAttrib.szClientEXEName,TEXT("OxBattle.exe"),CountArray(m_GameServiceAttrib.szClientEXEName));
+	lstrcpyn(m_GameServiceAttrib.szServerDLLName,TEXT("OxBattleServer.dll"),CountArray(m_GameServiceAttrib.szServerDLLName));
 
 	return;
 }
@@ -85,7 +85,6 @@ VOID * CGameServiceManager::CreateAndroidUserItemSink(REFGUID Guid, DWORD dwQuer
 		//创建机器人
 		VOID *pAndroidObject = m_AndroidServiceHelper->CreateAndroidUserItemSink(Guid,dwQueryVer);
 		if( pAndroidObject == NULL ) throw TEXT("创建机器人失败");
-
 		return pAndroidObject;
 	}
 	catch(...) {}
@@ -138,7 +137,6 @@ bool CGameServiceManager::RectifyParameter(tagGameServiceOption & GameServiceOpt
 		else if(GameServiceOption.lRestrictScore>0)
 			GameServiceOption.lMaxEnterScore=__min(GameServiceOption.lMaxEnterScore,GameServiceOption.lRestrictScore);
 	}
-
 	return true;
 }
 
