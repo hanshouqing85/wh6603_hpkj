@@ -252,17 +252,17 @@ void CAndroidUserItemSink::printLog(char *szBuff,...)
 #ifdef USE_RS_PRINT
 	if(m_strLogFile!=L"")
 	{
-		SYSTEMTIME timeCreateFile={0};	// 建档的时间
-		GetSystemTime(&timeCreateFile);	// 获得当前时间
+		SYSTEMTIME st={0};	// 建档的时间
+		GetSystemTime(&st);	// 获得当前时间
 		char timeFormat[256]={0};
 		sprintf(timeFormat,"【%04d-%02d-%02d %02d:%02d:%02d %03d】", 
-			timeCreateFile.wYear,
-			timeCreateFile.wMonth,
-			timeCreateFile.wDay,
-			timeCreateFile.wHour+8,	// 加8是对齐北京时间
-			timeCreateFile.wMinute,
-			timeCreateFile.wSecond,
-			timeCreateFile.wMilliseconds
+			st.wYear,
+			st.wMonth,
+			st.wDay,
+			st.wHour+8,	// 加8是对齐北京时间
+			st.wMinute,
+			st.wSecond,
+			st.wMilliseconds
 			);
 
 		char buf[1024]={0};
@@ -392,11 +392,12 @@ bool  CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
 				//统计次数
 				m_nChipTimeCount++;
 
-				//检测退出
-				if (lMaxChipLmt < m_RobotInfo.nChip[m_nChipLimit[0]])	return false;
+				//检测退出	
+				int MinJetton=m_RobotInfo.nChip[m_nChipLimit[0]];//考虑了赔付限制的下注筹码最小的面值
+				if (lMaxChipLmt < MinJetton)	return false;
 				for (int i = 0; i < AREA_COUNT; i++)
 				{
-					if (m_lAreaChip[i] >= m_RobotInfo.nChip[m_nChipLimit[0]])	break;
+					if (m_lAreaChip[i] >= MinJetton)	break;
 					if (i == AREA_COUNT-1)	return false;
 				}
 
@@ -409,7 +410,7 @@ bool  CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
 				{
 					nChipArea=CGameLogic::SelectByProb(chip_area_arr,m_RobotInfo.nAreaChance,AREA_COUNT,nACTotal);
 				}
-				while (m_lAreaChip[nChipArea] < m_RobotInfo.nChip[m_nChipLimit[0]]);
+				while (m_lAreaChip[nChipArea] < MinJetton);
 
 				//下注大小
 				if (m_nChipLimit[0] == m_nChipLimit[1])
@@ -431,9 +432,8 @@ bool  CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
 						}
 					}
 
-					//随机下注
-					nRandNum = (rand()+wMyID) % (nCurJetLmt[1]-nCurJetLmt[0]+1);
-					nCurChip = nCurJetLmt[0] + nRandNum;
+					//随机下注筹码面值索引
+					nCurChip = CGameLogic::GetRand(nCurJetLmt[0],nCurJetLmt[1]);
 
 					//多下控制 (当庄家金币较少时会尽量保证下足次数)
 					if (m_nChipTimeCount < m_nChipTime)
@@ -441,7 +441,7 @@ bool  CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
 						LONGLONG lLeftJetton = LONGLONG( (lMaxChipLmt-m_RobotInfo.nChip[nCurChip])/(m_nChipTime-m_nChipTimeCount) );
 
 						//不够次数 (即全用最小限制筹码下注也少了)
-						if (lLeftJetton < m_RobotInfo.nChip[m_nChipLimit[0]] && nCurChip > m_nChipLimit[0])
+						if (lLeftJetton < MinJetton && nCurChip > m_nChipLimit[0])
 							nCurChip--;
 					}
 				}
@@ -751,26 +751,28 @@ bool CAndroidUserItemSink::OnSubGameStart(const void * pBuffer, WORD wDataSize)
 		return true;
 
 	//设置时间
-	int nTimeGrid = int(pGameStart->cbTimeLeave-2)*800/m_nChipTime;		//时间格,前2秒不下注,所以-2,800表示机器人下注时间范围千分比
+	vector<int> vElapse(m_nChipTime);
 	for (int i = 0; i < m_nChipTime; i++)
 	{
-		int nRandRage = int( nTimeGrid * i / (1500*sqrt((double)m_nChipTime)) ) + 1;		//波动范围
-		nElapse = 2 + (nTimeGrid*i)/1000 + ( (rand()+wMyID)%(nRandRage*2) - (nRandRage-1) );
-		ASSERT(nElapse>=2&&nElapse<=pGameStart->cbTimeLeave);
-		if (nElapse < 2 || nElapse > pGameStart->cbTimeLeave)	continue;
-
-
-		//if (nElapse>3)
-		//{
-		//	nElapse = 3;//机器人之多在多少秒之内全部下完
-		//}
-		
-		m_pIAndroidUserItem->SetGameTimer(IDI_PLACE_JETTON+i+1, nElapse);
+		nElapse = CGameLogic::GetRand(2,pGameStart->cbTimeLeave-1);
+		vElapse[i]=nElapse;
 	}
+	std::sort(vElapse.begin(),vElapse.end());
+	std::stringstream ss;
+	for (int i = 0; i < m_nChipTime; i++)
+	{
+		m_pIAndroidUserItem->SetGameTimer(IDI_PLACE_JETTON+i+1, vElapse[i]);
+		ss << vElapse[i];
+		if(i < m_nChipTime-1)
+			ss << ",";
+	}
+	string s = ss.str();
+    ss.str("");
 
-	printLog(("机器人 wMyID=%d 下注次数m_nChipTime=%d 下注范围m_nChipLimit=[%d,%d] 总人数nChipRobotCount=%d 限制[最大下注(庄家)m_lMaxChipBanker=%I64d,最大下注 (个人)m_lMaxChipUser=%I64d] 上庄[申请数m_stlApplyBanker=%d,上庄个数m_nRobotApplyBanker=%d]"),  \
+	printLog(("机器人 wMyID=%d 下注次数m_nChipTime=%d 下注时间=[%s] 下注筹码面值索引范围m_nChipLimit=[%d,%d] 总人数nChipRobotCount=%d 限制[最大下注(庄家)m_lMaxChipBanker=%I64d,最大下注 (个人)m_lMaxChipUser=%I64d] 上庄[申请数m_stlApplyBanker=%d,上庄个数m_nRobotApplyBanker=%d]"),  \
 		wMyID,  \
 		m_nChipTime,  \
+		s.c_str(),  \
 		m_nChipLimit[0],  \
 		m_nChipLimit[1],  \
 		pGameStart->nChipRobotCount, \
@@ -951,7 +953,6 @@ void CAndroidUserItemSink::ReadConfigInformation(TCHAR szFileName[], TCHAR szRoo
 		);
 }
 
-//计算范围	(返回值表示是否可以通过下降下限达到下注)
 bool CAndroidUserItemSink::CalcJettonRange(LONGLONG lMaxScore, LONGLONG lChipLmt[], int & nChipTime, int lJetLmt[])
 {
 
@@ -971,7 +972,7 @@ bool CAndroidUserItemSink::CalcJettonRange(LONGLONG lMaxScore, LONGLONG lChipLmt
 	if (lMaxScore < m_RobotInfo.nChip[0])	return false;
 
 	//配置范围
-	for (int i = 0; i < CountArray(m_RobotInfo.nChip); i++)
+	for (int i = 0; i < CHIP_COUNT; i++)
 	{
 		if (!bHaveSetMinChip && m_RobotInfo.nChip[i] >= lChipLmt[0])
 		{ 

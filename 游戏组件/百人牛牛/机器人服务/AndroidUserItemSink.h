@@ -19,11 +19,11 @@ class CAndroidUserItemSink : public IAndroidUserItemSink
 protected:
 	LONGLONG						m_lMaxChipBanker;					//最大下注 (庄家)
 	LONGLONG						m_lMaxChipUser;						//最大下注 (个人)
-	LONGLONG						m_lAreaChip[AREA_COUNT];			//区域下注 
+	LONGLONG						m_lAreaChip[AREA_COUNT];			//每个区域的可下注数量(0~配置值) 
 	WORD							m_wCurrentBanker;					//庄家位置
 	BYTE							m_cbTimeLeave;						//剩余时间
 
-	int								m_nChipLimit[2];					//下注范围 (0-AREA_COUNT)
+	int								m_nChipLimit[2];					//下注筹码面值索引范围(0~CHIP_COUNT-1)
 	int								m_nChipTime;						//下注次数 (本局)
 	int								m_nChipTimeCount;					//已下次数 (本局)
 	
@@ -42,13 +42,13 @@ protected:
 	//配置变量	(游戏配置)
 protected:
 	bool							m_bRefreshCfg;						//每盘刷新
-	LONGLONG						m_lAreaLimitScore;					//区域限制
+	LONGLONG						m_lAreaLimitScore;					//区域限制(每个注区的最高封顶数量)
 	LONGLONG						m_lUserLimitScore;					//下注限制
 	LONGLONG						m_lBankerCondition;					//上庄条件		
 
 	//配置变量  (机器人配置)
 protected:
-	LONGLONG						m_lRobotJettonLimit[2];				//筹码限制	
+	LONGLONG						m_lRobotJettonLimit[2];				//筹码限制(注意是面值，不是面值索引)	
 	int								m_nRobotBetTimeLimit[2];			//次数限制	
 	bool							m_bRobotBanker;						//是否坐庄
 	int								m_nRobotBankerCount;				//坐庄次数
@@ -144,7 +144,21 @@ public:
 public:
 	//读取配置
 	void ReadConfigInformation(TCHAR szFileName[], TCHAR szRoomName[], bool bReadFresh);
-	//计算范围
+
+	/* --------------------------------------------------------------------------
+	函数说明：计算下注筹码面值索引范围(0~CHIP_COUNT-1)
+	传入参数：
+		lMaxScore	最大下注，其值等于庄家赔付限制和玩家赔付限制的较小者
+		lChipLmt[0]	机器人筹码范围(下限)，也即下注筹码最小的面值索引
+		lChipLmt[1]	机器人筹码范围(上限)，也即下注筹码最大的面值索引
+	传入传出参数：
+		nChipTime	下注次数(本局)
+	传出参数：
+		lJetLmt[0]，考虑了赔付限制的下注筹码最小的面值索引
+		lJetLmt[1]，考虑了赔付限制的下注筹码最大的面值索引
+	返回值：
+		成功则返回true，表示可以下注
+	--------------------------------------------------------------------------*/
 	bool CalcJettonRange(LONGLONG lMaxScore, LONGLONG lChipLmt[], int & nChipTime, int lJetLmt[]);
 
 	//生成日志

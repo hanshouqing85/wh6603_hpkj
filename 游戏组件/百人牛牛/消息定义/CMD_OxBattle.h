@@ -35,6 +35,7 @@
 #define MAX_INDEX					3									//最大索引
 
 #define AREA_COUNT					4									//区域数目
+#define CHIP_COUNT					8									//筹码面值数目
 
 #ifndef _UNICODE
 #define myprintf	_snprintf
@@ -57,14 +58,14 @@
 //机器人信息
 struct tagRobotInfo
 {
-	int nChip[8];														//筹码定义
+	int nChip[CHIP_COUNT];												//筹码定义
 	int nAreaChance[AREA_COUNT];										//区域几率
 	TCHAR szCfgFileName[MAX_PATH];										//配置文件
 	int	nMaxTime;														//最大赔率
 
 	tagRobotInfo()
 	{
-		int nTmpChip[8] = {1, 5, 10, 50, 100, 200, 500, 1000};
+		int nTmpChip[CHIP_COUNT] = {1, 5, 10, 50, 100, 200, 500, 1000};
 		int nTmpAreaChance[AREA_COUNT] = {1, 1, 1, 1};
 		TCHAR szTmpCfgFileName[MAX_PATH] = _T("OxBattleConfig.ini");
 
