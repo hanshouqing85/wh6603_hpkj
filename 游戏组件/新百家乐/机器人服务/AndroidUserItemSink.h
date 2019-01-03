@@ -164,6 +164,15 @@ public:
 	void ReadConfigInformation(TCHAR szFileName[], TCHAR szRoomName[], bool bReadFresh);
 	//计算范围
 	bool CalcBetRange(LONGLONG lMaxScore, LONGLONG lChipLmt[], int & nChipTime, int lJetLmt[]);
+
+	//取[nMin,nMax]之间的随机整数
+	static int GetRand(const int nMin,const int nMax);
+
+	//根据概率选择，返回true的概率为p
+	static bool SelectBoolByProb(float p);
+
+	//根据概率选择
+	static int SelectByProb(int arr[],int arrProb[],int count,int total=0);
 };
 
 //////////////////////////////////////////////////////////////////////////
