@@ -48,6 +48,7 @@ protected:
 
 	//配置变量  (机器人配置)
 protected:
+	vector<int>                     m_vRobotChipChance;                 //机器人下注筹码面值从小到大的概率权重
 	LONGLONG						m_lRobotJettonLimit[2];				//筹码限制(注意是面值，不是面值索引)	
 	int								m_nRobotBetTimeLimit[2];			//次数限制	
 	bool							m_bRobotBanker;						//是否坐庄
@@ -149,8 +150,8 @@ public:
 	函数说明：计算下注筹码面值索引范围(0~CHIP_COUNT-1)
 	传入参数：
 		lMaxScore	最大下注，其值等于庄家赔付限制和玩家赔付限制的较小者
-		lChipLmt[0]	机器人筹码范围(下限)，也即下注筹码最小的面值索引
-		lChipLmt[1]	机器人筹码范围(上限)，也即下注筹码最大的面值索引
+		lChipLmt[0]	机器人筹码范围(下限)，也即下注筹码最小的面值
+		lChipLmt[1]	机器人筹码范围(上限)，也即下注筹码最大的面值
 	传入传出参数：
 		nChipTime	下注次数(本局)
 	传出参数：

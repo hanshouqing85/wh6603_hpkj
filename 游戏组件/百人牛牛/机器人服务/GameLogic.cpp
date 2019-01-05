@@ -241,6 +241,9 @@ int CGameLogic::SelectByProb(int arr[],int arrProb[],int count,int total/*=0*/)
 			total+=arrProb[i];
 		}
 	}
+	// »›¥Ì¥¶¿Ì
+	if(total==0)
+		return arr[0];
 	int kind=0;
 	int iRand =rand()%total;
 	for(int i=0;i<count;i++)

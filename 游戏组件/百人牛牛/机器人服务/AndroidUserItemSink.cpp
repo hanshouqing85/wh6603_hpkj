@@ -2,6 +2,52 @@
 #include "AndroidUserItemSink.h"
 #include "math.h"
 //////////////////////////////////////////////////////////////////////////
+/** Returns a std::stringVector that contains all the substd::strings delimited
+   by the characters in the passed <code>delims</code> argument.
+   @param 
+   delims A list of delimiter characters to split by
+   @param 
+   maxSplits The maximum number of splits to perform (0 for unlimited splits). If this
+   parameters is > 0, the splitting process will stop after this many splits, left to right.
+"\t\n "   
+*/
+template<typename E,typename TR,typename AL>
+std::vector<std::basic_string<E, TR, AL>> split( const std::basic_string<E, TR, AL>& str, const std::basic_string<E, TR, AL>& delims, unsigned int maxSplits = 0)
+{
+	std::vector<std::basic_string<E, TR, AL>> ret;
+	unsigned int numSplits = 0;
+
+	// Use STL methods 
+	size_t start, pos;
+	start = 0;
+	do 
+	{
+		pos = str.find_first_of(delims, start);
+		if (pos == start)
+		{
+			// Do nothing
+			start = pos + 1;
+		}
+		else if (pos == std::basic_string<E, TR, AL>::npos || (maxSplits && numSplits == maxSplits))
+		{
+			// Copy the rest of the std::string
+			ret.push_back( str.substr(start) );
+			break;
+		}
+		else
+		{
+			// Copy up to delimiter
+			ret.push_back( str.substr(start, pos - start) );
+			start = pos + 1;
+		}
+		// parse up to next real data
+		start = str.find_first_not_of(delims, start);
+		++numSplits;
+
+	} while (pos != std::basic_string<E, TR, AL>::npos);
+	return ret;
+}
+
 //得到当前程序所在的路径 最后一个字符无 '\'
 string GetAppPath()
 {
@@ -382,12 +428,12 @@ bool  CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
 		{
 			if (nTimerID >= IDI_PLACE_JETTON && nTimerID <= IDI_PLACE_JETTON+MAX_CHIP_TIME)
 			{
-				srand(GetTickCount());
-
 				//变量定义
 				int nRandNum = 0, nChipArea = 0, nCurChip = 0, nACTotal = 0, nCurJetLmt[2] = {};
 				LONGLONG lMaxChipLmt = __min(m_lMaxChipBanker, m_lMaxChipUser);			//最大可下注值
 				WORD wMyID = m_pIAndroidUserItem->GetChairID();
+
+				srand(GetTickCount()+wMyID);
 
 				//统计次数
 				m_nChipTimeCount++;
@@ -433,7 +479,17 @@ bool  CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
 					}
 
 					//随机下注筹码面值索引
-					nCurChip = CGameLogic::GetRand(nCurJetLmt[0],nCurJetLmt[1]);
+					if(m_vRobotChipChance.size()==CHIP_COUNT)
+					{
+						static int s_arr[CHIP_COUNT]={0,1,2,3,4,5,6,7};
+						int nPos=nCurJetLmt[0];
+						int nLen=nCurJetLmt[1]-nCurJetLmt[0]+1;
+						nCurChip = CGameLogic::SelectByProb(&s_arr[nPos],&m_vRobotChipChance[nPos],nLen);
+					}
+					else
+					{
+					    nCurChip = CGameLogic::GetRand(nCurJetLmt[0],nCurJetLmt[1]);
+					}
 
 					//多下控制 (当庄家金币较少时会尽量保证下足次数)
 					if (m_nChipTimeCount < m_nChipTime)
@@ -710,8 +766,6 @@ bool CAndroidUserItemSink::OnSubGameStart(const void * pBuffer, WORD wDataSize)
 	//消息处理
 	CMD_S_GameStart * pGameStart=(CMD_S_GameStart *)pBuffer;
 
-	srand(GetTickCount());
-
 	//自己当庄或无下注机器人
 	if (pGameStart->wBankerUser == m_pIAndroidUserItem->GetChairID() || pGameStart->nChipRobotCount <= 0)
 		return true;
@@ -737,11 +791,9 @@ bool CAndroidUserItemSink::OnSubGameStart(const void * pBuffer, WORD wDataSize)
 	//计算下注次数
 	int nElapse = 0;												
 	WORD wMyID = m_pIAndroidUserItem->GetChairID();
+	srand(GetTickCount()+wMyID);
+	m_nChipTime=CGameLogic::GetRand(m_nRobotBetTimeLimit[0],m_nRobotBetTimeLimit[1]);
 
-	if (m_nRobotBetTimeLimit[0] == m_nRobotBetTimeLimit[1])
-		m_nChipTime = m_nRobotBetTimeLimit[0];
-	else
-		m_nChipTime = (rand()+wMyID)%(m_nRobotBetTimeLimit[1]-m_nRobotBetTimeLimit[0]+1) + m_nRobotBetTimeLimit[0];
 	ASSERT(m_nChipTime>=0);		
 	if (m_nChipTime <= 0)	return false;								//的确,2个都带等于
 	if (m_nChipTime > MAX_CHIP_TIME)	m_nChipTime = MAX_CHIP_TIME;	//限定MAX_CHIP次下注
@@ -903,6 +955,17 @@ void CAndroidUserItemSink::ReadConfigInformation(TCHAR szFileName[], TCHAR szRoo
 	ZeroMemory(OutBuf, sizeof(OutBuf));
 	GetPrivateProfileString(szRoomName, TEXT("RobotMinJetton"), _T("100"), OutBuf, 255, szConfigFileName);
 	myscanf(OutBuf, mystrlen(OutBuf), _T("%I64d"), &m_lRobotJettonLimit[0]);
+
+	ZeroMemory(OutBuf, sizeof(OutBuf));
+	GetPrivateProfileString(szRoomName, TEXT("RobotChipChance"), _T("1,1,1,1,1,1,1,1"), OutBuf, 255, szConfigFileName);
+	wstring wstr=OutBuf;
+	wstring delims=L",";
+	vector<wstring> vwstr=split(wstr,delims);
+	m_vRobotChipChance.clear();
+	for(int i=0;i<vwstr.size();i++)
+	{
+		m_vRobotChipChance.push_back(_wtoi(vwstr[i].c_str()));
+	}
 
 	if (m_lRobotJettonLimit[1] > 1000)					m_lRobotJettonLimit[1] = 1000;
 	if (m_lRobotJettonLimit[0] < 5)						m_lRobotJettonLimit[0] = 1;
