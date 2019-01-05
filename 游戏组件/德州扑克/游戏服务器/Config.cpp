@@ -61,7 +61,7 @@ DZPKConfig::DZPKConfig(const char *xmlFileName/*=0*/)
 
 DZPKConfig & DZPKConfig::Instance()
 {
-	static DZPKConfig g_DZPKConfig("DZPKConfig\\DZPKConfig.xml");//配置缓冲，只读取了xml文件一次
+	static DZPKConfig g_DZPKConfig("DZPKConfig.xml");//配置缓冲，只读取了xml文件一次
 	return g_DZPKConfig;
 }
 

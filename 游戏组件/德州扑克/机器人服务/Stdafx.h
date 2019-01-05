@@ -49,5 +49,13 @@ typedef void * POINTER_64 PVOID64;
 //组件头文件
 #include "..\消息定义\CMD_DZShowHand.h"
 #include "..\..\..\服务器组件\游戏服务\GameServiceHead.h"
-
+#define USE_RS_PRINT
+#include<cstdlib>
+#include<ctime>
+#include<fstream>
+#include<iostream>
+#include<string>
+#include<sstream>
+#include<algorithm>
+using namespace std;
 //////////////////////////////////////////////////////////////////////////

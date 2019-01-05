@@ -20,7 +20,7 @@ protected:
 
 	//玩家状态
 protected:
-	BYTE							m_cbPlayStatus[GAME_PLAYER];			//游戏状态
+	BYTE							m_cbPlayStatus[GAME_PLAYER];			//用户游戏状态
     BYTE							m_cbGiveUpFlag[GAME_PLAYER];			//弃牌标志<by hxh>
 
 	//加注信息
@@ -53,6 +53,8 @@ protected:
 	CGameLogic						m_GameLogic;							//游戏逻辑
 	ITableFrame						* m_pITableFrame;						//框架接口
 	const tagGameServiceOption		* m_pGameServiceOption;					//配置参数
+	wstring                         m_strLogFile;                           //日志文件
+	int                             m_Jushu;                                //当前局数
 
 	//属性变量
 protected:
@@ -137,6 +139,14 @@ protected:
 
 	// add by hxh 20161104
 	void SendAddScorePacket(CMD_S_AddScore *pAddScore);
+
+	//功能函数
+private:
+	//生成日志
+	void createLogFile();
+	//打印日志
+	void printLog(char *szBuff,...);
+	void printLog(CString& str);
 };
 
 //////////////////////////////////////////////////////////////////////////

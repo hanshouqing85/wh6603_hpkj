@@ -211,7 +211,7 @@ void CAndroidUserItemSink::createLogFile(tagAndroidUserParameter * pAndroidUserP
 	IServerUserItem *pMeUserItem = m_pIAndroidUserItem->GetMeUserItem();
 	if(pMeUserItem && pAndroidUserParameter)
 	{
-		DWORD chairId=pMeUserItem->GetChairID();
+		WORD chairId=pMeUserItem->GetChairID();
 		DWORD uid=pMeUserItem->GetUserID();//uid的值是对的
 		WORD tableId=pMeUserItem->GetTableID();
 		wstring wstr=pMeUserItem->GetNickName();
@@ -252,7 +252,7 @@ void CAndroidUserItemSink::printLog(char *szBuff,...)
 #ifdef USE_RS_PRINT
 	if(m_strLogFile!=L"")
 	{
-		SYSTEMTIME st={0};	// 建档的时间
+		SYSTEMTIME st={0};
 		GetSystemTime(&st);	// 获得当前时间
 		char timeFormat[256]={0};
 		sprintf(timeFormat,"【%04d-%02d-%02d %02d:%02d:%02d %03d】", 
@@ -543,7 +543,7 @@ bool  CAndroidUserItemSink::OnEventFrameMessage(WORD wCmdID, void * pData, WORD 
 			WORD chairId0=m_pIAndroidUserItem->GetChairID();
 			WORD uid0=m_pIAndroidUserItem->GetUserID();//uid0的值是错的
 			WORD tableId0=m_pIAndroidUserItem->GetTableID();
-			DWORD chairId=pMeUserItem->GetChairID();
+			WORD chairId=pMeUserItem->GetChairID();
 			DWORD uid=pMeUserItem->GetUserID();//uid的值是对的
 			WORD tableId=pMeUserItem->GetTableID();
 			printLog("登录完成chairId0=%d,uid0=%d,tableId0=%d,chairId=%d,uid=%d,tableId=%d",chairId0,uid0,tableId0,chairId,uid,tableId);

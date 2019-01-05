@@ -43,44 +43,13 @@ protected:
 	BYTE							m_cbCenterCardData[MAX_CENTERCOUNT];	//中心扑克
 	BYTE							m_cbHandCardData[GAME_PLAYER][MAX_COUNT];//手上扑克
 	BYTE							m_cbOverCardData[GAME_PLAYER][MAX_CENTERCOUNT];//结束扑克
-//	//限制信息
-//protected:
-//	LONG							m_lMeMaxScore;						//最大下注
-//	LONG							m_lAreaLimitScore;					//区域限制
-//	LONG							m_lApplyBankerCondition;			//申请条件
-//
-//	//个人下注
-//protected:
-//	LONG							m_lMeTieScore;						//买平总注
-//	LONG							m_lMeBankerScore;					//买庄总注
-//	LONG							m_lMePlayerScore;					//买闲总注
-//	LONG							m_lMeTieSamePointScore;				//同点平注
-//	LONG							m_lMePlayerKingScore;				//闲天王注
-//	LONG							m_lMeBankerKingScore;				//庄天王注
-//	LONG							m_lMePlayerTwoPair;					//对子下注
-//	LONG							m_lMeBankerTwoPair;					//对子下注
-
-//	//庄家信息
-//protected:
-//	LONG							m_lBankerScore;						//庄家积分
-//	WORD							m_wCurrentBanker;					//当前庄家
-
-//	//状态变量
-//protected:
-//	bool							m_bMeApplyBanker;					//申请标识
-
-//	//配置路径
-//protected:
-//	TCHAR							m_szConfigFile[MAX_PATH];			//配置文件路径
-
-
 
 	//控件变量
 protected:
 	ITableFrame						* m_pITableFrame;					//框架接口
 	CGameLogic						m_GameLogic;						//游戏逻辑
 	IAndroidUserItem *				m_pIAndroidUserItem;				//用户接口
-	//BYTE							m_cbWinSideControl;					//控制输赢
+	wstring                         m_strLogFile;                       //日志文件
 
 	//函数定义
 public:
@@ -111,8 +80,12 @@ public:
 	virtual bool  OnEventTimer(UINT nTimerID);
 	//游戏消息
 	virtual bool  OnEventGameMessage(WORD wSubCmdID, void * pData, WORD wDataSize);
-	//游戏消息
-	virtual bool  OnEventFrameMessage(WORD wSubCmdID, void * pData, WORD wDataSize);
+	/*
+		框架消息
+		wCmdID=低字节mid+高字节sid
+		考虑兼容性，复用此虚方法
+	*/
+	virtual bool  OnEventFrameMessage(WORD wCmdID, void * pData, WORD wDataSize);
 	//场景消息
 	virtual bool  OnEventSceneMessage(BYTE cbGameStatus, bool bLookonOther, void * pData, WORD wDataSize);
 
@@ -129,24 +102,16 @@ public:
 	//用户段位
 	virtual void  OnEventUserSegment(IAndroidUserItem * pIAndroidUserItem, bool bLookonUser);
 
-//	//辅助函数
-//private:
-//	//个人下注
-//	void SetMePlaceJetton(BYTE cbViewIndex, LONG lJettonCount);
-//	//设置庄家
-//	void SetBankerInfo(WORD wBanker,LONG lScore);
-//
-//	//游戏消息
-//private:
-//	//游戏开始
-//	bool OnSubGameStart(const void * pBuffer, WORD wDataSize);
-//	//游戏空闲
-//	bool OnSubGameFree(const void * pBuffer, WORD wDataSize);
-//	//游戏结束
-//	bool OnSubGameEnd(const void * pBuffer, WORD wDataSize);	
-//	//切换庄家
-//	bool OnSubChangeBanker(const void * pBuffer, WORD wDataSize);
+	//功能函数
+private:
+	//生成日志
+	void createLogFile(tagAndroidUserParameter * pAndroidUserParameter);
+	//打印日志
+	void printLog(char *szBuff,...);
+	void printLog(CString& str);
 
+//	游戏消息
+private:
 	//游戏开始
 	bool OnSubGameStart(const void * pBuffer, WORD wDataSize);
 	//用户加注
@@ -159,7 +124,6 @@ public:
 	bool OnSubGameEnd(const void * pBuffer, WORD wDataSize);
 	//开牌消息
 	bool OnSubOpenCard(const void * pBuffer, WORD wDataSize);
-
 };
 
 //////////////////////////////////////////////////////////////////////////

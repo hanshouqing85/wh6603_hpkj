@@ -101,5 +101,13 @@ typedef void * POINTER_64 PVOID64;
 //////////////////////////////////////////////////////////////////////////////////
 
 #include "..\消息定义\CMD_DZShowHand.h"
-
+#define USE_RS_PRINT
+#include<cstdlib>
+#include<ctime>
+#include<fstream>
+#include<iostream>
+#include<string>
+#include<sstream>
+#include<algorithm>
+using namespace std;
 ///////////////////////////////////////////////////////////////////////////////////

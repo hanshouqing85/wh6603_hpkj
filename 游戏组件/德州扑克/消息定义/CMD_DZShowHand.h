@@ -1,6 +1,6 @@
 #ifndef CMD_DZSHOWHAND_HEAD_FILE
 #define CMD_DZSHOWHAND_HEAD_FILE
-#pragma pack(1)//<by hxh>
+#pragma pack(1)
 //////////////////////////////////////////////////////////////////////////
 #if 0
 typedef DOUBLE DZPKSCORE;
@@ -32,6 +32,8 @@ typedef LONGLONG DZPKSCORE;
 //数值掩码
 #define	CARD_MASK_COLOR				0xF0									//花色掩码
 #define	CARD_MASK_VALUE				0x0F									//数值掩码
+#define	CARD_VALUE(c)               ((unsigned char)c & 0x0f)               //获取数值LO4(c)
+#define	CARD_COLOR(c)               (((unsigned char)c & 0xf0)>>4)          //获取花色HI4(c)={0方块,1梅花,2红桃,3黑桃,4王}
 
 #define  SMALL_CARD_WIDTH			25
 #define  SMALL_CARD_HEIGHT			33
@@ -81,7 +83,41 @@ struct tagCardItem
 #define GAME_ACTION_GIVEUP			5
 #define GAME_ACTION_ALLIN			6
 
+//有效判断
+inline bool IsValidCard(unsigned char cbCardData)
+{
+	//获取属性
+	BYTE cbCardColor=CARD_COLOR(cbCardData);
+	BYTE cbCardValue=CARD_VALUE(cbCardData);
 
+	//有效判断
+	if ((cbCardData==0x4E)||(cbCardData==0x4F)) return true;
+	if ((cbCardColor<=3)&&(cbCardValue>=0x01)&&(cbCardValue<=0x0D)) return true;
+
+	return false;
+}
+
+//测试用
+inline const char * GetCardName(unsigned char cbCardData)
+{
+	unsigned char cbCardColor=CARD_COLOR(cbCardData);
+	unsigned char cbCardValue=CARD_VALUE(cbCardData);
+	bool bLegal=((cbCardData==0x4E)||(cbCardData==0x4F)||(cbCardColor<=3)&&(cbCardValue>=0x01)&&(cbCardValue<=0x0D));
+	//assert(bLegal && "GetCardName的输入参数有误!");
+	if(bLegal)
+	{
+		static const char * szCardName[5][15]={
+			{"方块A","方块2","方块3","方块4","方块5","方块6","方块7","方块8","方块9","方块10","方块J","方块Q","方块K","",""},
+			{"梅花A","梅花2","梅花3","梅花4","梅花5","梅花6","梅花7","梅花8","梅花9","梅花10","梅花J","梅花Q","梅花K","",""},
+			{"红桃A","红桃2","红桃3","红桃4","红桃5","红桃6","红桃7","红桃8","红桃9","红桃10","红桃J","红桃Q","红桃K","",""},
+			{"黑桃A","黑桃2","黑桃3","黑桃4","黑桃5","黑桃6","黑桃7","黑桃8","黑桃9","黑桃10","黑桃J","黑桃Q","黑桃K","",""},
+			{"","","","","","","","","","","","","","小王","大王"},
+		};
+		return szCardName[cbCardColor][cbCardValue-1];
+	}
+	else
+		return "";
+}
 
 //////////////////////////////////////////////////////////////////////////
 //服务器命令结构
@@ -137,7 +173,7 @@ struct CMD_S_GameStart
 	DZPKSCORE							lTurnMaxScore;						//最大下注
 	DZPKSCORE							lTurnLessScore;						//最小下注
 	DZPKSCORE							lAddLessScore;						//加最小注
-	DZPKSCORE							lUserMaxScore[GAME_PLAYER];			//用户金币数<by hxh>
+	DZPKSCORE							lUserMaxScore[GAME_PLAYER];			//用户金币数
 	BYTE								cbPlayStatus[GAME_PLAYER];			//游戏状态
 	BYTE								cbCardData[GAME_PLAYER][MAX_COUNT];	//用户扑克
 };
@@ -229,5 +265,5 @@ struct CMD_C_AddScore
 
 
 //////////////////////////////////////////////////////////////////////////
-#pragma pack()//<by hxh>
+#pragma pack()
 #endif

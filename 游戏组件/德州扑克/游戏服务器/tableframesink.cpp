@@ -1,6 +1,131 @@
 #include "StdAfx.h"
 #include "TableFrameSink.h"
 #include "Config.h"
+
+//////////////////////////////////////////////////////////////////////////
+//得到当前程序所在的路径 最后一个字符无 '\'
+string GetAppPath()
+{
+	HINSTANCE hInst=NULL;
+	hInst=(HINSTANCE)GetModuleHandleA(NULL);
+
+	CHAR path_buffer[_MAX_PATH];
+	GetModuleFileNameA(hInst,path_buffer,sizeof(path_buffer));//得到exe文件的全路径 
+	string strPath;
+
+	strPath=path_buffer;
+
+	//只提出文件的路径，不要文件名
+	int pos=strPath.find_last_of("\\");
+
+	strPath=strPath.substr(0,pos);
+
+
+	return strPath;
+}
+
+// 创建目录
+int create_dir(wchar_t* pszDirName, int iDirNameLen)
+{
+	if(!pszDirName || 0==iDirNameLen)
+		return 10;	// 目录名是空值或者长度不正确
+
+	int iResult = 0;
+	int iFlag = 0;
+	DWORD dwError = 0;
+
+	// iMode 值的含义：
+	//	00 Existence only
+	//	02  Write-only
+	//	04 Read-only
+	//	06 Read and write
+	int iMode = 4;
+
+	// 判断目录存在否
+	iFlag = _waccess(pszDirName, iMode);
+
+	if(0==iFlag)	// 存在该目录
+	{
+		return 0;
+	}	
+	else	// 没有该目录
+	{
+		iFlag = _wmkdir(pszDirName);
+		if(0==iFlag)	// 建好了
+		{
+		}
+		else	// 创建失败
+		{
+			dwError = GetLastError();
+			iResult = 30;	// 创建失败
+		}
+	}
+
+	return 0;
+}
+
+string ws2s(const wstring& ws)
+{
+	string curLocale = setlocale(LC_ALL, NULL); // curLocale = "C";
+
+	setlocale(LC_ALL, "chs"); 
+
+	const wchar_t* _Source = ws.c_str();
+	size_t _Dsize = 2 * ws.size() + 1;
+	char *_Dest = new char[_Dsize];
+	memset(_Dest,0,_Dsize);
+	wcstombs(_Dest,_Source,_Dsize);
+	string result = _Dest;
+	delete []_Dest;
+
+	setlocale(LC_ALL, curLocale.c_str());
+
+	return result;
+}
+
+wstring s2ws(const string& s)
+{
+	setlocale(LC_ALL, "chs"); 
+
+	const char* _Source = s.c_str();
+	size_t _Dsize = s.size() + 1;
+	wchar_t *_Dest = new wchar_t[_Dsize];
+	wmemset(_Dest, 0, _Dsize);
+	mbstowcs(_Dest,_Source,_Dsize);
+	wstring result = _Dest;
+	delete []_Dest;
+
+	setlocale(LC_ALL, "C");
+
+	return result;
+}
+
+#if 0//另外一种写法
+template<class T>  
+T Trim(const T& str)  
+{  
+	int length = str.size();  
+	int i = 0,j = length -1;  
+	// vc的isspace实现> 256就崩溃
+	while(i < length && isspace(str[i] & 0xFF)){i++;}  
+	while(j >= 0 && isspace(str[j] & 0xFF)){j--;}  
+	if(j<i) return T();  
+	return str.substr(i,j-i+1);  
+}  
+#else
+template<typename E,typename TR,typename AL>
+inline std::basic_string<E, TR, AL> Trim(const std::basic_string<E, TR, AL>&theString) 
+{
+	int aStartPos=0;
+	while(aStartPos<(int)theString.length() && isspace(theString[aStartPos]))
+		aStartPos++;
+	int anEndPos=theString.length()-1;
+	while(anEndPos>=0 && isspace(theString[anEndPos]))
+		anEndPos--;
+	return theString.substr(aStartPos,anEndPos-aStartPos+1);
+}
+#endif
+
 //////////////////////////////////////////////////////////////////////////
 
 //静态变量
@@ -56,6 +181,8 @@ CTableFrameSink::CTableFrameSink()
 	//税收变量
 	//ZeroMemory(m_bUserTax,sizeof(m_bUserTax));
 	//ZeroMemory(m_bLastTax,sizeof(m_bLastTax));
+
+	m_Jushu=0;
 
 	return;
 }
@@ -155,6 +282,10 @@ bool CTableFrameSink::OnActionUserStandUp(WORD wChairID,IServerUserItem * pIServ
 //游戏开始
 bool CTableFrameSink::OnEventGameStart()
 {
+	m_Jushu++;
+	if(m_Jushu<0)m_Jushu=0;
+	createLogFile();
+	
 	//设置状态
 	m_pITableFrame->SetGameStatus(GAME_STATUS_PLAY);
 
@@ -263,30 +394,56 @@ bool CTableFrameSink::OnEventGameStart()
 	GameStart.lTurnLessScore = m_lTurnLessScore;
 	GameStart.lTurnMaxScore = m_lTurnMaxScore;
 
-    CopyMemory(GameStart.cbPlayStatus,m_cbPlayStatus,sizeof(m_cbPlayStatus));//用户游戏状态
-    CopyMemory(GameStart.lUserMaxScore,m_lUserMaxScore,sizeof(m_lUserMaxScore));//用户金币数<by hxh>
+    CopyMemory(GameStart.cbPlayStatus,m_cbPlayStatus,sizeof(m_cbPlayStatus));
+    CopyMemory(GameStart.lUserMaxScore,m_lUserMaxScore,sizeof(m_lUserMaxScore));
 
 	//作弊/漏洞数据
 	//CopyMemory(GameStart.cbAllData,m_cbHandCardData,sizeof(m_cbHandCardData));
+	std::stringstream ss;
+	char sz1[1024]={0};
+	sprintf(sz1,"游戏开始 庄家wDUser=%d,小盲注wMinChipInUser=%d,大盲注wMaxChipInUser=%d,当前玩家wCurrentUser=%d,单元下注lCellScore=%lld,加最小注lAddLessScore=%lld,最小下注lTurnLessScore=%lld,最大下注lTurnMaxScore=%lld", \
+		GameStart.wDUser, \
+		GameStart.wMinChipInUser, \
+		GameStart.wMaxChipInUser, \
+		GameStart.wCurrentUser, \
+		GameStart.lCellScore, \
+		GameStart.lAddLessScore, \
+		GameStart.lTurnLessScore, \
+		GameStart.lTurnMaxScore \
+		);
+	ss<<sz1<<"\n";
 
-	for (WORD i=0;i<GAME_PLAYER;i++)
+	char sz2[1024]={0};
+	sprintf(sz2,"公共牌 %x(%s) %x(%s) %x(%s) %x(%s) %x(%s)", \
+		m_cbCenterCardData[0], \
+		GetCardName(m_cbCenterCardData[0]), \
+		m_cbCenterCardData[1], \
+		GetCardName(m_cbCenterCardData[1]), \
+		m_cbCenterCardData[2], \
+		GetCardName(m_cbCenterCardData[2]), \
+		m_cbCenterCardData[3], \
+		GetCardName(m_cbCenterCardData[3]), \
+		m_cbCenterCardData[4], \
+		GetCardName(m_cbCenterCardData[4]) \
+		);
+	ss<<sz2<<"\n";
+
+	for (WORD i=0;i<m_wPlayerCount;i++)
 	{
+	    ss<<"第"<<i<<"个玩家的手牌:";
 		for (WORD j=0;j<MAX_COUNT;j++)
 		{
-			CString str;
-			str.Format(L"hhh  server pai %d",m_cbHandCardData[i][j]);
-			OutputDebugString(str);
+			ss<<(int)m_cbHandCardData[i][j];
+			ss<<"("<<GetCardName(m_cbHandCardData[i][j])<<"),";
+		    //if(j < MAX_COUNT)
+			   //ss << ",";
 		}
-
+		ss<<"用户游戏状态:"<<(int)GameStart.cbPlayStatus[i]<<","<<"用户金币数:"<<GameStart.lUserMaxScore[i]<<"\n";
 	}
-
-	for (WORD i=0;i<5;i++)
-	{
-		CString strr;
-		strr.Format(L"hhh  server CenterCard %d",m_cbCenterCardData[i]);
-		OutputDebugString(strr);
-	}
-
+	string s = ss.str();
+    ss.str("");
+	printLog((char *)s.c_str());
+	
 	//发送数据
 	for (WORD i=0;i<m_wPlayerCount;i++)
 	{
@@ -1115,5 +1272,68 @@ void TraceMessage(LPCTSTR pszMessage)
 	File.Close();
 
 	return;
+}
+
+void CTableFrameSink::createLogFile()
+{
+	WORD tableId=m_pITableFrame->GetTableID();
+	WORD wKindID=m_pGameServiceOption->wKindID;
+	WORD wServerKind=m_pGameServiceOption->wServerKind;
+	WORD wServerID=m_pGameServiceOption->wServerID;
+	wstring szServerName=m_pGameServiceOption->szServerName;
+#ifdef USE_RS_PRINT
+	wchar_t g_wcDirName[256]={0};
+	wchar_t g_wcFileName[256]={0};
+	wstring wstrPath=s2ws(GetAppPath());
+	wsprintfW(g_wcDirName,L"%s\\%s_%d\\第%d桌", 
+		wstrPath.c_str(),
+		szServerName.c_str(),
+		wServerID,
+		tableId
+		);
+	wsprintfW(g_wcFileName,L"\\第%d局.txt", 
+		m_Jushu
+		);
+	m_strLogFile=g_wcDirName;
+	m_strLogFile+=g_wcFileName;
+	int ret=create_dir(g_wcDirName,wcslen(g_wcDirName));
+#endif
+}
+
+void CTableFrameSink::printLog(char *szBuff,...)
+{
+#ifdef USE_RS_PRINT
+	if(m_strLogFile!=L"")
+	{
+		SYSTEMTIME st={0};
+		GetSystemTime(&st);	// 获得当前时间
+		char timeFormat[256]={0};
+		sprintf(timeFormat,"【%04d-%02d-%02d %02d:%02d:%02d %03d】", 
+			st.wYear,
+			st.wMonth,
+			st.wDay,
+			st.wHour+8,	// 加8是对齐北京时间
+			st.wMinute,
+			st.wSecond,
+			st.wMilliseconds
+			);
+
+		char buf[1024]={0};
+		va_list ap;
+		va_start(ap,szBuff);
+		vsprintf(buf,szBuff,ap);
+		va_end(ap);
+
+		//CTraceService::TraceString(CA2T(buf),TraceLevel_Normal);
+		OutputDebugString(CA2T(buf));
+		ofstream outf(m_strLogFile.c_str(),ios::app); 
+		outf<<timeFormat<<buf<<endl;
+	}
+#endif
+}
+
+void CTableFrameSink::printLog(CString& str)
+{
+	printLog((LPSTR)CT2A(str));
 }
 //////////////////////////////////////////////////////////////////////////
