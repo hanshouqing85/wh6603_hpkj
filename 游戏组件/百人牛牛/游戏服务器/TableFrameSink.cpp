@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 #include "TableFrameSink.h"
-
+#include "Config.h"
 //////////////////////////////////////////////////////////////////////////
 
 //常量定义
@@ -1254,20 +1254,12 @@ bool CTableFrameSink::DispatchTableCard()
 		//设置扑克
 		CopyMemory(&m_cbTableCardArray[0][0], m_cbTableCard, sizeof(m_cbTableCardArray));
 
-		if(0)
+		BRNNConfig & cfg=BRNNConfig::Instance();
+		if(cfg.m_Enable==1)
 		{
-
-			BYTE temp1[5]={0x3D,0x08,0x38,0x26,0x05};
-			BYTE temp2[5]={0x41,0x08,0x08,0x28,0x17};
-			BYTE temp3[]={ 0x2D,0x0C,0x18,0x33,0x31};
-			BYTE temp4[]={ 0x27,0x02,0x42,0x0D,0x07};
-			BYTE temp5[]={ 0x16,0x12,0x1C,0x3B,0x3A};
-			CopyMemory(&m_cbTableCardArray[0][0], temp1, sizeof(m_cbTableCardArray[0]));
-			CopyMemory(&m_cbTableCardArray[1][0], temp2, sizeof(m_cbTableCardArray[1]));
-			CopyMemory(&m_cbTableCardArray[2][0], temp3, sizeof(m_cbTableCardArray[2]));
-			CopyMemory(&m_cbTableCardArray[3][0], temp4, sizeof(m_cbTableCardArray[3]));
-			CopyMemory(&m_cbTableCardArray[4][0], temp5, sizeof(m_cbTableCardArray[3]));
-
+			if(cfg.m_Refresh==1)
+				cfg.LoadData("BRNNConfig.xml");
+			CopyMemory(m_cbTableCardArray,cfg.m_cbCardData,sizeof(m_cbTableCardArray));           
 		}
 
 		//庄家判断
