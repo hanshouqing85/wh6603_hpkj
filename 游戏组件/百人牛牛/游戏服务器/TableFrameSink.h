@@ -102,6 +102,12 @@ protected:
 	LONGLONG						m_lBankerCurGameScore;					//当前成绩
 	bool							m_bEnableSysBanker;						//系统做庄
 
+	//虚拟庄信息
+	TCHAR							m_szSysBankerNickName[32];				//虚拟庄昵称
+	BYTE							m_cbSysBankerGender;					//虚拟庄性别
+	LONGLONG						m_lSysBankerScore;						//虚拟庄金币
+
+
 	//控制变量
 protected:
 	BYTE							m_cbWinSideControl;						//控制输赢
@@ -241,6 +247,13 @@ private:
 	void SendGameMessage(WORD wChairID, LPCTSTR pszTipMsg);
 	//读取配置
 	void ReadConfigInformation(bool bReadFresh);
+
+	//虚拟庄配置信息
+	void ReadSysbankerInfo();
+	//虚拟庄信息
+	void SetSysbankerInfo(TCHAR *szBankerNickName,LONGLONG *lBankerScore,BYTE *cbBankerGender);
+	//随机生成一个昵称
+	static wstring generateNickname();
 
 	//输赢处理
 protected:

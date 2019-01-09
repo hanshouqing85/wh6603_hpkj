@@ -62,6 +62,10 @@ CTableFrameSink::CTableFrameSink()
 	m_cbLeftCardCount=0;
 	m_bContiueCard=false;
 
+	m_lSysBankerScore=0;
+	memset(m_szSysBankerNickName,0,sizeof(m_szSysBankerNickName));
+	m_cbSysBankerGender = 1;
+
 	//记录变量
 	ZeroMemory(m_GameRecordArrary,sizeof(m_GameRecordArrary));
 	m_nRecordFirst=0;
@@ -76,7 +80,7 @@ CTableFrameSink::CTableFrameSink()
 	m_nChipRobotCount = 0;
 	ZeroMemory(m_lRobotAreaScore, sizeof(m_lRobotAreaScore));
 
-	
+
 
 	return;
 }
@@ -108,9 +112,9 @@ void *  CTableFrameSink::QueryInterface(const IID & Guid, DWORD dwQueryVer)
 {
 	QUERYINTERFACE(ITableFrameSink,Guid,dwQueryVer);
 	QUERYINTERFACE(ITableUserAction,Guid,dwQueryVer);	
-//#ifdef __BANKER___
-//	QUERYINTERFACE(ITableUserActionEX,Guid,dwQueryVer);	
-//#endif
+	//#ifdef __BANKER___
+	//	QUERYINTERFACE(ITableUserActionEX,Guid,dwQueryVer);	
+	//#endif
 	QUERYINTERFACE_IUNKNOWNEX(ITableFrameSink,Guid,dwQueryVer);
 	return NULL;
 }
@@ -126,10 +130,10 @@ bool  CTableFrameSink::Initialization(IUnknownEx * pIUnknownEx)
 	//查询配置
 	m_pGameServiceOption=m_pITableFrame->GetGameServiceOption();
 	m_pGameServiceAttrib=m_pITableFrame->GetGameServiceAttrib();
-	
-		//开始模式
+
+	//开始模式
 	m_pITableFrame->SetStartMode(START_MODE_TIME_CONTROL);
-	
+
 	////控制接口
 	//m_pITableFrameControl=QUERY_OBJECT_PTR_INTERFACE(pIUnknownEx,ITableFrameControl);
 	//if (m_pITableFrameControl==NULL) return false;
@@ -147,7 +151,7 @@ bool  CTableFrameSink::Initialization(IUnknownEx * pIUnknownEx)
 	memcpy(m_szRoomName, m_pGameServiceOption->szServerName, sizeof(m_pGameServiceOption->szServerName));
 
 	ReadConfigInformation(true);	
-	
+
 	//服务控制
 	m_hInst = NULL;
 	m_pServerContro = NULL;
@@ -186,7 +190,7 @@ VOID  CTableFrameSink::RepositionSink()
 	//机器人控制
 	m_nChipRobotCount = 0;
 	ZeroMemory(m_lRobotAreaScore, sizeof(m_lRobotAreaScore));
-	
+
 	//初始化参数,可以从配置读取
 	m_list.Init(10000, 9999, 100);
 	return;
@@ -230,6 +234,10 @@ bool  CTableFrameSink::OnEventGameStart()
 	{
 		pIBankerServerUserItem=m_pITableFrame->GetTableUserItem(m_wCurrentBanker);
 		m_lBankerScore=pIBankerServerUserItem->GetUserScore();
+	}
+	else
+	{
+	    m_lBankerScore=m_lSysBankerScore;
 	}
 
 	//设置变量
@@ -315,7 +323,11 @@ bool  CTableFrameSink::OnEventGameConclude(WORD wChairID, IServerUserItem * pISe
 			lBankerWinScore=CalculateScore();
 			//累计庄家积分
 			m_lBankerWinScore += lBankerWinScore;
-
+			//虚拟庄金币值是一个变化的值
+			if (m_wCurrentBanker==INVALID_CHAIR)
+			{
+				m_lSysBankerScore+=lBankerWinScore;
+			}
 
 			//结束消息
 			CMD_S_GameEnd GameEnd;
@@ -646,6 +658,10 @@ bool  CTableFrameSink::OnEventSendGameScene(WORD wChiarID, IServerUserItem * pIS
 				wcscpy(StatusFree.szBankerNickName,pIServerUserItem->GetNickName());
 				StatusFree.cbBankerGender = pIServerUserItem->GetGender();
 			}
+			else
+			{
+				SetSysbankerInfo(StatusFree.szBankerNickName,&StatusFree.lBankerScore,&StatusFree.cbBankerGender);		
+			}
 
 			//玩家信息
 			if (pIServerUserItem->GetUserStatus()!=US_LOOKON)
@@ -722,6 +738,10 @@ bool  CTableFrameSink::OnEventSendGameScene(WORD wChiarID, IServerUserItem * pIS
 				wcscpy(StatusPlay.szBankerNickName,pIServerUserItem->GetNickName());
 				StatusPlay.cbBankerGender = pIServerUserItem->GetGender();
 			}	
+			else
+			{
+				SetSysbankerInfo(StatusPlay.szBankerNickName,&StatusPlay.lBankerScore,&StatusPlay.cbBankerGender);		
+			}
 
 			//全局信息
 			DWORD dwPassTime=(DWORD)time(NULL)-m_dwJettonTime;
@@ -760,9 +780,9 @@ bool  CTableFrameSink::OnEventSendGameScene(WORD wChiarID, IServerUserItem * pIS
 			TCHAR szTipMsg[128];
 			_sntprintf(szTipMsg,CountArray(szTipMsg),TEXT("本房间上庄条件为：%I64d,区域限制为：%I64d,玩家限制为：%I64d"),m_lApplyBankerCondition,
 				m_lAreaLimitScore,m_lUserLimitScore);
-			
+
 			m_pITableFrame->SendGameMessage(pIServerUserItem,szTipMsg,SMT_CHAT);
-			
+
 			//发送申请者
 			SendApplyUser( pIServerUserItem );
 
@@ -904,7 +924,7 @@ bool  CTableFrameSink::OnGameMessage(WORD wSubCmdID, VOID * pDataBuffer, WORD wD
 			if (wDataSize!=sizeof(CMD_C_PlaceJetton)) return false;
 
 			//用户效验
-			
+
 			tagUserInfo * pUserData=pIServerUserItem->GetUserInfo();
 
 			if (pUserData->cbUserStatus!=US_PLAYING) return true;
@@ -1584,7 +1604,7 @@ bool CTableFrameSink::ChangeBanker(bool bCancelCurrentBanker)
 
 	}
 	//系统做庄
-	else if (m_wCurrentBanker==INVALID_CHAIR && m_ApplyUserArray.GetCount()!=0)
+	else if (m_wCurrentBanker==INVALID_CHAIR && (m_ApplyUserArray.GetCount()!=0||m_lSysBankerScore+m_lBankerCurGameScore<m_lApplyBankerCondition))
 	{
 		//轮换判断
 		TakeTurns();
@@ -1592,6 +1612,18 @@ bool CTableFrameSink::ChangeBanker(bool bCancelCurrentBanker)
 		bChangeBanker=true;
 		m_bExchangeBanker = true;
 		m_wAddTime = 0;
+
+		// 从一个虚拟庄更换为另外一个虚拟庄
+		if(m_ApplyUserArray.GetCount()==0)
+		{                   
+			wstring wstr=generateNickname();
+			wcscpy(m_szSysBankerNickName,wstr.c_str());
+			ReadSysbankerInfo();
+	        m_wBankerTime=0;
+	        m_lBankerScore=0;
+	        m_lBankerWinScore=0;
+	        m_lBankerCurGameScore=0;
+		}
 	}
 
 	//切换判断
@@ -1611,6 +1643,13 @@ bool CTableFrameSink::ChangeBanker(bool bCancelCurrentBanker)
 			ChangeBanker.lBankerScore=pIServerUserItem->GetUserScore();
 			wcscpy(ChangeBanker.szBankerNickName,pIServerUserItem->GetNickName());
 			ChangeBanker.cbBankerGender = pIServerUserItem->GetGender();
+
+			// 下次重新随机虚拟庄昵称
+			memset(m_szSysBankerNickName,0,sizeof(m_szSysBankerNickName));
+		}
+		else
+		{
+			SetSysbankerInfo(ChangeBanker.szBankerNickName,&ChangeBanker.lBankerScore,&ChangeBanker.cbBankerGender);			
 		}
 		m_pITableFrame->SendTableData(INVALID_CHAIR,SUB_S_CHANGE_BANKER,&ChangeBanker,sizeof(ChangeBanker));
 		m_pITableFrame->SendLookonData(INVALID_CHAIR,SUB_S_CHANGE_BANKER,&ChangeBanker,sizeof(ChangeBanker));
@@ -1850,8 +1889,8 @@ LONGLONG CTableFrameSink::CalculateScore()
 
 	//FILE *pf = fopen("C://ServLong.txt","ab+");
 	TCHAR szBuffer[256] = TEXT("");
-    m_nTotalWin = 0;
-    m_nTotalPay = 0;
+	m_nTotalWin = 0;
+	m_nTotalPay = 0;
 	//计算积分
 	for (WORD wChairID=0; wChairID<GAME_PLAYER; wChairID++)
 	{
@@ -1888,7 +1927,7 @@ LONGLONG CTableFrameSink::CalculateScore()
 				//统计玩家分数
 				if(bhashuman)
 				{
-//					m_nTotalWin -=  ( pUserScore[wAreaIndex][wChairID] * cbMultiple[wAreaIndex] ) ;
+					//					m_nTotalWin -=  ( pUserScore[wAreaIndex][wChairID] * cbMultiple[wAreaIndex] ) ;
 					m_nTotalPay +=  pUserScore[wAreaIndex][wChairID]*cbMultiple[wAreaIndex];
 				}
 			}
@@ -2048,8 +2087,14 @@ void CTableFrameSink::ReadConfigInformation(bool bReadFresh)
 
 	//上庄条件
 	ZeroMemory(OutBuf, sizeof(OutBuf));
-	GetPrivateProfileString(m_szRoomName, TEXT("score"), _T("100"), OutBuf, 255, m_szConfigFileName);
+	GetPrivateProfileString(m_szRoomName, TEXT("Score"), _T("100"), OutBuf, 255, m_szConfigFileName);
 	myscanf(OutBuf, mystrlen(OutBuf), _T("%I64d"), &m_lApplyBankerCondition);
+
+	if(m_lSysBankerScore<m_lApplyBankerCondition)
+	{
+		//虚拟庄配置信息
+	    ReadSysbankerInfo();
+	}
 
 	//做庄次数
 	m_nBankerTimeLimit = GetPrivateProfileInt(m_szRoomName, TEXT("Time"), 10, m_szConfigFileName);
@@ -2110,6 +2155,80 @@ void CTableFrameSink::ReadConfigInformation(bool bReadFresh)
 
 	//MyDebug(_T("配置 B 限制 [%I64d %I64d] 库存 [%I64d %d] 时间 [%d %d %d] 机人下注 %d"), m_lUserLimitScore, m_lAreaLimitScore,
 	//	m_lStorageStart, m_nStorageDeduct, m_nFreeTime, m_nPlaceJettonTime, m_nGameEndTime, m_nMaxChipRobot);
+}
+
+//虚拟庄配置信息
+void CTableFrameSink::ReadSysbankerInfo()
+{
+	LONGLONG lScore=m_lApplyBankerCondition+CGameLogic::GetRand(0,m_lApplyBankerCondition);
+	CString strScore;
+	strScore.Format(_T("%I64d"),lScore);
+
+	//变量定义
+	TCHAR OutBuf[255] = {};
+	ZeroMemory(OutBuf, sizeof(OutBuf));
+	GetPrivateProfileString(m_szRoomName, TEXT("SysBankerScore"), strScore, OutBuf, 255, m_szConfigFileName);
+	myscanf(OutBuf, mystrlen(OutBuf), _T("%I64d"), &m_lSysBankerScore);
+
+	int iGender=CGameLogic::GetRand(1,2);
+	m_cbSysBankerGender = GetPrivateProfileInt(m_szRoomName, TEXT("SysBankerGender"), iGender, m_szConfigFileName);
+}
+
+//虚拟庄信息
+void CTableFrameSink::SetSysbankerInfo(TCHAR *szBankerNickName,LONGLONG *lBankerScore,BYTE *cbBankerGender)
+{
+	*lBankerScore=m_lSysBankerScore;
+	wstring wstr=m_szSysBankerNickName;
+	if(wstr.size()==0)
+	{
+		wstr=generateNickname();
+		wcscpy(m_szSysBankerNickName,wstr.c_str());
+	}
+	memcpy(szBankerNickName,m_szSysBankerNickName,sizeof(m_szSysBankerNickName));
+	*cbBankerGender = m_cbSysBankerGender;
+}
+
+//	随机生成一个昵称
+wstring CTableFrameSink::generateNickname()
+{
+	wchar_t cFront[128] = {};
+	int i = 0;
+	do 
+	{
+		int nNum = CGameLogic::GetRand(97, 122);
+		wsprintfW(&cFront[i], L"%c", nNum);
+		if (i == 4)
+		{
+			break;
+		}
+		i++;
+	} while (1);
+
+	int nLast = CGameLogic::GetRand(100, 999);
+	wchar_t cLastBuf[5] = {};
+	wsprintfW(cLastBuf, L"%d", nLast);
+	wstring sResult = cFront;
+	sResult.append(cLastBuf);
+
+	return sResult;
+
+	/*
+	int nNum = random(0, 9);
+	string sNickNameBuf[10] = 
+	{
+	"adffd123",
+	"man001",
+	"hellooo",
+	"Lion00",
+	"liii11",
+	"123321hhh",
+	"luckyboy",
+	"wuliao122",
+	"nicheng123",
+	"hdhdhd"
+	};
+	return sNickNameBuf[nNum];
+	*/
 }
 
 //输赢处理	(暂时采用特殊处理，以后给其解耦，适用到任何百人财富游戏)
@@ -2184,7 +2303,7 @@ bool CTableFrameSink::GameCheat()
 	//MyDebug(_T("作弊 C 输赢方式 %x 库存 %I64d 本次 %I64d"), nWinType, m_lStorageStart, lAllTypeLose);
 	if (lAllTypeLose == 0)	return false;
 	if (m_lStorageStart - lAllTypeLose > 0)	return false; 
-	
+
 
 	//需求位置
 	for (int i = 1; i < 5; i++)
