@@ -178,7 +178,7 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <OutputFile>../../../运行/ServDebugUnicode/OxBattleServer.DLL</OutputFile>
+      <OutputFile>../../../运行/ServDebugUnicode/OxBattleServer.dll</OutputFile>
       <ModuleDefinitionFile />
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -225,7 +225,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Config.cpp" /> 
+    <ClCompile Include="Config.cpp" />
     <ClCompile Include="GameLogic.cpp" />
     <ClCompile Include="GameServer.cpp" />
     <ClCompile Include="GameServerManager.cpp" />
@@ -242,11 +242,11 @@
     <ClCompile Include="TinyXml\tinystr.cpp" />
     <ClCompile Include="TinyXml\tinyxml.cpp" />
     <ClCompile Include="TinyXml\tinyxmlerror.cpp" />
-    <ClCompile Include="TinyXml\tinyxmlparser.cpp" />	
+    <ClCompile Include="TinyXml\tinyxmlparser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\消息定义\CMD_OxBattle.h" />
-    <ClInclude Include="Config.h" />	
+    <ClInclude Include="Config.h" />
     <ClInclude Include="GameLogic.h" />
     <ClInclude Include="GameServerManager.h" />
     <ClInclude Include="Random.h" />
@@ -254,7 +254,7 @@
     <ClInclude Include="Stdafx.h" />
     <ClInclude Include="TableFrameSink.h" />
     <ClInclude Include="wincontrol.h" />
-	<ClInclude Include="TinyXml\tinystr.h" />
+    <ClInclude Include="TinyXml\tinystr.h" />
     <ClInclude Include="TinyXml\tinyxml.h" />
   </ItemGroup>
   <ItemGroup>
