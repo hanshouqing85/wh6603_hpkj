@@ -23,20 +23,28 @@ protected:
 
 	//加注信息
 protected:
-	LONG							m_lCellScore;						//单元下注
-	LONG							m_lTurnLessScore;					//最小下注
-	LONG							m_lTurnMaxScore;					//最大下注
-	LONG							m_lAddLessScore;					//加最小注
-	LONG							m_lTableScore[GAME_PLAYER];			//下注数目
-	LONG							m_lTotalScore[GAME_PLAYER];			//累计下注
-	LONG							m_lCenterScore;						//中心筹码
-	LONG							m_lBalanceScore;					//平衡筹码
+	DZPKSCORE							m_lCellScore;						//单元下注
+	DZPKSCORE							m_lTurnLessScore;					//最小下注
+	DZPKSCORE							m_lTurnMaxScore;					//最大下注
+	DZPKSCORE							m_lAddLessScore;					//加最小注
+	DZPKSCORE							m_lTableScore[GAME_PLAYER];			//下注数目
+	DZPKSCORE							m_lTotalScore[GAME_PLAYER];			//累计下注
+	DZPKSCORE							m_lCenterScore;						//中心筹码
+	DZPKSCORE							m_lBalanceScore;					//平衡筹码
+
+	DZPKSCORE							m_lBeforeScore;						//用户押注
+	
+	int                             m_nCurCardCount;                    //当前牌数
+	bool                            m_bGiveUp;                          //是否放弃
+
+	bool							m_bWillWin;							//发牌结果  //机器人胜利标志
+	bool							m_bShowHand;						//梭哈标志
 
 	//状态变量
 protected:
 	BYTE							m_cbPlayStatus[GAME_PLAYER];			//游戏状态
 	BOOL							m_bAutoStart;							//自动开始
-	LONG							m_dEndScore[GAME_PLAYER];				//结束分数
+	DZPKSCORE							m_dEndScore[GAME_PLAYER];				//结束分数
 
 	//扑克信息
 protected:
@@ -50,6 +58,14 @@ protected:
 	CGameLogic						m_GameLogic;						//游戏逻辑
 	IAndroidUserItem *				m_pIAndroidUserItem;				//用户接口
 	wstring                         m_strLogFile;                       //日志文件
+//银行操作
+	LONGLONG						m_lRobotBankGetScore;					//取款最小数额(取款数是该值以上的一个随机数)
+	LONGLONG						m_lRobotBankGetScoreBanker;			//取款最大数额(此数值一定要大于RobotBankGet)
+	int								m_nRobotBankStorageMul;				//存款倍数
+	LONGLONG						m_lBankerLostScore;							//庄家输分 (当机器人为庄)
+	LONGLONG						m_lRobotScoreRange[2];					//最大范围
+
+	TCHAR							m_szRoomName[32];			
 
 	//函数定义
 public:
@@ -108,7 +124,7 @@ private:
 	void createLogFile(tagAndroidUserParameter * pAndroidUserParameter);
 	//打印日志
 	void printLog(char *szBuff,...);
-	void printLog(CString& str);
+	void TraceString(LPCTSTR pszString, enTraceLevel TraceLevel);
 
 //	游戏消息
 private:
@@ -124,6 +140,30 @@ private:
 	bool OnSubGameEnd(const void * pBuffer, WORD wDataSize);
 	//开牌消息
 	bool OnSubOpenCard(const void * pBuffer, WORD wDataSize);
+
+	//功能函数
+protected:
+
+	//推算赢家
+	WORD EstimateWinner(BYTE cbStartPos, BYTE cbConcludePos);
+	//赢家是否为机器人
+	bool WinIsAndroid(BYTE cbStartPos, BYTE cbConcludePos);
+	//概率
+	bool GaiLv(BYTE bNum);
+	//跟注
+	void FollowScore();
+	//加注
+	void AddScore();
+	//梭哈
+	void SendSuoHand();
+	//下注
+	void OnSubAddScoreEx();
+	//放弃
+	void GiveUpScore();
+
+	//读取配置
+	void ReadConfigInformation();
+
 };
 
 //////////////////////////////////////////////////////////////////////////

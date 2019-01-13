@@ -125,17 +125,10 @@ inline std::basic_string<E, TR, AL> Trim(const std::basic_string<E, TR, AL>&theS
 }
 #endif
 
-//////////////////////////////////////////////////////////////////////////
-//辅助时间
-#define TIME_LESS					2									//最少时间
 //定时器标识
-#define IDI_START_GAME				200									//开始定时器
-#define IDI_USER_ADD_SCORE			201									//加注定时器
-
-//时间标识
-#define TIME_START_GAME				10	/*20*/								//开始定时器
-#define TIME_USER_ADD_SCORE			10	/*20*/								//放弃定时器
-
+#define IDI_CHIP_OP                 (1)           //行动定时器
+#define IDI_START_GAME				(2)									
+#define IDI_BANK_OPERATE			(3)                   
 //////////////////////////////////////////////////////////////////////////
 
 //构造函数
@@ -153,6 +146,11 @@ CAndroidUserItemSink::CAndroidUserItemSink()
 	m_lBalanceScore = 0L;
 	m_lCenterScore = 0L;
 	m_lCellScore = 0L;
+	m_bGiveUp = false;
+	m_bShowHand = false;
+
+	m_lBeforeScore = 0;
+	
 	ZeroMemory(m_lTotalScore,sizeof(m_lTotalScore));
 	ZeroMemory(m_lTableScore,sizeof(m_lTableScore));
 
@@ -200,6 +198,7 @@ bool  CAndroidUserItemSink::RepositionSink()
 	m_wCurrentUser = INVALID_CHAIR;
 	m_bOpenCard = false;
 	m_bExitTag	= false;
+	m_bGiveUp = false;
 
 	//加注信息
 	m_lAddLessScore = 0L;
@@ -207,6 +206,9 @@ bool  CAndroidUserItemSink::RepositionSink()
 	m_lBalanceScore = 0L;
 	m_lCenterScore = 0L;
 	m_lCellScore = 0L;
+
+	m_lBeforeScore = 0;
+
 	ZeroMemory(m_lTotalScore,sizeof(m_lTotalScore));
 	ZeroMemory(m_lTableScore,sizeof(m_lTableScore));
 
@@ -225,6 +227,7 @@ bool  CAndroidUserItemSink::RepositionSink()
 //时间消息
 bool  CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
 {
+	m_pIAndroidUserItem->KillGameTimer(nTimerID);
 	switch (nTimerID)
 	{
 	case IDI_START_GAME:
@@ -232,14 +235,43 @@ bool  CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
 			m_pIAndroidUserItem->SendUserReady(NULL,0);
 			return true;
 		}
-	case IDI_USER_ADD_SCORE:
+	case IDI_CHIP_OP:
 		{
-			//发送消息
-			CMD_C_AddScore AddScore;
-			AddScore.lScore=m_lTurnLessScore;
-			m_pIAndroidUserItem->SendSocketData(SUB_C_ADD_SCORE,&AddScore,sizeof(AddScore));
+			if(m_bGiveUp == true) return true;  //如果用户已经放弃的话退出
+
+ 			OnSubAddScoreEx();   
 
 			return true;
+		}
+	case IDI_BANK_OPERATE:		//银行操作
+		{
+			m_pIAndroidUserItem->KillGameTimer(nTimerID);
+
+			//变量定义
+			IServerUserItem *pUserItem = m_pIAndroidUserItem->GetMeUserItem();
+			LONGLONG lRobotScore = pUserItem->GetUserScore();			
+			{
+
+				//判断存取
+				if (lRobotScore > m_lRobotScoreRange[1])
+				{
+					LONGLONG lSaveScore=0L;
+
+					lSaveScore = LONGLONG(lRobotScore*m_nRobotBankStorageMul/100);
+					if (lSaveScore > lRobotScore)  lSaveScore = lRobotScore;
+
+					if (lSaveScore > 0)
+						m_pIAndroidUserItem->PerformSaveScore(lSaveScore);
+
+				}
+				else if (lRobotScore < m_lRobotScoreRange[0])
+				{
+					DZPKSCORE lScore=m_lRobotBankGetScore+m_lRobotBankGetScoreBanker/(rand()%3+3);
+					if (lScore > 0)
+						m_pIAndroidUserItem->PerformTakeScore(lScore);
+				}
+			}
+			return false;
 		}
 	default:
 		{
@@ -270,6 +302,10 @@ bool  CAndroidUserItemSink::OnEventGameMessage(WORD wSubCmdID, void * pBuffer, W
 	case SUB_S_GAME_END:		//游戏结束
 		{
 			return OnSubGameEnd(pBuffer,wDataSize);
+		}
+	case SUB_S_GIVE_UP:			//用户放弃
+		{
+            return OnSubGiveUp(pBuffer,wDataSize);
 		}
 	}
 
@@ -320,14 +356,35 @@ bool  CAndroidUserItemSink::OnEventSceneMessage(BYTE cbGameStatus, bool bLookonO
 			CMD_S_StatusFree * pStatusFree=(CMD_S_StatusFree *)pData;
 			IServerUserItem * pIServerUserItem=m_pIAndroidUserItem->GetMeUserItem();
 
+			//memcpy(m_szRoomName, pStatusFree->szGameRoomName, sizeof(m_szRoomName));
+			//消息处理
+			ReadConfigInformation();
 			//玩家设置
 			if (pIServerUserItem->GetUserStatus()!=US_READY)
 			{
-				UINT nElapse=rand()%TIME_START_GAME+TIME_LESS;
+				UINT nElapse=CGameLogic::GetRand(1,3);
 				m_pIAndroidUserItem->SetGameTimer(IDI_START_GAME,nElapse);
 			}
 			return true;
 		}
+	case GAME_STATUS_PLAY:	//游戏状态
+		{
+			//效验数据
+			if (wDataSize!=sizeof(CMD_S_StatusPlay)) return false;
+			CMD_S_StatusPlay * pStatusPlay=(CMD_S_StatusPlay *)pData;
+
+	/*		m_lCellScore = pStatusPlay->lCellScore;
+
+			m_lDrawMaxScore = pStatusPlay->lDrawMaxScore;
+			m_lTurnLessScore = pStatusPlay->lTurnLessScore;
+			m_lTurnMaxScore = pStatusPlay->lTurnMaxScore;*/
+
+			//memcpy(m_szRoomName, pStatusPlay->szGameRoomName, sizeof(m_szRoomName));
+			ReadConfigInformation();
+		
+			return true;
+		}
+	
 	}
 	return false;
 }
@@ -378,7 +435,8 @@ bool CAndroidUserItemSink::OnSubGameStart(const void * pBuffer, WORD wDataSize)
 	m_lAddLessScore = pGameStart->lAddLessScore;
 	m_lTurnLessScore = pGameStart->lTurnLessScore;
 	m_lTurnMaxScore = pGameStart->lTurnMaxScore;
-	m_lCellScore = pGameStart->lCellScore;
+	//m_bWillWin = pGameStart->bWillWin;  //是否胜利
+	m_lCellScore = pGameStart->lCellScore;  //单元倍数
 
 	//加注信息
 	m_lTableScore[pGameStart->wDUser] += m_lCellScore;
@@ -386,9 +444,18 @@ bool CAndroidUserItemSink::OnSubGameStart(const void * pBuffer, WORD wDataSize)
 	m_lTotalScore[pGameStart->wDUser] =  m_lCellScore;
 	m_lTotalScore[pGameStart->wMaxChipInUser] = 2*m_lCellScore;
 
-	//发送暗牌
+	m_bShowHand = false;
+	m_bGiveUp = false;
+	m_nCurCardCount = 2;
+
+	//复制暗牌
 	CopyMemory(m_cbHandCardData,pGameStart->cbCardData,sizeof(m_cbHandCardData));
-	m_pIAndroidUserItem->SetGameTimer(IDI_USER_ADD_SCORE,rand()%TIME_USER_ADD_SCORE);
+	
+	if(m_wCurrentUser==m_pIAndroidUserItem->GetChairID())
+	{
+		UINT nElapse=CGameLogic::GetRand(5,7);
+		m_pIAndroidUserItem->SetGameTimer(IDI_CHIP_OP,nElapse);
+	}
 
 	return true;
 }
@@ -401,7 +468,6 @@ bool CAndroidUserItemSink::OnSubAddScore(const void * pBuffer, WORD wDataSize)
 	CMD_S_AddScore * pAddScore=(CMD_S_AddScore *)pBuffer;
 
 	//变量定义
-	//WORD wMeChairID=GetMeChairID();
 	WORD wAddScoreUser=pAddScore->wAddScoreUser;
 
 	//设置变量
@@ -410,7 +476,16 @@ bool CAndroidUserItemSink::OnSubAddScore(const void * pBuffer, WORD wDataSize)
 	m_lTurnMaxScore = pAddScore->lTurnMaxScore;
 	m_lAddLessScore = pAddScore->lAddLessScore;
 
-	m_pIAndroidUserItem->SetGameTimer(IDI_USER_ADD_SCORE,rand()%TIME_USER_ADD_SCORE+5);
+	if(abs(pAddScore->lAddScoreCount-m_lTurnMaxScore)<0.001)
+		m_bShowHand = true;
+
+	m_lBeforeScore = pAddScore->lAddScoreCount;
+
+	if(m_wCurrentUser == m_pIAndroidUserItem->GetChairID())
+	{
+		UINT nElapse=CGameLogic::GetRand(3,5);
+		m_pIAndroidUserItem->SetGameTimer(IDI_CHIP_OP,nElapse);
+	}
 	
 	return true;
 }
@@ -433,6 +508,10 @@ bool CAndroidUserItemSink::OnSubGiveUp(const void * pBuffer, WORD wDataSize)
 		m_lTableScore[wGiveUpUser] = 0L;
 	}
 
+		//状态变量
+	if(wGiveUpUser==m_pIAndroidUserItem->GetChairID()) 
+		m_bGiveUp = true;
+
 	return true;
 }
 
@@ -447,9 +526,17 @@ bool CAndroidUserItemSink::OnSubSendCard(const void * pBuffer, WORD wDataSize)
 	m_wCurrentUser = pSendCard->wCurrentUser;
 	CopyMemory(m_cbCenterCardData,pSendCard->cbCenterCardData,sizeof(BYTE)*(pSendCard->cbSendCardCount));
 
-	if((pSendCard->cbSendCardCount < 3))
+/*	if((pSendCard->cbSendCardCount < 3))
 	{
-		m_pIAndroidUserItem->SetGameTimer(IDI_START_GAME,rand()%TIME_START_GAME+5);
+		m_pIAndroidUserItem->SetGameTimer(IDI_START_GAME,rand()%TIME_START_GAME+2);
+	}*/
+
+	m_nCurCardCount = pSendCard->cbSendCardCount;
+	
+	if(m_wCurrentUser == m_pIAndroidUserItem->GetChairID())
+	{
+		UINT nElapse=CGameLogic::GetRand(1,2);
+		m_pIAndroidUserItem->SetGameTimer(IDI_CHIP_OP,nElapse);
 	}
 
 	return true;
@@ -461,9 +548,9 @@ bool CAndroidUserItemSink::OnSubGameEnd(const void * pBuffer, WORD wDataSize)
 	//效验数据
 	if (wDataSize!=sizeof(CMD_S_GameEnd)) return false;
 	CMD_S_GameEnd * pGameEnd=(CMD_S_GameEnd *)pBuffer;
-	m_pIAndroidUserItem->KillGameTimer(IDI_START_GAME);
-	m_pIAndroidUserItem->KillGameTimer(IDI_USER_ADD_SCORE);
-	m_pIAndroidUserItem->SetGameTimer(IDI_START_GAME,rand()%TIME_START_GAME+5);
+
+	UINT nElapse=CGameLogic::GetRand(5,7);
+	m_pIAndroidUserItem->SetGameTimer(IDI_START_GAME,nElapse);
 	
 	return true;
 }
@@ -472,6 +559,354 @@ bool CAndroidUserItemSink::OnSubGameEnd(const void * pBuffer, WORD wDataSize)
 bool CAndroidUserItemSink::OnSubOpenCard(const void * pBuffer, WORD wDataSize)
 {
 	return true;
+}
+//////////////////////////////////////////////////////////////////////////
+/////所有操作
+void CAndroidUserItemSink::OnSubAddScoreEx()
+{
+	//梦成网络修改
+	srand((unsigned)time(NULL));//设置随机数种子
+	//获取当前机器人用户
+	WORD MeChairID=m_pIAndroidUserItem->GetChairID();
+
+
+	//如果用户梭哈的话,怎么办?
+	if(m_bWillWin)
+	{
+		TraceString(_T("赢"),TraceLevel_Info);  //输出信息
+	}else{
+	
+		TraceString(_T("输"),TraceLevel_Info);  //输出信息
+	}
+	
+	switch(m_nCurCardCount)   //当前牌数
+	{
+	case 2:     //刚发牌   //第一张牌不应该放弃
+		{
+				TraceString(_T("没有发牌"),TraceLevel_Info);  //输出信息
+				if(m_bWillWin)     //机器人胜利
+				{
+					if (GaiLv(50))	//一个底牌一个名牌如果牌面上的牌小于玩家的牌面有百分之70跟注
+					{
+						FollowScore();
+						return;
+					}
+					else 
+					{
+						//加注
+						AddScore();
+						return;
+					}
+				}
+				else  //机器人输
+				{
+					if (GaiLv(80))	//百分之80跟注
+					{
+						FollowScore();
+						return;
+					}
+					else 
+					{
+						//这里是放弃或加注
+						if (GaiLv(80))  //机器人输,百分之80加注
+						{
+							AddScore();
+							return;
+						}
+						else	//give up
+						{
+							TraceString(_T("机器人放弃1"),TraceLevel_Info);  //输出信息
+							GiveUpScore();//机器人输机器人弃牌
+							return;
+						}
+					}
+				}
+
+
+			
+		}
+
+	case 3:  //放送第3张牌
+		{
+			
+					TraceString(_T("第一次发牌"),TraceLevel_Info);  //输出信息
+					if(m_bWillWin)  //机器人胜利
+					{
+						if (GaiLv(50)) 
+						{
+							FollowScore();
+							return;
+						}
+						else
+						{
+
+							//加注
+							AddScore();
+							return;
+
+						}
+					}
+					else   //机器人输   
+					{
+						if (GaiLv(80))    //百分之80 跟注
+						{
+							FollowScore();  
+							return;
+						}
+						else
+						{
+							if (GaiLv(80))      //百分之80加注
+							{
+								AddScore();
+								return;
+							}
+							else
+							{
+							    TraceString(_T("机器人放弃2"),TraceLevel_Info);  //输出信息
+								GiveUpScore();  //放弃
+								return;
+							}
+						}
+					}
+
+				
+			
+		}
+	case 4:  //放送第4张牌
+		{
+			TraceString(_T("第四次发牌"),TraceLevel_Info);  //输出信息
+			if (m_bShowHand) //如果有用户梭哈
+			{
+				if(m_bWillWin)			//可器人胜利
+				{
+
+
+						FollowScore();//如果牌面上的牌大于玩家牌面上的牌有90%的跟注
+						return;
+
+				}
+				else    //机器人输
+				{
+					if (GaiLv(5))      //百分之5可能会跟
+					{
+						FollowScore();//如果牌面上的牌大于玩家牌面上的牌有90%的跟注
+						return;
+					}
+					else            
+					{
+						TraceString(_T("机器人放弃3"),TraceLevel_Info);  //输出信息
+						GiveUpScore();//如果牌面上的牌大于玩家牌面上的牌有10%放弃
+						return;
+					}
+				}
+			}
+			else        //没有用户梭哈
+			{
+				if(m_bWillWin)     //用户胜利
+				{
+						if (GaiLv(10))     //百分之10梭哈
+						{
+								SendSuoHand();	//如果不是梭哈标准，如果机器人的牌面大于玩家牌面就有80%梭哈
+								return;
+						}
+						else   
+						{
+								if (GaiLv(50))       
+								{
+									AddScore();		//如果不是梭哈标准，如果机器人的牌面大于玩家牌面就有（100-80）×70=14%加注
+									return;
+								}
+								else
+								{
+									FollowScore();	//如果不是梭哈标准，如果机器人的牌面大于玩家牌面就有（100-80）×30=6%跟注			
+									return;
+								}
+						}
+						
+					
+				}
+				else    //机器人输
+				{
+					if (GaiLv(10)) //如果不是梭哈标准，如果机器人的牌面小于玩家牌面就有30%跟注
+					{
+						FollowScore();
+						return;
+					}
+					else
+					{
+						TraceString(_T("机器人放弃4"),TraceLevel_Info);  //输出信息
+						GiveUpScore();//如果不是梭哈标准，如果机器人的牌面小于玩家牌面就有70%放弃
+						return;
+					}
+						
+				}
+			}
+				
+		}
+		
+	case 5:    //一共有五张牌
+		{
+		
+			TraceString(_T("第三次发牌"),TraceLevel_Info);  //输出信息
+			if (m_bShowHand)    //有用户梭哈
+			{
+				if(m_bWillWin)      //机器人胜利
+				{
+						FollowScore();	//如果是梭哈标准，如果机器人的牌面大于玩家牌面就有60%的概率跟注		
+						return;
+				}
+				else
+				{
+						TraceString(_T("机器人放弃5"),TraceLevel_Info);  //输出信息
+						GiveUpScore();//如果是梭哈标准，如果机器人的牌面小于玩家牌面就有90%的概率放弃
+						return;	
+
+				}
+
+			}
+			else   //没有用户梭哈
+			{
+				if(m_bWillWin)     //机器人胜利
+				{
+				
+						if (GaiLv(20))
+						{
+							SendSuoHand();	//如果不是梭哈标准，如果机器人的牌面大于玩家牌面就有（100-30）×90=63%的概率梭哈			
+							return;
+						}
+						else
+						{
+							if (GaiLv(65))
+								AddScore();	
+							else
+								FollowScore();	//如果不是梭哈标准，如果机器人的牌面大于玩家牌面就有（100-30）×10=7%的概率跟注				
+								
+							return;
+						}
+
+				}
+				else      //机器人输
+				{
+
+							if (GaiLv(20))
+							{
+									FollowScore();	//如果不是梭哈标准，如果机器人的牌面大于玩家牌面就有（100-30）×90=63%的概率梭哈			
+									return;
+							}
+							else
+							{
+									TraceString(_T("机器人放弃6"),TraceLevel_Info);  //输出信息
+									GiveUpScore();	//如果不是梭哈标准，如果机器人的牌面大于玩家牌面就有（100-30）×10=7%的概率跟注				
+									return;
+							}
+
+				
+				}
+			}
+		}
+		ASSERT(false);
+		
+	}
+}
+void CAndroidUserItemSink::GiveUpScore()
+{
+		m_pIAndroidUserItem->SendSocketData(SUB_C_GIVE_UP);
+		return;
+}
+
+void CAndroidUserItemSink::FollowScore()
+{
+	if(m_lTurnLessScore<=0.001)
+	{
+		CMD_C_AddScore AddScore;
+		AddScore.lScore=SCORE_ZERO;
+		AddScore.cbJudgeAction=GAME_ACTION_PASS;
+		m_pIAndroidUserItem->SendSocketData(SUB_C_ADD_SCORE,&AddScore,sizeof(AddScore));
+	}
+	else
+	{
+		CMD_C_AddScore AddScore;
+		AddScore.lScore=m_lTurnLessScore;
+		AddScore.cbJudgeAction=GAME_ACTION_FOLLOW;
+		m_pIAndroidUserItem->SendSocketData(SUB_C_ADD_SCORE,&AddScore,sizeof(AddScore));	
+	}
+	return;
+}
+
+void CAndroidUserItemSink::AddScore()
+{
+	DZPKSCORE lCurrentAddScore = m_lBeforeScore+(rand()%3+1)*m_lCellScore;
+	if(lCurrentAddScore<m_lAddLessScore)
+		lCurrentAddScore = m_lAddLessScore;
+
+	//发送消息
+	CMD_C_AddScore AddScore;
+	AddScore.lScore=lCurrentAddScore;
+	AddScore.cbJudgeAction=GAME_ACTION_ADD;
+	m_pIAndroidUserItem->SendSocketData(SUB_C_ADD_SCORE,&AddScore,sizeof(AddScore));
+	return;
+}
+
+void CAndroidUserItemSink::SendSuoHand()
+{
+		DZPKSCORE lCurrentScore = m_lTurnMaxScore;
+		//发送消息
+		CMD_C_AddScore AddScore;
+		AddScore.lScore=lCurrentScore;
+	    AddScore.cbJudgeAction=GAME_ACTION_ALLIN;
+		m_pIAndroidUserItem->SendSocketData(SUB_C_ADD_SCORE,&AddScore,sizeof(AddScore));
+		return;
+}
+
+bool CAndroidUserItemSink::GaiLv(BYTE bNum)
+{
+	if (rand()%100<bNum)
+	{
+		return true;
+	}
+	return false;
+}
+bool CAndroidUserItemSink::WinIsAndroid(BYTE cbStartPos, BYTE cbConcludePos)
+{
+	WORD iWinner = EstimateWinner(cbStartPos,cbConcludePos);
+	if(iWinner==m_pIAndroidUserItem->GetChairID())
+		return true;
+	return false;
+}
+WORD CAndroidUserItemSink::EstimateWinner(BYTE cbStartPos, BYTE cbConcludePos)
+{
+	return 1;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//读取配置
+void CAndroidUserItemSink::ReadConfigInformation()
+{
+	//获取目录
+	TCHAR szPath[MAX_PATH]=TEXT("");
+	GetCurrentDirectory(CountArray(szPath),szPath);
+
+	//读取配置
+
+
+	TCHAR szConfigFileName[MAX_PATH]=TEXT("");
+	_sntprintf(szConfigFileName,sizeof(szConfigFileName),TEXT("%s\\DZShowHandConfig.ini"),szPath);
+
+	//分数限制
+	m_lRobotScoreRange[0] = GetPrivateProfileInt(m_szRoomName, _T("RobotScoreMin"), 100, szConfigFileName);
+	m_lRobotScoreRange[1] = GetPrivateProfileInt(m_szRoomName, _T("RobotScoreMax"), 100000, szConfigFileName);
+
+	if (m_lRobotScoreRange[1] < m_lRobotScoreRange[0])	m_lRobotScoreRange[1] = m_lRobotScoreRange[0];
+
+	//提款数额
+	m_lRobotBankGetScore = GetPrivateProfileInt(m_szRoomName, _T("RobotBankGet"), 20000000, szConfigFileName);
+
+	//提款数额 
+	m_lRobotBankGetScoreBanker = GetPrivateProfileInt(m_szRoomName, _T("RobotBankGetBanker"), 30000000, szConfigFileName);
+
+	//存款倍数
+	m_nRobotBankStorageMul = GetPrivateProfileInt(m_szRoomName, _T("RobotBankStoMul"), 20, szConfigFileName);
+
 }
 
 void CAndroidUserItemSink::createLogFile(tagAndroidUserParameter * pAndroidUserParameter)
@@ -541,7 +976,6 @@ void CAndroidUserItemSink::printLog(char *szBuff,...)
 		vsprintf(buf,szBuff,ap);
 		va_end(ap);
 
-		//CTraceService::TraceString(CA2T(buf),TraceLevel_Normal);
 		OutputDebugString(CA2T(buf));
 		ofstream outf(m_strLogFile.c_str(),ios::app); 
 		outf<<timeFormat<<buf<<endl;
@@ -549,9 +983,9 @@ void CAndroidUserItemSink::printLog(char *szBuff,...)
 #endif
 }
 
-void CAndroidUserItemSink::printLog(CString& str)
+void CAndroidUserItemSink::TraceString(LPCTSTR pszString, enTraceLevel TraceLevel)
 {
+	CString str=pszString;
 	printLog((LPSTR)CT2A(str));
+	CTraceService::TraceString(pszString,TraceLevel);
 }
-
-//////////////////////////////////////////////////////////////////////////

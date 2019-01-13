@@ -45,6 +45,49 @@ typedef void * POINTER_64 PVOID64;
 #endif // _AFX_NO_AFXCMN_SUPPORT
 
 //////////////////////////////////////////////////////////////////////////
+//编译环境
+#include "..\..\SDKCondition.h"
+
+//////////////////////////////////////////////////////////////////////////////////
+
+#if _MSC_VER == 1400
+
+//////////////////////////////////////////////////////////////////////////////////
+#ifndef _DEBUG
+#ifndef _UNICODE
+	#pragma comment (lib,"../../../VC8链接库/Ansi/KernelEngine.lib")
+#else
+	#pragma comment (lib,"../../../VC8链接库/Unicode/KernelEngine.lib")
+#endif
+#else
+#ifndef _UNICODE
+	#pragma comment (lib,"../../../VC8链接库/Ansi/KernelEngineD.lib")
+#else
+	#pragma comment (lib,"../../../VC8链接库/Unicode/KernelEngineD.lib")
+#endif
+#endif
+
+//////////////////////////////////////////////////////////////////////////////////
+
+#else
+
+//////////////////////////////////////////////////////////////////////////////////
+#ifndef _DEBUG
+#ifndef _UNICODE
+#pragma comment (lib,"../../../链接库/Ansi/KernelEngine.lib")
+#else
+#pragma comment (lib,"../../../链接库/Unicode/KernelEngine.lib")
+#endif
+#else
+#ifndef _UNICODE
+#pragma comment (lib,"../../../链接库/Ansi/KernelEngineD.lib")
+#else
+#pragma comment (lib,"../../../链接库/Unicode/KernelEngineD.lib")
+#endif
+#endif
+//////////////////////////////////////////////////////////////////////////////////
+
+#endif // SDK_CONDITION
 
 //组件头文件
 #include "..\消息定义\CMD_DZShowHand.h"

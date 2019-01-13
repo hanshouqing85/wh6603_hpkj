@@ -556,4 +556,54 @@ void CGameLogic::AnalysebCardData(const BYTE cbCardData[], BYTE cbCardCount, tag
 
 	return;
 }
+
+//取[nMin,nMax]之间的随机整数
+int	CGameLogic::GetRand(const int nMin,const int nMax)
+{
+	if ( nMin > nMax)
+		return nMin;
+	return rand()%(nMax-nMin+1)+nMin;
+}
+
+//根据概率选择，返回true的概率为p
+bool CGameLogic::SelectBoolByProb(float p)
+{
+	if(p>=1)
+		return true;
+	if(p<=0)
+		return false;
+	int P=(int)(p*1000+0.5); 
+	int randNum = GetRand(0,1000);
+	if(randNum<P)
+		return true;
+	return false;
+}
+
+//根据概率选择
+int CGameLogic::SelectByProb(int arr[],int arrProb[],int count,int total/*=0*/)
+{
+	if(total==0)
+	{
+		for(int i=0;i<count;i++)
+		{
+			total+=arrProb[i];
+		}
+	}
+	int kind=0;
+	int iRand =rand()%total;
+	for(int i=0;i<count;i++)
+	{
+		if (iRand < arrProb[i])
+		{
+			kind=arr[i];
+			break;
+		}
+		else
+		{
+			iRand -= arrProb[i];
+		}
+	}
+	return kind;
+}
+
 //////////////////////////////////////////////////////////////////////////
