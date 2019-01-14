@@ -74,6 +74,9 @@
     <ClInclude Include="TinyXml\tinyxml.h">
       <Filter>TinyXml</Filter>
     </ClInclude>
+    <ClInclude Include="..\消息定义\CMD_DZShowHand.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GameServer.rc">

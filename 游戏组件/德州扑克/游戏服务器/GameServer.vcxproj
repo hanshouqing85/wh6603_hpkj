@@ -251,6 +251,7 @@ copy /y ..\..\..\..\运行\Release\Ansi\$(TargetFileName) ..\..\..\发布组件\
     <ClCompile Include="TinyXml\tinyxmlparser.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\消息定义\CMD_DZShowHand.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="GameLogic.h" />
     <ClInclude Include="GameServerManager.h" />

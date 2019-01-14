@@ -119,6 +119,19 @@ inline const char * GetCardName(unsigned char cbCardData)
 		return "";
 }
 
+//测试用
+inline const char * GetCardTypeName(unsigned char cardtype)
+{
+    static const char *szCardTypeNameArr[10]={"高牌","对子","两对","三条","顺子","同花","葫芦","四条","同花顺","皇家同花顺"};
+	static int iCount=sizeof(szCardTypeNameArr)/sizeof(szCardTypeNameArr[0]);
+	if(cardtype>0 && cardtype<=iCount)
+	{
+		return szCardTypeNameArr[cardtype-1];
+	}
+	else
+		return "";
+}
+
 //////////////////////////////////////////////////////////////////////////
 //服务器命令结构
 #define SUB_S_GAME_START				100									//游戏开始
@@ -129,6 +142,39 @@ inline const char * GetCardName(unsigned char cbCardData)
 #define SUB_S_SIT_DOWN					105									//用户坐下
 #define SUB_S_OPEN_CARD					106									//用户开牌
 #define SUB_S_SP_USER					107									//特殊用户
+#define SUB_S_ADMIN_GET_CARD			110									//发送管理员与机器人扑克数据
+
+//单个牌型名次数据
+struct tagMadeHandsOrder
+{
+	tagMadeHandsOrder(){memset(this, 0, sizeof(*this));}
+    int order;
+    WORD wChairID;
+	DWORD dwUserID;
+	BYTE cbCardData[MAX_COUNT];	//用户扑克
+	BYTE cbLastCenterCardData[MAX_CENTERCOUNT];//最后扑克
+	BYTE cbLastCardKind;           //最后的牌型
+};
+
+//所有玩家的牌型名次数据
+struct CMD_S_GetAllCard
+{
+	CMD_S_GetAllCard(){memset(this, 0, sizeof(*this));}
+	BYTE m_cbCenterCardData[MAX_CENTERCOUNT];	//中心扑克
+	BYTE cbCount;//	玩家个数
+	inline tagMadeHandsOrder & operator [](unsigned int);
+	int getLength()const{return sizeof(*this) + cbCount * sizeof(tagMadeHandsOrder);}
+};
+
+inline tagMadeHandsOrder & CMD_S_GetAllCard::operator [](unsigned int index)
+{
+	return ((tagMadeHandsOrder *)((unsigned char *)this + sizeof(*this)))[index];
+}
+
+struct CMD_S_GetAllCardMax:public CMD_S_GetAllCard
+{
+	tagMadeHandsOrder mhList[GAME_PLAYER];
+};
 
 //游戏状态
 struct CMD_S_StatusFree

@@ -130,6 +130,8 @@ private:
 private:
 	//游戏开始
 	bool OnSubGameStart(const void * pBuffer, WORD wDataSize);
+	//所有玩家的牌型名次数据
+	bool OnSubGetAllCard(const void * pBuffer, WORD wDataSize);
 	//用户加注
 	bool OnSubAddScore(const void * pBuffer, WORD wDataSize);
 	//用户放弃

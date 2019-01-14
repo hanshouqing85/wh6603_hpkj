@@ -48,6 +48,8 @@ protected:
 	BYTE							m_cbCenterCardData[MAX_CENTERCOUNT];	//中心扑克
 	BYTE							m_cbHandCardData[GAME_PLAYER][MAX_COUNT];//手上扑克
 
+    vector<tagMadeHandsOrder>       m_vAllCard;
+
 	//组件变量
 protected:
 	CGameLogic						m_GameLogic;							//游戏逻辑
@@ -139,6 +141,9 @@ protected:
 
 	// add by hxh 20161104
 	void SendAddScorePacket(CMD_S_AddScore *pAddScore);
+
+	//发送管理员与机器人扑克数据
+	void SendUserCard();
 
 	//功能函数
 private:

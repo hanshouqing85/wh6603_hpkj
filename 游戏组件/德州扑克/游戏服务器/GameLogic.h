@@ -64,31 +64,61 @@ private:
 	//控制函数
 public:
 	//排列扑克
-	void SortCardList(BYTE cbCardData[], BYTE cbCardCount);
+	static void SortCardList(BYTE cbCardData[], BYTE cbCardCount);
 	//混乱扑克
-	VOID RandCardList(BYTE cbCardBuffer[], BYTE cbBufferCount);
+	static VOID RandCardList(BYTE cbCardBuffer[], BYTE cbBufferCount);
 
 	//类型函数
 public:
 	//获取类型
-	BYTE GetCardType(BYTE cbCardData[], BYTE cbCardCount);
+	static BYTE GetCardType(BYTE cbCardData[], BYTE cbCardCount);
 	//获取数值
-	BYTE GetCardValue(BYTE cbCardData) { return cbCardData&LOGIC_MASK_VALUE; }
+	static BYTE GetCardValue(BYTE cbCardData) { return cbCardData&LOGIC_MASK_VALUE; }
 	//获取花色
-	BYTE GetCardColor(BYTE cbCardData) { return cbCardData&LOGIC_MASK_COLOR; }
+	static BYTE GetCardColor(BYTE cbCardData) { return cbCardData&LOGIC_MASK_COLOR; }
 
 	//功能函数
 public:
 	//逻辑数值
-	BYTE GetCardLogicValue(BYTE cbCardData);
+	static BYTE GetCardLogicValue(BYTE cbCardData);
 	//对比扑克
-	BYTE CompareCard(BYTE cbFirstData[], BYTE cbNextData[], BYTE cbCardCount);
+	static BYTE CompareCard(BYTE cbFirstData[], BYTE cbNextData[], BYTE cbCardCount);
 	//分析扑克
-	void AnalysebCardData(const BYTE cbCardData[], BYTE cbCardCount, tagAnalyseResult & AnalyseResult);
+	static void AnalysebCardData(const BYTE cbCardData[], BYTE cbCardCount, tagAnalyseResult & AnalyseResult);
 	//7返5
-	BYTE FiveFromSeven(BYTE cbHandCardData[],BYTE cbHandCardCount,BYTE cbCenterCardData[],BYTE cbCenterCardCount,BYTE cbLastCardData[],BYTE cbLastCardCount);
+	static BYTE FiveFromSeven(BYTE cbHandCardData[],BYTE cbHandCardCount,BYTE cbCenterCardData[],BYTE cbCenterCardCount,BYTE cbLastCardData[],BYTE cbLastCardCount);
 	//查找最大
-	bool SelectMaxUser(BYTE bCardData[GAME_PLAYER][MAX_CENTERCOUNT],UserWinList &EndResult,const DZPKSCORE lAddScore[]);
+	static bool SelectMaxUser(BYTE bCardData[GAME_PLAYER][MAX_CENTERCOUNT],UserWinList &EndResult,const DZPKSCORE lAddScore[]);
+};
+
+//定义函数对象用来排序
+class sort_tagMadeHandsOrder
+{
+public:
+	sort_tagMadeHandsOrder(){}
+	bool operator()(tagMadeHandsOrder& X,tagMadeHandsOrder& Y)const
+	{
+		BYTE iRet=CGameLogic::CompareCard(X.cbLastCenterCardData,Y.cbLastCenterCardData,MAX_CENTERCOUNT);
+		// 在德克萨斯扑克里，四种花色不分大小
+		if(iRet==0)
+		{
+		   // 得到一种稳定的排序关系
+		   BYTE XLogic[5];
+		   XLogic[0]=CGameLogic::GetCardLogicValue(X.cbCardData[0]);
+		   XLogic[1]=CGameLogic::GetCardLogicValue(X.cbCardData[1]);
+		   XLogic[2]=CARD_COLOR(X.cbCardData[0]);
+		   XLogic[3]=CARD_COLOR(X.cbCardData[1]);
+		   XLogic[4]=(XLogic[0]+XLogic[1]+XLogic[2]+XLogic[3]);
+		   BYTE YLogic[5];
+		   YLogic[0]=CGameLogic::GetCardLogicValue(Y.cbCardData[0]);
+		   YLogic[1]=CGameLogic::GetCardLogicValue(Y.cbCardData[1]);
+		   YLogic[2]=CARD_COLOR(Y.cbCardData[0]);
+		   YLogic[3]=CARD_COLOR(Y.cbCardData[1]);
+		   YLogic[4]=(YLogic[0]+YLogic[1]+YLogic[2]+YLogic[3]);
+		   return XLogic[4]>YLogic[4];
+		}
+		return iRet>1;
+	}
 };
 
 //////////////////////////////////////////////////////////////////////////

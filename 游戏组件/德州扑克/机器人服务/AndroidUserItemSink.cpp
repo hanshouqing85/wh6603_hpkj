@@ -291,6 +291,10 @@ bool  CAndroidUserItemSink::OnEventGameMessage(WORD wSubCmdID, void * pBuffer, W
 		{
 			return OnSubGameStart(pBuffer,wDataSize);
 		}
+	case SUB_S_ADMIN_GET_CARD:		//所有玩家的牌型名次数据
+		{
+			return OnSubGetAllCard(pBuffer,wDataSize);
+		}
 	case SUB_S_ADD_SCORE:		//用户加注
 		{
 			return OnSubAddScore(pBuffer,wDataSize);
@@ -451,6 +455,50 @@ bool CAndroidUserItemSink::OnSubGameStart(const void * pBuffer, WORD wDataSize)
 	//复制暗牌
 	CopyMemory(m_cbHandCardData,pGameStart->cbCardData,sizeof(m_cbHandCardData));
 	
+	return true;
+}
+
+//所有玩家的牌型名次数据
+bool CAndroidUserItemSink::OnSubGetAllCard(const void * pBuffer, WORD wDataSize)
+{
+	//效验数据
+	if (wDataSize<sizeof(CMD_S_GetAllCard)) return false;
+	CMD_S_GetAllCard * pAllCard=(CMD_S_GetAllCard *)pBuffer;
+
+	std::stringstream ss;
+	IServerUserItem *pMeUserItem = m_pIAndroidUserItem->GetMeUserItem();
+	if(pMeUserItem)
+	{
+		WORD chairId0=m_pIAndroidUserItem->GetChairID();
+		WORD uid0=m_pIAndroidUserItem->GetUserID();//uid0的值是错的
+		WORD tableId0=m_pIAndroidUserItem->GetTableID();
+		WORD chairId=pMeUserItem->GetChairID();
+		DWORD uid=pMeUserItem->GetUserID();//uid的值是对的
+		WORD tableId=pMeUserItem->GetTableID();
+
+		char sz1[1024]={0};
+		sprintf(sz1,"OnSubGetAllCard所有玩家的牌型名次数据 chairId0=%d,uid0=%d,tableId0=%d,chairId=%d,uid=%d,tableId=%d",chairId0,uid0,tableId0,chairId,uid,tableId);
+		ss<<sz1<<"\n";
+
+		for(int i=0;i<pAllCard->cbCount;i++)
+		{
+		   tagMadeHandsOrder obj=(*pAllCard)[i];
+	       string strName;
+		   IServerUserItem * pItem=m_pIAndroidUserItem->GetTableUserItem(obj.wChairID);
+		   if(pItem)
+		   {
+			   TCHAR szNickName[LEN_NICKNAME]={0};
+			   _sntprintf(szNickName,CountArray(szNickName),TEXT("%s"),pItem->GetNickName());
+			   strName=ws2s(szNickName);
+			   strName=Trim(strName);
+		   }
+		   ss<<"第"<<i<<"个玩家"<<strName.c_str()<<"(chairId="<<obj.wChairID<<",uid="<<obj.dwUserID<<")的牌型名次数据：order="<<obj.order<<",cbLastCardKind="<<(int)obj.cbLastCardKind<<"\n";
+		}
+		string s = ss.str();
+		ss.str("");
+		printLog((char *)s.c_str());
+	}
+
 	if(m_wCurrentUser==m_pIAndroidUserItem->GetChairID())
 	{
 		UINT nElapse=CGameLogic::GetRand(5,7);

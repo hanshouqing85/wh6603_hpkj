@@ -291,6 +291,7 @@ bool CTableFrameSink::OnEventGameStart()
 
 	//游戏变量
 	WORD wUserCount=0;
+	m_vAllCard.clear();
 	for (WORD i=0;i<GAME_PLAYER;i++)
 	{
 		//获取用户
@@ -430,7 +431,26 @@ bool CTableFrameSink::OnEventGameStart()
 
 	for (WORD i=0;i<m_wPlayerCount;i++)
 	{
-	    ss<<"第"<<i<<"个玩家的手牌:";
+		//获取用户
+		IServerUserItem * pIServerUserItem=m_pITableFrame->GetTableUserItem(i);
+
+		//无效用户
+		if (pIServerUserItem==NULL) continue;
+
+		tagMadeHandsOrder obj;
+		obj.wChairID=pIServerUserItem->GetChairID();
+		obj.dwUserID=pIServerUserItem->GetUserID();
+		memcpy(obj.cbCardData,m_cbHandCardData[i],sizeof(obj.cbCardData));
+		obj.cbLastCardKind=m_GameLogic.FiveFromSeven(m_cbHandCardData[i],MAX_COUNT,m_cbCenterCardData,MAX_CENTERCOUNT,obj.cbLastCenterCardData,MAX_CENTERCOUNT);
+		m_vAllCard.push_back(obj);
+
+		TCHAR szNickName[LEN_NICKNAME]={0};
+		_sntprintf(szNickName,CountArray(szNickName),TEXT("%s"),pIServerUserItem->GetNickName());
+		string strName=ws2s(szNickName);
+		strName=Trim(strName);
+		DWORD uid=pIServerUserItem->GetUserID();
+		ss<<"第"<<i<<"个玩家"<<strName.c_str()<<"("<<uid<<")"<<"的手牌:";
+
 		for (WORD j=0;j<MAX_COUNT;j++)
 		{
 			ss<<(int)m_cbHandCardData[i][j];
@@ -457,6 +477,9 @@ bool CTableFrameSink::OnEventGameStart()
 		m_pITableFrame->SendLookonData(i,SUB_S_GAME_START,&GameStart,sizeof(GameStart));
 	}
 
+	//向机器人与管理员发送扑克数据
+	SendUserCard();
+
 	// 开启行动定时器
     m_pITableFrame->SetGameTimer(IDI_ACTION,TIME_ACTION,1,0L);
 
@@ -466,10 +489,10 @@ bool CTableFrameSink::OnEventGameStart()
 //游戏结束
 bool CTableFrameSink::OnEventGameConclude(WORD wChairID, IServerUserItem * pIServerUserItem, BYTE cbReason)
 {
-	OutputDebugString(L"hhh 游戏结束");
-	CString str;
-	str.Format(L"hhh   cbReason==%d",cbReason);
-	OutputDebugString(str);
+	std::stringstream ss;
+	char sz1[1024]={0};
+	sprintf(sz1,"OnEventGameConclude游戏结束 wChairID=%d,cbReason=%d",wChairID,cbReason);
+	ss<<sz1<<"\n";
 
 	// 杀掉行动定时器
 	m_pITableFrame->KillGameTimer(IDI_ACTION);
@@ -494,12 +517,10 @@ bool CTableFrameSink::OnEventGameConclude(WORD wChairID, IServerUserItem * pISer
 					//用户过滤
 					if (m_cbPlayStatus[i]==FALSE) continue;
 
-					//最大牌型//BYTE CGameLogic::FiveFromSeven(BYTE cbHandCardData[],BYTE cbHandCardCount,BYTE cbCenterCardData[],BYTE cbCenterCardCount,BYTE cbLastCardData[],BYTE cbLastCardCount)
+					//最大牌型
 					GameEnd.cbLastCardKind[i] = m_GameLogic.FiveFromSeven(m_cbHandCardData[i],MAX_COUNT,m_cbCenterCardData,MAX_CENTERCOUNT,cbEndCardData[i],MAX_CENTERCOUNT);
 					ASSERT(GameEnd.cbLastCardKind[i]!=FALSE);			
 					CopyMemory(GameEnd.cbLastCenterCardData[i],cbEndCardData[i],sizeof(BYTE)*CountArray(cbEndCardData));
-					
-
 				}
 			}catch(...)
 			{
@@ -509,15 +530,19 @@ bool CTableFrameSink::OnEventGameConclude(WORD wChairID, IServerUserItem * pISer
 			
 			for (WORD i=0;i<GAME_PLAYER;i++)
 			{
-				for (WORD j=0;j<MAX_COUNT;j++)
+				//用户过滤
+				if (m_cbPlayStatus[i]==FALSE) continue;
+				ss<<"第"<<i<<"个玩家的成手牌Made Hands:";
+				for (WORD j=0;j<MAX_CENTERCOUNT;j++)
 				{
-					CString str;
-					str.Format(L"hhh  jieshu pai %d",GameEnd.cbLastCenterCardData[i][j]);
-					OutputDebugString(str);
+					ss<<(int)GameEnd.cbLastCenterCardData[i][j];
+					ss<<"("<<GetCardName(GameEnd.cbLastCenterCardData[i][j])<<"),";
 				}
-				
+		        ss<<"成手牌型:"<<(int)GameEnd.cbLastCardKind[i]<<"("<<GetCardTypeName(GameEnd.cbLastCardKind[i])<<")"<<"\n";				
 			}
-		
+			string s = ss.str();
+			ss.str("");
+			printLog((char *)s.c_str());
 
 			//总下注备份
 			DZPKSCORE lTotalScore[GAME_PLAYER];
@@ -1251,6 +1276,36 @@ void CTableFrameSink::SendAddScorePacket(CMD_S_AddScore *pAddScore)
 	m_pITableFrame->KillGameTimer(IDI_ACTION);
 	// 开启行动定时器
     m_pITableFrame->SetGameTimer(IDI_ACTION,TIME_ACTION,1,0L);
+}
+
+//发送管理员与机器人扑克数据
+void CTableFrameSink::SendUserCard()
+{
+	int iCount=m_vAllCard.size();
+	std::sort(m_vAllCard.begin(),m_vAllCard.end(),sort_tagMadeHandsOrder());
+
+	// 发送扑克
+	CMD_S_GetAllCardMax gac;
+	gac.cbCount=iCount;
+	CopyMemory(gac.m_cbCenterCardData,m_cbCenterCardData,sizeof(m_cbCenterCardData));  //复制扑克数据
+	for(int i=0;i<iCount;i++)
+	{
+	    m_vAllCard[i].order=i;
+		memcpy(&gac.mhList[i],&m_vAllCard[i],sizeof(tagMadeHandsOrder));
+	}
+
+	for(WORD i=0;i<GAME_PLAYER;i++)
+	{
+		IServerUserItem *pIServerUserItem=m_pITableFrame->GetTableUserItem(i);
+
+		if(pIServerUserItem==NULL) continue;
+		// 判断机器人否 
+		if(pIServerUserItem->IsAndroidUser()||(CUserRight::IsGameCheatUser(pIServerUserItem->GetUserRight()))==true)
+		{
+			m_pITableFrame->SendTableData(i,SUB_S_ADMIN_GET_CARD,&gac,gac.getLength());
+		}
+	}
+
 }
 
 //输出信息
