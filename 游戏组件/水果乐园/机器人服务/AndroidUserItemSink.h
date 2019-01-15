@@ -26,7 +26,7 @@ struct tagRobotInfo
 	{
 		int nTmpChip[7] = {1, 3, 5, 10, 50, 100, 1000};
 		int nTmpAreaChance[AREA_COUNT] = {3, 0, 3, 1, 1, 0, 0, 0};
-		TCHAR szTmpCfgFileName[MAX_PATH] = _T("SGLYConfig.ini");
+		TCHAR szTmpCfgFileName[MAX_PATH] = _T("SGDZ.ini");
 
 		nMaxTime = 2;
 		memcpy(nChip, nTmpChip, sizeof(nChip));

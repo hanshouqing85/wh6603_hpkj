@@ -169,7 +169,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AndroidUserItemSink.cpp" />
     <ClCompile Include="GameServer.cpp" />
     <ClCompile Include="GameServerManager.cpp" />
     <ClCompile Include="Stdafx.cpp">
@@ -182,7 +181,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AndroidUserItemSink.h" />
     <ClInclude Include="..\消息定义\CMD_SGZZ.h" />
     <ClInclude Include="GameServerManager.h" />
     <ClInclude Include="Resource.h" />

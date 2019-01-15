@@ -276,21 +276,22 @@ bool CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
 
 				//ÏÂ×¢ÇøÓò
 				ASSERT(nACTotal>0);
+				nChipArea = 0;
 				static int nStFluc = 1;				//Ëæ»ú¸¨Öú
-				if (nACTotal <= 0)	return false;
-				do {
-					nRandNum = (rand()+wMyID+nStFluc*3) % nACTotal;
-					for (int i = 0; i < AREA_COUNT; i++)
-					{
-						nRandNum -= m_RobotInfo.nAreaChance[i];
-						if (nRandNum < 0)
-						{
-							nChipArea = i;
-							break;
-						}
-					}
-				}
-				while (m_lAreaChip[nChipArea] < m_RobotInfo.nChip[m_nChipLimit[0]]);
+				//if (nACTotal <= 0)	return false;
+				//do {
+				//	nRandNum = (rand()+wMyID+nStFluc*3) % nACTotal;
+				//	for (int i = 0; i < AREA_COUNT; i++)
+				//	{
+				//		nRandNum -= m_RobotInfo.nAreaChance[i];
+				//		if (nRandNum < 0)
+				//		{
+				//			nChipArea = i;
+				//			break;
+				//		}
+				//	}
+				//}
+				//while (m_lAreaChip[nChipArea] < m_RobotInfo.nChip[m_nChipLimit[0]]);
 
 				LONGLONG lLeaveScore = 0;
 				lLeaveScore = (m_lMaxChipBanker-m_lAreaChip1[nChipArea]);

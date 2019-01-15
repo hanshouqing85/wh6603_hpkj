@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AndroidUserItemSink.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="GameServer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -32,9 +29,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AndroidUserItemSink.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="..\消息定义\CMD_SGZZ.h">
       <Filter>头文件</Filter>
     </ClInclude>
