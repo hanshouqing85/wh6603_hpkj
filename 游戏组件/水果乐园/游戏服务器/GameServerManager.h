@@ -15,7 +15,7 @@ protected:
 	tagGameServiceAttrib				m_GameServiceAttrib;			//服务属性
 
 	//组件变量
-	//CGameServiceManagerHelper				m_AndroidServiceHelper;			//机器人服务
+	CGameServiceManagerHelper				m_AndroidServiceHelper;			//机器人服务
 
 	//函数定义
 public:

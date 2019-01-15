@@ -122,6 +122,7 @@ bool CGameServiceManager::RectifyParameter(tagGameServiceOption & GameServiceOpt
 //创建机器
 VOID * CGameServiceManager::CreateAndroidUserItemSink(REFGUID Guid, DWORD dwQueryVer)
 {
+#if 0
 	//变量定义
 	CAndroidUserItemSink * pAndroidUserItemSink=NULL;
 
@@ -143,8 +144,26 @@ VOID * CGameServiceManager::CreateAndroidUserItemSink(REFGUID Guid, DWORD dwQuer
 	SafeDelete(pAndroidUserItemSink);
 
 	return NULL;
+#else
+	try
+	{
+		//创建组件
+		if( m_AndroidServiceHelper.GetInterface() == NULL )
+		{
+			m_AndroidServiceHelper.SetModuleCreateInfo(TEXT("SGLYAndroid.dll"),"CreateGameServiceManager");
 
+			if( !m_AndroidServiceHelper.CreateInstance() ) throw 0;
+		}
 
+		//创建机器人
+		VOID *pAndroidObject = m_AndroidServiceHelper->CreateAndroidUserItemSink(Guid,dwQueryVer);
+		if( pAndroidObject == NULL ) throw TEXT("创建机器人失败");
+
+		return pAndroidObject;
+	}
+	catch(...) {}
+
+#endif
 }
 
 //创建数据
