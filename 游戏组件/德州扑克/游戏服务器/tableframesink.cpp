@@ -313,6 +313,8 @@ bool CTableFrameSink::OnEventGameStart()
 	DZPKConfig & cfg=DZPKConfig::Instance();
 	if(cfg.m_Enable==1)
 	{
+		if(cfg.m_Refresh==1)
+			cfg.LoadData("DZPKConfig.xml");
 		//ÓÃ»§ÆË¿Ë
 		WORD wCardCount=0;
 		for (WORD i=0;i<GAME_PLAYER;i++)

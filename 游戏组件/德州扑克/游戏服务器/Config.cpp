@@ -89,6 +89,7 @@ int DZPKConfig::LoadData(const char *xmlFileName)
 			if(Node1)
 			{
 				SetINT(Node1,Enable)
+				SetINT(Node1,Refresh)
 				vector<string> vecCenterCard;
 				const char*CenterCard=Node1->Attribute("CenterCard");
 				if(CenterCard!=NULL)

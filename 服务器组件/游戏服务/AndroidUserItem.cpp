@@ -90,8 +90,15 @@ IServerUserItem * CAndroidUserItem::GetMeUserItem()
 }
 
 //ÓÎÏ·ÓÃ»§
-IServerUserItem * CAndroidUserItem::GetTableUserItem(WORD wChariID)
+IServerUserItem * CAndroidUserItem::GetTableUserItem(WORD wChairID)
 {
+	DWORD cnt=m_pIServerUserManager->GetUserItemCount();
+	for(WORD wEnumIndex=0;wEnumIndex<cnt;wEnumIndex++)
+	{
+		IServerUserItem * pItem=m_pIServerUserManager->EnumUserItem(wEnumIndex);
+		if(pItem && pItem->GetChairID()==wChairID)
+			return pItem;
+	}
 	return NULL;
 }
 

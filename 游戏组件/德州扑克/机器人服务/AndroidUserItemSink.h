@@ -52,6 +52,8 @@ protected:
 	BYTE							m_cbHandCardData[GAME_PLAYER][MAX_COUNT];//手上扑克
 	BYTE							m_cbOverCardData[GAME_PLAYER][MAX_CENTERCOUNT];//结束扑克
 
+    vector<tagMadeHandsOrder>       m_vAllCard;
+
 	//控件变量
 protected:
 	ITableFrame						* m_pITableFrame;					//框架接口

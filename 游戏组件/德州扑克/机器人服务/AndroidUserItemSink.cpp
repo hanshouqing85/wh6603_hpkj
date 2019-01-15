@@ -148,7 +148,7 @@ CAndroidUserItemSink::CAndroidUserItemSink()
 	m_lCellScore = 0L;
 	m_bGiveUp = false;
 	m_bShowHand = false;
-
+	m_bWillWin = false;
 	m_lBeforeScore = 0;
 	
 	ZeroMemory(m_lTotalScore,sizeof(m_lTotalScore));
@@ -439,7 +439,6 @@ bool CAndroidUserItemSink::OnSubGameStart(const void * pBuffer, WORD wDataSize)
 	m_lAddLessScore = pGameStart->lAddLessScore;
 	m_lTurnLessScore = pGameStart->lTurnLessScore;
 	m_lTurnMaxScore = pGameStart->lTurnMaxScore;
-	//m_bWillWin = pGameStart->bWillWin;  //是否胜利
 	m_lCellScore = pGameStart->lCellScore;  //单元倍数
 
 	//加注信息
@@ -462,8 +461,10 @@ bool CAndroidUserItemSink::OnSubGameStart(const void * pBuffer, WORD wDataSize)
 bool CAndroidUserItemSink::OnSubGetAllCard(const void * pBuffer, WORD wDataSize)
 {
 	//效验数据
-	if (wDataSize<sizeof(CMD_S_GetAllCard)) return false;
+	if (wDataSize<=sizeof(CMD_S_GetAllCard)) return false;
 	CMD_S_GetAllCard * pAllCard=(CMD_S_GetAllCard *)pBuffer;
+
+	m_vAllCard.clear();
 
 	std::stringstream ss;
 	IServerUserItem *pMeUserItem = m_pIAndroidUserItem->GetMeUserItem();
@@ -483,6 +484,11 @@ bool CAndroidUserItemSink::OnSubGetAllCard(const void * pBuffer, WORD wDataSize)
 		for(int i=0;i<pAllCard->cbCount;i++)
 		{
 		   tagMadeHandsOrder obj=(*pAllCard)[i];
+		   m_vAllCard.push_back(obj);
+		   if(i==0)
+		   {
+		      m_bWillWin=(obj.wChairID==chairId);//是否当前机器人赢
+		   }
 	       string strName;
 		   IServerUserItem * pItem=m_pIAndroidUserItem->GetTableUserItem(obj.wChairID);
 		   if(pItem)
@@ -549,16 +555,38 @@ bool CAndroidUserItemSink::OnSubGiveUp(const void * pBuffer, WORD wDataSize)
 	m_cbPlayStatus[pGiveUp->wGiveUpUser]=FALSE;
 
 	//变量定义
+	WORD chairId0=m_pIAndroidUserItem->GetChairID();
 	WORD wGiveUpUser=pGiveUp->wGiveUpUser;
-
 	if(m_lTableScore[wGiveUpUser]!=0L)
 	{
 		m_lTableScore[wGiveUpUser] = 0L;
 	}
 
-		//状态变量
-	if(wGiveUpUser==m_pIAndroidUserItem->GetChairID()) 
+	//状态变量
+	if(wGiveUpUser==chairId0) 
 		m_bGiveUp = true;
+
+	for(vector<tagMadeHandsOrder>::iterator it=m_vAllCard.begin(); it!=m_vAllCard.end();)
+	{
+		if(it->wChairID == wGiveUpUser)
+		{
+			it=m_vAllCard.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+
+	int iCount=m_vAllCard.size();
+	for(int i=0;i<iCount;i++)
+	{
+	    m_vAllCard[i].order=i;
+		if(i==0)
+		{
+			m_bWillWin=(chairId0==m_vAllCard[i].wChairID);//是否当前机器人赢
+		}
+	}
 
 	return true;
 }

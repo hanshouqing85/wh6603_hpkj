@@ -1187,7 +1187,7 @@ public:
 	//获取自己
 	virtual IServerUserItem * GetMeUserItem()=NULL;
 	//游戏用户
-	virtual IServerUserItem * GetTableUserItem(WORD wChariID)=NULL;
+	virtual IServerUserItem * GetTableUserItem(WORD wChairID)=NULL;
 
 	//银行接口
 public:
