@@ -1216,7 +1216,7 @@ bool CTableFrameSink::OnUserPlaceJetton(WORD wChairID, BYTE cbJettonArea, __int6
 //特殊账号控制
 bool CTableFrameSink::DispatchTableCardControl()
 {
-	if (m_cbControlArea==9 || m_cbControlArea==21)
+	if (m_cbControlArea==AREA_9 || m_cbControlArea==AREA_21)
 		return false;
 	if (m_cbControlArea!=0xff && m_cbControlTimes>0)
 	{
@@ -1240,18 +1240,18 @@ bool CTableFrameSink::DispatchTableCard()
 	DWORD dwRateGoodLuck=rand()%1000;
 	if (dwRateGoodLuck<m_dwRateGoodLuck)
 	{
-		m_cbWinArea=(rand()%2==0)?9:21;
+		m_cbWinArea=(rand()%2==0)?AREA_9:AREA_21;
 	}
 	else
 	{
 		do
 		{
 			m_cbWinArea=rand()%PATH_STEP_NUMBER;//随机24个区域
-		} while (m_cbWinArea==9 || m_cbWinArea==21);
+		} while (m_cbWinArea==AREA_9 || m_cbWinArea==AREA_21);
 	}
 	//m_cbWinArea=9;
 	//m_cbWinArea=(rand()%2==0)?9:21;
-	if (m_cbWinArea==9 || m_cbWinArea==21)//开中GoodLuck
+	if (m_cbWinArea==AREA_9 || m_cbWinArea==AREA_21)//开中GoodLuck
 	{
 		DWORD dwRateType=rand()%(m_dwRateChiFen+m_dwRateCaiJin+m_dwRateDaQiang);
 		if (dwRateType<m_dwRateChiFen) m_cbGoodLuckType=0;
@@ -1262,37 +1262,37 @@ bool CTableFrameSink::DispatchTableCard()
 		//static temp=0;
 		//m_cbGoodLuckType=temp%5;
 		//temp++;
-		if (m_cbGoodLuckType==0)//吃分
+		if (m_cbGoodLuckType==GOOD_LUCK_TYPE_0)//吃分
 		{
 			m_cbPaoHuoCheCount=77;
 		}
-		if (m_cbGoodLuckType==1)//大三元
+		if (m_cbGoodLuckType==GOOD_LUCK_TYPE_1)//大三元
 		{
 			m_cbPaoHuoCheCount=3;
-			if (m_cbWinArea==9)
+			if (m_cbWinArea==AREA_9)
 			{
 				m_cbPaoHuoCheArea[0]=7;
 				m_cbPaoHuoCheArea[1]=19;
 				m_cbPaoHuoCheArea[2]=15;
 			}
-			if (m_cbWinArea==21)
+			if (m_cbWinArea==AREA_21)
 			{
 				m_cbPaoHuoCheArea[0]=19;
 				m_cbPaoHuoCheArea[1]=15;
 				m_cbPaoHuoCheArea[2]=7;
 			}
 		}
-		if (m_cbGoodLuckType==2)//大四喜
+		if (m_cbGoodLuckType==GOOD_LUCK_TYPE_2)//大四喜
 		{
 			m_cbPaoHuoCheCount=4;
-			if (m_cbWinArea==9)
+			if (m_cbWinArea==AREA_9)
 			{
 				m_cbPaoHuoCheArea[0]=4;
 				m_cbPaoHuoCheArea[1]=22;
 				m_cbPaoHuoCheArea[2]=16;
 				m_cbPaoHuoCheArea[3]=10;
 			}
-			if (m_cbWinArea==21)
+			if (m_cbWinArea==AREA_21)
 			{
 				m_cbPaoHuoCheArea[0]=16;
 				m_cbPaoHuoCheArea[1]=10;
@@ -1300,18 +1300,18 @@ bool CTableFrameSink::DispatchTableCard()
 				m_cbPaoHuoCheArea[3]=22;
 			}
 		}
-		if (m_cbGoodLuckType==3)//小三元
+		if (m_cbGoodLuckType==GOOD_LUCK_TYPE_3)//小三元
 		{
 			m_cbPaoHuoCheCount=3;
 			if (rand()%2==0)
 			{
-				if (m_cbWinArea==9)
+				if (m_cbWinArea==AREA_9)
 				{
 					m_cbPaoHuoCheArea[0]=1;
 					m_cbPaoHuoCheArea[1]=18;
 					m_cbPaoHuoCheArea[2]=12;
 				}
-				if (m_cbWinArea==21)
+				if (m_cbWinArea==AREA_21)
 				{
 					m_cbPaoHuoCheArea[0]=18;
 					m_cbPaoHuoCheArea[1]=12;
@@ -1320,13 +1320,13 @@ bool CTableFrameSink::DispatchTableCard()
 			}
 			else
 			{
-				if (m_cbWinArea==9)
+				if (m_cbWinArea==AREA_9)
 				{
 					m_cbPaoHuoCheArea[0]=6;
 					m_cbPaoHuoCheArea[1]=0;
 					m_cbPaoHuoCheArea[2]=13;
 				}
-				if (m_cbWinArea==21)
+				if (m_cbWinArea==AREA_21)
 				{
 					m_cbPaoHuoCheArea[0]=13;
 					m_cbPaoHuoCheArea[1]=6;
@@ -1334,7 +1334,7 @@ bool CTableFrameSink::DispatchTableCard()
 				}
 			}
 		}
-		if (m_cbGoodLuckType==4)//跑火车
+		if (m_cbGoodLuckType==GOOD_LUCK_TYPE_4)//跑火车
 		{
 			m_cbPaoHuoCheCount=rand()%6+2;//随机2至7个区域
 			//新规定，跑火车为连续的区域
@@ -1351,13 +1351,13 @@ bool CTableFrameSink::DispatchTableCard()
 				ASSERT(m_cbPaoHuoCheArea[i]!=9 && m_cbPaoHuoCheArea[i]!=21);
 			}
 		}
-		if (m_cbGoodLuckType==5)//随机打枪
+		if (m_cbGoodLuckType==GOOD_LUCK_TYPE_5)//随机打枪
 		{
 			m_cbPaoHuoCheCount=rand()%7+1;//随机1至7个区域
 			BYTE cbArea1[22]={8,7,6,5,4,3,2,1,0,23,22,20,19,18,17,16,15,14,13,12,11,10};
 			BYTE cbArea2[22]={20,19,18,17,16,15,14,13,12,11,10,8,7,6,5,4,3,2,1,0,23,22};
 			BYTE cbIndex=0;
-			if (m_cbWinArea==9)
+			if (m_cbWinArea==AREA_9)
 			{
 				for (int i=0; i<m_cbPaoHuoCheCount; )
 				{
@@ -1371,7 +1371,7 @@ bool CTableFrameSink::DispatchTableCard()
 					}
 				}
 			}
-			if (m_cbWinArea==21)
+			if (m_cbWinArea==AREA_21)
 			{
 				for (int i=0; i<m_cbPaoHuoCheCount; )
 				{

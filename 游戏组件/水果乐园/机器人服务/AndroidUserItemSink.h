@@ -4,96 +4,54 @@
 #pragma once
 
 #include "Stdafx.h"
-//#include "GameLogic.h"
 
-//////////////////////////////////////////////////////////////////////////
-//宏定义
 
-//最大下注次数
-#define MAX_CHIP_TIME								50
-
-#define AREA_COUNT					                8					//区域数目
-
-//机器人信息
-struct tagRobotInfo
-{
-	int nChip[7];														//筹码定义
-	int nAreaChance[AREA_COUNT];										//区域几率
-	TCHAR szCfgFileName[MAX_PATH];										//配置文件
-	int	nMaxTime;														//最大赔率
-
-	tagRobotInfo()
-	{
-		int nTmpChip[7] = {1, 3, 5, 10, 50, 100, 1000};
-		int nTmpAreaChance[AREA_COUNT] = {3, 0, 3, 1, 1, 0, 0, 0};
-		TCHAR szTmpCfgFileName[MAX_PATH] = _T("SGDZ.ini");
-
-		nMaxTime = 2;
-		memcpy(nChip, nTmpChip, sizeof(nChip));
-		memcpy(nAreaChance, nTmpAreaChance, sizeof(nAreaChance));
-		memcpy(szCfgFileName, szTmpCfgFileName, sizeof(szCfgFileName));
-	}
-};
-//////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 //机器人类
 class CAndroidUserItemSink : public IAndroidUserItemSink
 {
-	//游戏变量
 protected:
-	LONGLONG						m_lMaxChipBanker;					//最大下注 (庄家)
-	LONGLONG						m_lMaxChipUser;						//最大下注 (个人)
-	LONGLONG						m_lAreaChip[AREA_COUNT];			//区域下注 
-	LONGLONG						m_lAreaChip1[AREA_COUNT];			//区域下注 
-	SCORE							m_lRecordScore;
-	WORD							m_wCurrentBanker;					//庄家位置
-	BYTE							m_cbTimeLeave;						//剩余时间
+	LONGLONG							m_lAreaLimitScore;					//区域限制
+	LONGLONG							m_lUserLimitScore;					//区域限制
+	LONGLONG							m_lApplyBankerCondition;			//申请条件
 
-	int								m_nChipLimit[2];					//下注范围 (0-AREA_COUNT)
-	int								m_nChipTime;						//下注次数 (本局)
-	int								m_nChipTimeCount;					//已下次数 (本局)
-	
-	//上庄变量
+	LONGLONG							m_lUserJettonScore[JETTON_AREA_COUNT];	//个人总注
+	LONGLONG							m_lAllJettonScore[JETTON_AREA_COUNT];	//全体总注
+
+	LONGLONG							m_lMeMaxScore;						//最大下注
+	//庄家信息
 protected:
-	bool							m_bMeApplyBanker;					//申请标识
-	int								m_nBankerCount;						//本机器人的坐庄次数
-	int								m_nWaitBanker;						//空几盘
-	static int						m_stlApplyBanker;					//申请数
-	static int						m_stnApplyCount;					//申请数
+	LONGLONG							m_lBankerScore;						//庄家积分
+	LONGLONG							m_lBankerWinScore;					//庄家成绩
+	WORD								m_wBankerUser;						//当前庄家
+	WORD								m_wBankerTime;						//做庄次数
 
-	//配置变量  (全局配置)
+	bool								m_bEnableSysBanker;					//系统做庄
+
 protected:
-	tagRobotInfo					m_RobotInfo;						//全局配置
-	TCHAR							m_szRoomName[32];					//配置房间
+	BYTE								m_cbJettonArea;
+	WORD								m_wJettonCount;
 
-	//配置变量	(游戏配置)
+	bool								m_bMeCurrentBanker;
+	bool								m_bApplyingBanker;
+	bool								m_bCancelingBanker;
+	WORD								m_wRandBankerTime;
+	static int							m_stlApplyBanker;					//申请数
+	DWORD								m_dwJettonRate;						//筹码比率
+
+	//配置文件
 protected:
-	bool							m_bRefreshCfg;						//每盘刷新
-	LONGLONG						m_lAreaLimitScore[8];				//区域限制
-	LONGLONG						m_lUserLimitScore;					//下注限制
-	LONGLONG						m_lBankerCondition;					//上庄条件		
+	LONGLONG						    m_lRobotJettonLimit[2];				//筹码限制	
+	BOOL								m_bAllowApplyBanker;				//机器人是否可以申请坐庄
+	WORD								m_wMaxBankerTime;					//机器人坐庄次数
+	int									m_nJettonRange;						//机器人下注范围
+	int									m_nRobotApplyBanker;				//上庄个数
 
-	//配置变量  (机器人配置)
-protected:
-	LONGLONG						m_lRobotBetLimit[2];				//筹码限制	
-	int								m_nRobotBetTimeLimit[2];			//次数限制	
-	bool							m_bRobotBanker;						//是否坐庄
-	int								m_nRobotBankerCount;				//坐庄次数
-	int								m_nRobotWaitBanker;					//空盘重申
-	int								m_nRobotApplyBanker;				//上庄个数
-	int								m_nRobotListMinCount;				//上庄个数
-	bool							m_bReduceBetLimit;					//降低限制
+	TCHAR								m_szConfigFileName[MAX_PATH];		//配置文件
+	TCHAR								m_szRoomName[32];					//配置房间
 
-	//机器人存取款
-	LONGLONG						m_lRobotScoreRange[2];				//最大范围
-	LONGLONG						m_lRobotBankGetScore;				//提款数额
-	LONGLONG						m_lRobotBankGetScoreBanker;			//提款数额 (庄家)
-	int								m_nRobotBankStorageMul;				//存款倍数
-
-	//控件变量
-protected:
-	//CGameLogic						m_GameLogic;						//游戏逻辑
-	IAndroidUserItem *				m_pIAndroidUserItem;				//用户接口
+	IAndroidUserItem *					m_pIAndroidUserItem;				//用户接口
 
 	//函数定义
 public:
@@ -106,8 +64,10 @@ public:
 public:
 	//释放对象
 	virtual VOID Release() { }
+	//是否有效
+	virtual bool __cdecl IsValid() { return AfxIsValidAddress(this,sizeof(CAndroidUserItemSink))?true:false; }
 	//接口查询
-	virtual void * QueryInterface(REFGUID Guid, DWORD dwQueryVer);
+	virtual void * QueryInterface(const IID & Guid, DWORD dwQueryVer);
 
 	//控制接口
 public:
@@ -115,6 +75,12 @@ public:
 	virtual bool Initialization(IUnknownEx * pIUnknownEx);
 	//重置接口
 	virtual bool RepositionSink();
+
+public:
+	//初始接口
+	virtual bool  InitUserItemSink(IUnknownEx * pIUnknownEx);
+	//重置接口
+	virtual bool  RepositUserItemSink();
 
 	//游戏事件
 public:
@@ -137,7 +103,10 @@ public:
 	virtual void OnEventUserScore(IAndroidUserItem * pIAndroidUserItem, bool bLookonUser);
 	//用户状态
 	virtual void OnEventUserStatus(IAndroidUserItem * pIAndroidUserItem, bool bLookonUser);
-
+	//用户段位
+	virtual void OnEventUserSegment(IAndroidUserItem * pIAndroidUserItem, bool bLookonUser);
+	//所有玩家都开始了
+	//virtual void OnEventAllUserStart(IAndroidUserItem * pIAndroidUserItem, bool bLookonUser);
 
 	//消息处理
 public:
@@ -146,9 +115,9 @@ public:
 	//游戏开始
 	bool OnSubGameStart(const void * pBuffer, WORD wDataSize);
 	//用户加注
-	bool OnSubPlaceBet(const void * pBuffer, WORD wDataSize);
+	bool OnSubPlaceJetton(const void * pBuffer, WORD wDataSize);
 	//下注失败
-	bool OnSubPlaceBetFail(const void * pBuffer, WORD wDataSize);
+	bool OnSubPlaceJettonFail(const void * pBuffer, WORD wDataSize);
 	//游戏结束
 	bool OnSubGameEnd(const void * pBuffer, WORD wDataSize);
 	//申请做庄
@@ -158,14 +127,11 @@ public:
 	//切换庄家
 	bool OnSubChangeBanker(const void * pBuffer, WORD wDataSize);
 
-	//功能函数
-public:
-	//读取配置
-	void ReadConfigInformation(TCHAR szFileName[], TCHAR szRoomName[], bool bReadFresh);
-	//计算范围
-	bool CalcBetRange(LONGLONG lMaxScore, LONGLONG lChipLmt[], int & nChipTime, int lJetLmt[]);
+	//最大下注
+	LONGLONG GetUserMaxJetton();
+	//读取配置文件
+	void ReadConfigInformation(bool bFirstRead);
 };
 
-//////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////////////////
 #endif

@@ -1,89 +1,506 @@
 #include "Stdafx.h"
 #include "AndroidUserItemSink.h"
-#include "math.h"
 
-#define		ANDROID_BANKER_TEST
-//////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+#define IDI_GAME_ACTION				105
+////////////////////////////////////////////////////////////////////////////////
 
-//时间标识
-#define IDI_REQUEST_BANKER			101									//申请定时
-#define IDI_GIVEUP_BANKER			102									//下庄定时
-#define IDI_PLACE_JETTON1			103									//下注定时
-#define IDI_PLACE_JETTON2			104									//下注定时
-#define IDI_PLACE_JETTON3			105									//下注定时
-#define IDI_PLACE_JETTON4			106									//下注定时
-#define IDI_PLACE_JETTON5			107									//下注定时
-#define IDI_CHECK_BANKER			108									//检查上庄
-#define IDI_BANK_OPERATE			109									//银行定时
-#define IDI_PLACE_JETTON			110									//下注定义 (预留110-160)
-
-//////////////////////////////////////////////////////////////////////////
-
-int CAndroidUserItemSink::m_stlApplyBanker = 0L;
-void RecordMessage(CString szinfo,DWORD id);
+static const LONGLONG lScoreArray[]={100L,1000L,10000L};
+int CAndroidUserItemSink::m_stlApplyBanker=0L;
 
 //构造函数
 CAndroidUserItemSink::CAndroidUserItemSink()
 {
-	//游戏变量
-	m_lMaxChipBanker = 0;
-	m_lMaxChipUser = 0;
-	m_wCurrentBanker = 0;
-	m_nChipTime = 0;
-	m_nChipTimeCount = 0;
-	m_cbTimeLeave = 0;
-	m_lRecordScore = SCORE_ZERO;
-	ZeroMemory(m_lAreaChip, sizeof(m_lAreaChip));
-	ZeroMemory(m_nChipLimit, sizeof(m_nChipLimit));
-	ZeroMemory(m_lAreaChip1, sizeof(m_lAreaChip1));
-
-	//上庄变量
-	m_bMeApplyBanker=false;
-	m_nWaitBanker=0;
-	m_nBankerCount=0;
-
-	// 读取变量初始化
-	m_lRobotBetLimit[1] = 1000;
-	m_lRobotBetLimit[0] = 1;
-	if (m_lRobotBetLimit[1] > 1000)					m_lRobotBetLimit[1] = 1000;
-	if (m_lRobotBetLimit[0] < 1)						m_lRobotBetLimit[0] = 1;
-	if (m_lRobotBetLimit[1] < m_lRobotBetLimit[0])	m_lRobotBetLimit[1] = m_lRobotBetLimit[0];
-
-	//次数限制
-	m_nRobotBetTimeLimit[0] = 4;
-	m_nRobotBetTimeLimit[1] = 8;
-
-	if (m_nRobotBetTimeLimit[0] < 0)							m_nRobotBetTimeLimit[0] = 0;
-	if (m_nRobotBetTimeLimit[1] < m_nRobotBetTimeLimit[0])		m_nRobotBetTimeLimit[1] = m_nRobotBetTimeLimit[0];
-
-	//是否坐庄
-	m_bRobotBanker = 0;
-
-	//坐庄次数
-	m_nRobotBankerCount = 3;
-
-	//空盘重申
-	m_nRobotWaitBanker = 3;
-
-	//最多个数
-	m_nRobotApplyBanker = 3;
-	m_nRobotListMinCount = 2;
-
-	//降低限制
-	m_bReduceBetLimit = 0;
-
-	//区域概率
-	m_RobotInfo.nAreaChance[0] = 5;
-	m_RobotInfo.nAreaChance[1] = 0;
-	m_RobotInfo.nAreaChance[2] = 5;
-	m_RobotInfo.nAreaChance[3] = 1;
-	m_RobotInfo.nAreaChance[4] = 1;
-	m_RobotInfo.nAreaChance[5] = 0;
-	m_RobotInfo.nAreaChance[6] = 0;
-	m_RobotInfo.nAreaChance[7] = 0;
+//AllocConsole();
+//freopen("CONOUT$","w+t",stdout);
+//freopen("CONIN$","r+t",stdin);
+	m_lAreaLimitScore=0L;
+	m_lUserLimitScore=0L;
+	m_lApplyBankerCondition=0L;
+	ZeroMemory(m_lUserJettonScore,sizeof(m_lUserJettonScore));
+	ZeroMemory(m_lAllJettonScore,sizeof(m_lAllJettonScore));
+	m_lMeMaxScore=0L;
+	m_lBankerScore=0L;
+	m_wBankerUser=INVALID_CHAIR;
+	m_bEnableSysBanker=false;
+	m_cbJettonArea=0;
+	m_bMeCurrentBanker=false;
+	m_bApplyingBanker=false;
+	m_bCancelingBanker=false;
+	m_wRandBankerTime=0;
+	m_dwJettonRate=100;
+	m_nJettonRange=99;
 	return;
 }
 
+//重置
+bool CAndroidUserItemSink::RepositionSink()
+{
+	//m_bMeCurrentBanker=false;
+	//m_bApplyingBanker=false;
+	//m_bCancelingBanker=false;
+	//ZeroMemory(m_lUserJettonScore,sizeof(m_lUserJettonScore));
+	//ZeroMemory(m_lAllJettonScore,sizeof(m_lAllJettonScore));
+	return true;
+}
+//重置接口
+bool  CAndroidUserItemSink::RepositUserItemSink()
+{
+	m_bMeCurrentBanker=false;
+	m_bApplyingBanker=false;
+	m_bCancelingBanker=false;
+	ZeroMemory(m_lUserJettonScore,sizeof(m_lUserJettonScore));
+	ZeroMemory(m_lAllJettonScore,sizeof(m_lAllJettonScore));
+
+	return true;
+}
+
+//时间消息
+bool CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
+{
+	switch (m_pIAndroidUserItem->GetGameStatus())
+	{
+	case GAME_STATUS_FREE://用于申请上庄、或申请下庄的逻辑分支
+		{
+			if (m_bMeCurrentBanker==false && m_stlApplyBanker<m_nRobotApplyBanker)//不是庄家，且名额足够
+			{
+				if (m_bApplyingBanker==true)//已经申请，则不需再申请（已经申请的机器人，已经存在于上庄列表了）
+				{
+					return false;
+				}
+				if (m_pIAndroidUserItem->GetMeUserItem()->GetUserScore()<m_lApplyBankerCondition)//分数不足
+				{
+					return false;
+				}
+				m_pIAndroidUserItem->SendSocketData(SUB_C_APPLY_BANKER,NULL,0);//发送上庄申请
+				m_stlApplyBanker++;//占用一个名额
+				m_bApplyingBanker=true;//已申请上庄
+			}
+			else if (m_bMeCurrentBanker==true)//我是庄家
+			{
+				if (m_bCancelingBanker==true) return false;
+				m_pIAndroidUserItem->SendSocketData(SUB_C_CANCEL_BANKER,NULL,0);//发送下庄申请
+				m_bCancelingBanker=true;//已申请下庄
+			}
+			return true;
+		}
+	case GS_PLACE_JETTON://用于下注的逻辑分支
+		{
+			if (m_wJettonCount--==0) return false;//下注次数用完
+			//限制索引
+			//int nMaxIndex=0;
+			//for (int i=0; i<CountArray(lScoreArray); i++)
+			//	if (m_lMeMaxScore>lScoreArray[i]) nMaxIndex=i+1;
+			//if (nMaxIndex>m_nMaxJettonRange) nMaxIndex=m_nMaxJettonRange;
+			//筹码大小；在筹码数组里随机找合适的筹码
+			//LONGLONG lJettonScore=lScoreArray[rand()%nMaxIndex]*(rand()%9+1);
+			LONGLONG lJettonScore;
+			//ASSERT(lJettonScore<=m_lMeMaxScore);
+
+			//int iCount = 0;
+			//while (lJettonScore>m_lRobotJettonLimit[1] || lJettonScore<m_lRobotJettonLimit[0])
+			//{
+			//	lJettonScore=lScoreArray[rand()%nMaxIndex];
+			//	iCount++;
+			//	if (iCount>100) return true;
+			//}
+
+			//if (lJettonScore>GetUserMaxJetton()) return false;
+			//printf("m_wJettonCount=%d,m_cbJettonArea=%d,lJettonScore=%I64d\n",m_wJettonCount,m_cbJettonArea,lJettonScore);
+			//设置变量
+			BYTE cbAreaCount=rand()%5+4;//每次下注4至8次
+			for (int i=0; i<cbAreaCount; i++)
+			{
+				m_cbJettonArea=rand()%JETTON_AREA_COUNT;
+				if (m_nJettonRange<1 || m_nJettonRange>999) m_nJettonRange=99;
+				lJettonScore=(rand()%m_nJettonRange+1)*m_dwJettonRate;
+				m_lUserJettonScore[m_cbJettonArea]+=lJettonScore;
+				//发送消息
+				CMD_C_PlaceJetton PlaceJetton;
+				PlaceJetton.cbJettonArea=m_cbJettonArea;
+				PlaceJetton.lJettonScore=lJettonScore;
+				m_pIAndroidUserItem->SendSocketData(SUB_C_PLACE_JETTON,&PlaceJetton,sizeof(PlaceJetton));
+			}
+			//设置定时器
+			UINT nElapse=rand()%2+2;
+			m_pIAndroidUserItem->SetGameTimer(IDI_GAME_ACTION,nElapse);
+			return true;
+		}
+	case GS_GAME_END:
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+//游戏消息(OK)
+bool CAndroidUserItemSink::OnEventGameMessage(WORD wSubCmdID, void * pBuffer, WORD wDataSize)
+{
+//printf("wSubCmdID=%d\n",wSubCmdID);
+	switch (wSubCmdID)
+	{
+	case SUB_S_GAME_FREE://游戏空闲
+		{
+			return OnSubGameFree(pBuffer,wDataSize);
+		}
+	case SUB_S_GAME_START://游戏开始
+		{
+			return OnSubGameStart(pBuffer,wDataSize);
+		}
+	case SUB_S_PLACE_JETTON://用户加注
+		{
+			return OnSubPlaceJetton(pBuffer,wDataSize);
+		}
+	case SUB_S_GAME_END://游戏结束
+		{
+			return OnSubGameEnd(pBuffer,wDataSize);
+		}
+	case SUB_S_APPLY_BANKER://申请做庄
+		{
+			return OnSubUserApplyBanker(pBuffer,wDataSize);
+		}
+	case SUB_S_CHANGE_BANKER://切换庄家
+		{
+			return OnSubChangeBanker(pBuffer,wDataSize);
+		}
+	case SUB_S_SEND_RECORD://游戏记录
+		{
+			return true;
+		}
+	case SUB_S_PLACE_JETTON_FAIL://下注失败
+		{
+			return OnSubPlaceJettonFail(pBuffer,wDataSize);
+		}
+	case SUB_S_CANCEL_BANKER://取消做庄
+		{
+			return OnSubUserCancelBanker(pBuffer,wDataSize);
+		}
+	case SUB_S_BIG_SMALL://猜大小
+		{
+			return true;
+		}
+	case SUB_S_CHIP_UPDATE:
+		{
+			return true;
+		}
+	}
+	ASSERT(FALSE);
+	return true;
+}
+
+//场景消息
+bool CAndroidUserItemSink::OnEventSceneMessage(BYTE cbGameStatus, bool bLookonOther, void * pData, WORD wDataSize)
+{
+	switch(cbGameStatus)
+	{
+	case GAME_STATUS_FREE:			//空闲状态
+		{
+			//效验数据
+			ASSERT(wDataSize==sizeof(CMD_S_StatusFree));
+			if (wDataSize!=sizeof(CMD_S_StatusFree)) return false;
+
+			//消息处理
+			CMD_S_StatusFree * pStatusFree=(CMD_S_StatusFree *)pData;
+			m_lApplyBankerCondition=pStatusFree->lApplyBankerCondition;
+			////////////////////m_lAreaLimitScore=pStatusFree->lAreaLimitScore;
+			m_wBankerUser=pStatusFree->wBankerUser;
+			m_wBankerTime=pStatusFree->wBankerTime;
+			m_lBankerScore=pStatusFree->lBankerScore;
+			m_lBankerWinScore=pStatusFree->lBankerWinScore;
+			m_bEnableSysBanker=pStatusFree->bEnableSysBanker;
+
+			if (bLookonOther==false)
+			{
+				m_lMeMaxScore=pStatusFree->lUserMaxScore;
+			}
+			memcpy(m_szRoomName,pStatusFree->szRoomName,sizeof(m_szRoomName));
+			m_dwJettonRate=pStatusFree->dwChipRate;
+
+			ReadConfigInformation(true);
+			return true;
+
+		}
+	case GS_PLACE_JETTON:			//游戏状态
+	case GS_GAME_END:			//结束状态
+		{
+			//效验数据
+			ASSERT(wDataSize==sizeof(CMD_S_StatusPlay));
+			if (wDataSize!=sizeof(CMD_S_StatusPlay)) return false;
+
+			//消息处理
+			CMD_S_StatusPlay * pStatusPlay=(CMD_S_StatusPlay *)pData;
+			m_lApplyBankerCondition=pStatusPlay->lApplyBankerCondition;
+			////////////////////m_lAreaLimitScore=pStatusPlay->lAreaLimitScore;
+			m_wBankerUser=pStatusPlay->wBankerUser;
+			m_wBankerTime=pStatusPlay->cbBankerTime;
+			m_lBankerScore=pStatusPlay->lBankerScore;
+			m_lBankerWinScore=pStatusPlay->lBankerWinScore;
+			m_bEnableSysBanker=pStatusPlay->bEnableSysBanker;
+
+			CopyMemory(m_lAllJettonScore,pStatusPlay->lTotalJettonScore,sizeof(m_lAllJettonScore));
+
+			if (bLookonOther==false)
+			{
+				m_lMeMaxScore=pStatusPlay->lUserMaxScore;
+				CopyMemory(m_lUserJettonScore,pStatusPlay->lUserAreaScore,sizeof(m_lUserJettonScore));
+			}
+
+			memcpy(m_szRoomName,pStatusPlay->szRoomName,sizeof(m_szRoomName));
+			m_dwJettonRate=pStatusPlay->dwChipRate;
+
+			ReadConfigInformation(true);
+
+			return true;
+		}
+	}
+	return true;
+}
+
+//游戏空闲(OK)；选择性的，申请上庄，或申请下庄
+bool CAndroidUserItemSink::OnSubGameFree(const void * pBuffer, WORD wDataSize)
+{
+	//效验数据
+	ASSERT(wDataSize==sizeof(CMD_S_GameFree));
+	if (wDataSize!=sizeof(CMD_S_GameFree)) return false;
+	//读取配置文件
+	ReadConfigInformation(false);
+
+	m_pIAndroidUserItem->SetGameStatus(GAME_STATUS_FREE);
+
+	IServerUserItem *pServerUserItem=m_pIAndroidUserItem->GetMeUserItem();
+	ASSERT(pServerUserItem!=NULL);
+	if (m_wBankerUser==INVALID_CHAIR||m_wBankerUser!=pServerUserItem->GetChairID())
+		m_bMeCurrentBanker=false;
+	//消息处理
+	CMD_S_GameFree * pGameFree=(CMD_S_GameFree *)pBuffer;
+	m_lApplyBankerCondition=pGameFree->lApplyBankerCondition;
+	//很重要的申请数量同步
+	if (m_stlApplyBanker!=pGameFree->wApplyUserCount)
+	{
+		m_stlApplyBanker=pGameFree->wApplyUserCount;
+	}
+	//
+	if (pServerUserItem->GetUserStatus()!=US_LOOKON)
+	{
+		//上庄条件；未申请、我不是庄家、允许机器人上庄、分数足够
+		if (m_bApplyingBanker==false && m_bMeCurrentBanker==false && m_bAllowApplyBanker==TRUE && pServerUserItem->GetUserScore()>m_lApplyBankerCondition)
+		{
+			m_wRandBankerTime=rand()%m_wMaxBankerTime+1;
+			if(m_wRandBankerTime<3) m_wRandBankerTime=3;//最起码要坐庄3局以上
+
+			UINT nElapse=rand()%3+1;
+			m_pIAndroidUserItem->SetGameTimer(IDI_GAME_ACTION, nElapse);
+		}
+		else if (m_bMeCurrentBanker==true && m_bCancelingBanker==false)//下庄申请
+		{
+			if (m_wBankerTime>=m_wRandBankerTime)
+			{
+				UINT nElapse=rand()%3+1;
+				m_pIAndroidUserItem->SetGameTimer(IDI_GAME_ACTION, nElapse);
+			}
+		}
+	}
+	return true;
+}
+
+//游戏开始(OK)，游戏开始，可以进行下注；产生下注区域，以及下注次数；然后去到CAndroidUserItemSink::OnEventTimer()的GS_PLACE_JETTON分支
+bool CAndroidUserItemSink::OnSubGameStart(const void * pBuffer, WORD wDataSize)
+{
+	//效验数据
+	ASSERT(wDataSize==sizeof(CMD_S_GameStart));
+	if (wDataSize!=sizeof(CMD_S_GameStart)) return false;
+	//消息处理
+	CMD_S_GameStart * pGameStart=(CMD_S_GameStart *)pBuffer;
+	//设置变量
+	m_lMeMaxScore=pGameStart->lUserMaxScore;
+	m_wBankerUser=pGameStart->wBankerUser;
+	m_lBankerScore=pGameStart->lBankerScore;
+	//设置状态
+	m_pIAndroidUserItem->SetGameStatus(GS_PLACE_JETTON);
+	//下注条件
+	if (m_lMeMaxScore>2000L && m_wBankerUser!=m_pIAndroidUserItem->GetChairID() /*m_wBankerUser!=INVALID_CHAIR &&*/)
+	{
+		m_wJettonCount=rand()%10+3;
+		//定时器
+		UINT nElapse=rand()%2+1;
+		m_pIAndroidUserItem->SetGameTimer(IDI_GAME_ACTION,nElapse);
+	}
+	return true;
+}
+
+//用户加注(OK)，得到用户下注的信息，存入“总注”
+bool CAndroidUserItemSink::OnSubPlaceJetton(const void * pBuffer, WORD wDataSize)
+{
+	//效验数据
+	ASSERT(wDataSize==sizeof(CMD_S_PlaceJetton));
+	if (wDataSize!=sizeof(CMD_S_PlaceJetton)) return false;
+	//消息处理
+	CMD_S_PlaceJetton * pPlaceJetton=(CMD_S_PlaceJetton *)pBuffer;
+	//校验数据
+	ASSERT(pPlaceJetton->cbJettonArea<=ID_APPLE && pPlaceJetton->cbJettonArea>=ID_BAR);//区域校验
+	ASSERT(pPlaceJetton->wChairID!=INVALID_CHAIR);//玩家校验
+	//ASSERT(pPlaceJetton->lJettonScore>=lScoreArray[0] && pPlaceJetton->lJettonScore<=lScoreArray[3]);//分数校验
+	//设置变量
+	//m_lAllJettonScore[pPlaceJetton->cbJettonArea]+=pPlaceJetton->lJettonScore;
+	CopyMemory(m_lAllJettonScore,pPlaceJetton->lTotalJettonScore,sizeof(m_lAllJettonScore));
+	return true;
+}
+
+//下注失败(OK)，此消息是单发，不需判断是否是自己，取消已下注，删除定时器
+bool CAndroidUserItemSink::OnSubPlaceJettonFail(const void * pBuffer, WORD wDataSize)
+{
+	//效验数据
+	ASSERT(wDataSize==sizeof(CMD_S_PlaceJettonFail));
+	if (wDataSize!=sizeof(CMD_S_PlaceJettonFail)) return false;
+	//消息处理
+	CMD_S_PlaceJettonFail * pPlaceJettonFail=(CMD_S_PlaceJettonFail *)pBuffer;
+	//校验数据
+	ASSERT(pPlaceJettonFail->cbJettonArea<=ID_APPLE && pPlaceJettonFail->cbJettonArea>=ID_BAR);
+	//设置变量
+	m_lUserJettonScore[pPlaceJettonFail->cbJettonArea]-=pPlaceJettonFail->lJettonScore;
+	//删除定时器
+	m_pIAndroidUserItem->KillGameTimer(IDI_GAME_ACTION);
+	return true;
+}
+
+//游戏结束(OK)
+bool CAndroidUserItemSink::OnSubGameEnd(const void * pBuffer, WORD wDataSize)
+{
+	//效验数据
+	ASSERT(wDataSize==sizeof(CMD_S_GameEnd));
+	if (wDataSize!=sizeof(CMD_S_GameEnd)) return false;
+	//消息处理
+	CMD_S_GameEnd * pGameEnd=(CMD_S_GameEnd *)pBuffer;
+	//设置变量
+	m_lBankerScore=pGameEnd->lBankerScore;
+	m_wBankerTime=(WORD)pGameEnd->iBankerTime;
+	m_lApplyBankerCondition=pGameEnd->lApplyBankerCondition;
+	ZeroMemory(m_lUserJettonScore,sizeof(m_lUserJettonScore));
+	ZeroMemory(m_lAllJettonScore,sizeof(m_lAllJettonScore));
+	//游戏状态
+	m_pIAndroidUserItem->SetGameStatus(GS_GAME_END);
+	return true;
+}
+
+//申请做庄(OK)
+bool CAndroidUserItemSink::OnSubUserApplyBanker(const void * pBuffer, WORD wDataSize)
+{
+	//效验数据
+	ASSERT(wDataSize==sizeof(CMD_S_ApplyBanker));
+	if (wDataSize!=sizeof(CMD_S_ApplyBanker)) return false;
+	//消息处理
+	CMD_S_ApplyBanker * pApplyBanker=(CMD_S_ApplyBanker *)pBuffer;
+	return true;
+}
+
+//取消做庄(OK)，取消申请，设置“同步值”
+bool CAndroidUserItemSink::OnSubUserCancelBanker(const void * pBuffer, WORD wDataSize)
+{
+	//效验数据
+	ASSERT(wDataSize==sizeof(CMD_S_CancelBanker));
+	if (wDataSize!=sizeof(CMD_S_CancelBanker)) return false;
+	//消息处理
+	CMD_S_CancelBanker * pCancelBanker=(CMD_S_CancelBanker *)pBuffer;
+	//
+	if (lstrcmp(m_pIAndroidUserItem->GetMeUserItem()->GetNickName(),pCancelBanker->szCancelUser)==0)
+	{
+		m_stlApplyBanker--;
+		m_bApplyingBanker=false;
+	}
+	return true;
+}
+
+//切换庄家
+bool CAndroidUserItemSink::OnSubChangeBanker(const void * pBuffer, WORD wDataSize)
+{
+	//效验数据
+	ASSERT(wDataSize==sizeof(CMD_S_ChangeBanker));
+	if (wDataSize!=sizeof(CMD_S_ChangeBanker)) return false;
+
+	//消息处理
+	CMD_S_ChangeBanker * pChangeBanker=(CMD_S_ChangeBanker *)pBuffer;
+
+	WORD wMeChairID=m_pIAndroidUserItem->GetChairID();
+	if (m_wBankerUser==wMeChairID && pChangeBanker->wBankerUser!=wMeChairID)//机器人下庄
+	{
+		m_bMeCurrentBanker=false;
+		m_bCancelingBanker=false;
+		m_stlApplyBanker--;
+		m_wRandBankerTime=0;
+	}
+	else if (pChangeBanker->wBankerUser==wMeChairID)//机器人上庄
+	{
+		m_bMeCurrentBanker=true;
+		m_bApplyingBanker=false;
+	}
+
+	m_wBankerUser=pChangeBanker->wBankerUser;
+	m_lBankerScore=pChangeBanker->lBankerScore;
+
+	return true;
+}
+
+//最大下注
+LONGLONG CAndroidUserItemSink::GetUserMaxJetton()
+{
+	//已下注额
+	LONGLONG lNowJetton = 0;
+	ASSERT(JETTON_AREA_COUNT<=CountArray(m_lUserJettonScore));
+	for (int nAreaIndex=1; nAreaIndex<=JETTON_AREA_COUNT; ++nAreaIndex) 
+		lNowJetton += m_lUserJettonScore[nAreaIndex];
+
+	//庄家金币
+	LONGLONG lBankerScore=2147483647;
+	if (m_wBankerUser!=INVALID_CHAIR) 
+		lBankerScore=m_lBankerScore;
+
+	for (int nAreaIndex=1; nAreaIndex<=JETTON_AREA_COUNT; ++nAreaIndex)
+		lBankerScore-=m_lAllJettonScore[nAreaIndex];
+
+	//区域限制
+	LONGLONG lMeMaxScore=min(m_lMeMaxScore-lNowJetton,m_lAreaLimitScore);
+
+	//庄家限制
+	lMeMaxScore=min(lMeMaxScore,lBankerScore);
+
+	//非零限制
+	ASSERT(lMeMaxScore >= 0);
+	lMeMaxScore = max(lMeMaxScore, 0);
+
+	return lMeMaxScore;
+}
+
+//读取配置文件
+void CAndroidUserItemSink::ReadConfigInformation(bool bFirstRead)
+{
+	//设置文件名
+	TCHAR szPath[MAX_PATH]=TEXT("");
+	GetCurrentDirectory(sizeof(szPath),szPath);
+	mysprintf(m_szConfigFileName,sizeof(m_szConfigFileName),_T("%s\\SGDZ.ini"),szPath);
+	//筹码限制
+	TCHAR OutBuf[255] = TEXT("");
+	ZeroMemory(OutBuf, sizeof(OutBuf));
+	GetPrivateProfileString(m_szRoomName, TEXT("RobotMaxJetton"), _T("5000000"), OutBuf, 255, m_szConfigFileName);
+	myscanf(OutBuf, mystrlen(OutBuf), _T("%I64d"), &m_lRobotJettonLimit[1]);
+
+	ZeroMemory(OutBuf, sizeof(OutBuf));
+	GetPrivateProfileString(m_szRoomName, TEXT("RobotMinJetton"), _T("100"), OutBuf, 255, m_szConfigFileName);
+	myscanf(OutBuf, mystrlen(OutBuf), _T("%I64d"), &m_lRobotJettonLimit[0]);
+	//是否每局刷新
+	if(!bFirstRead && GetPrivateProfileInt(m_szRoomName, TEXT("Refresh"),0, m_szConfigFileName)==0) return;
+	//机器人下注范围
+	m_nJettonRange=GetPrivateProfileInt(m_szRoomName,TEXT("JettonRange"),99,m_szConfigFileName);
+	if (m_nJettonRange<1 || m_nJettonRange>999) m_nJettonRange=99;
+	//机器人最大坐庄次数
+	m_wMaxBankerTime=(WORD)GetPrivateProfileInt(m_szRoomName,TEXT("RobotBankerCount"),3,m_szConfigFileName);
+	//机器人能否申请坐庄
+	m_bAllowApplyBanker=GetPrivateProfileInt(m_szRoomName,TEXT("RobotBanker"),1,m_szConfigFileName);
+	//机器人最大上庄个数
+	m_nRobotApplyBanker=GetPrivateProfileInt(m_szRoomName, TEXT("RobotApplyBanker"),5,m_szConfigFileName);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 //析构函数
 CAndroidUserItemSink::~CAndroidUserItemSink()
 {
@@ -96,9 +513,8 @@ void * CAndroidUserItemSink::QueryInterface(REFGUID Guid, DWORD dwQueryVer)
 	QUERYINTERFACE_IUNKNOWNEX(IAndroidUserItemSink,Guid,dwQueryVer);
 	return NULL;
 }
-
 //初始接口
-bool CAndroidUserItemSink::Initialization(IUnknownEx * pIUnknownEx)
+bool  CAndroidUserItemSink::InitUserItemSink(IUnknownEx * pIUnknownEx)
 {
 	//查询接口
 	m_pIAndroidUserItem=QUERY_OBJECT_PTR_INTERFACE(pIUnknownEx,IAndroidUserItem);
@@ -107,387 +523,18 @@ bool CAndroidUserItemSink::Initialization(IUnknownEx * pIUnknownEx)
 	return true;
 }
 
-//重置接口
-bool CAndroidUserItemSink::RepositionSink()
+//初始接口
+bool CAndroidUserItemSink::Initialization(IUnknownEx * pIUnknownEx)
 {
-	//游戏变量
-	m_lMaxChipBanker = 0;
-	m_lMaxChipUser = 0;
-	m_wCurrentBanker = 0;
-	m_nChipTime = 0;
-	m_nChipTimeCount = 0;
-	m_cbTimeLeave = 0;
-	ZeroMemory(m_lAreaChip, sizeof(m_lAreaChip));
-	ZeroMemory(m_nChipLimit, sizeof(m_nChipLimit));
-	ZeroMemory(m_lAreaChip1, sizeof(m_lAreaChip1));
-
-	//上庄变量
-	m_bMeApplyBanker=false;
-	m_nWaitBanker=0;
-	m_nBankerCount=0;
-
-	return true;
-}
-
-//时间消息
-bool CAndroidUserItemSink::OnEventTimer(UINT nTimerID)
-{
-	switch (nTimerID)
-	{
-	case IDI_BANK_OPERATE:
-		{
-			//变量定义
-			IServerUserItem *pUserItem = m_pIAndroidUserItem->GetMeUserItem();
-			LONGLONG lRobotScore = pUserItem->GetUserScore();			
-			//判断存取
-			if (lRobotScore >m_lRobotScoreRange[1] )
-			{
-				LONGLONG lSaveScore=0L;
-
-				lSaveScore = LONGLONG(lRobotScore*m_nRobotBankStorageMul/100);
-				if (lSaveScore > lRobotScore)  lSaveScore = lRobotScore;
-
-				if (lSaveScore > 0 && m_wCurrentBanker != m_pIAndroidUserItem->GetChairID())
-				{
-					m_pIAndroidUserItem->PerformSaveScore(lSaveScore);
-#ifdef ANDROID_BANKER_TEST
-					CString szinfo=TEXT("");
-					szinfo.Format(TEXT("%s,存款：%I64d,积分：%0.2f"),pUserItem->GetNickName(),lSaveScore,pUserItem->GetUserScore());
-					RecordMessage(szinfo,pUserItem->GetUserID());
-#endif
-				}
-			}
-			else if (lRobotScore < m_lRobotScoreRange[0])
-			{
-				LONGLONG lScore=rand()%m_lRobotBankGetScoreBanker+m_lRobotBankGetScore;
-				if (lScore > 0)
-				{
-					m_pIAndroidUserItem->PerformTakeScore(lScore);
-#ifdef ANDROID_BANKER_TEST
-					CString szinfo=TEXT("");
-					szinfo.Format(TEXT("%s,取款：%I64d,积分：%0.2f"),pUserItem->GetNickName(),lScore,pUserItem->GetUserScore());
-					RecordMessage(szinfo,pUserItem->GetUserID());
-#endif
-				}
-			}
-			
-			return false;
-		}
-	case IDI_CHECK_BANKER:		//检查上庄
-		{
-			m_pIAndroidUserItem->KillGameTimer(nTimerID);
-
-			if (m_wCurrentBanker == m_pIAndroidUserItem->GetChairID())
-				return false;
-			
-			int nMinCount = m_nRobotApplyBanker;
-			if ( m_nRobotApplyBanker > m_nRobotListMinCount)
-				nMinCount = (rand()%(m_nRobotApplyBanker - m_nRobotListMinCount)) + m_nRobotListMinCount;
-
-			
-	//		if (m_wCurrentBanker == INVALID_CHAIR)
-			{
-				//空庄
-				m_nWaitBanker++;
-
-				//MyDebug(TEXT("机器人上庄(End) %d [%d %d] [%d %d]"), m_pIAndroidUserItem->GetChairID(), m_nWaitBanker, 
-				//	m_nRobotWaitBanker, m_stlApplyBanker, m_nRobotApplyBanker);
-
-				//机器人上庄
-				if ( m_bRobotBanker
-				&& !m_bMeApplyBanker 
-				 && m_nWaitBanker >= m_nRobotWaitBanker
-				  && m_stlApplyBanker < m_nRobotApplyBanker
-				  && m_stlApplyBanker < nMinCount )
-				{
-					//合法判断
-					IServerUserItem *pIUserItemBanker = m_pIAndroidUserItem->GetMeUserItem();
-					if (pIUserItemBanker->GetUserScore() > m_lBankerCondition) 
-					{
-						//机器人上庄
-						m_nBankerCount = 0;
-						m_stlApplyBanker++;
-						m_pIAndroidUserItem->SetGameTimer(IDI_REQUEST_BANKER, (rand() % m_cbTimeLeave) + 1);
-					}
-				}
-			}
-		//	else if ( m_wCurrentBanker != INVALID_CHAIR )
-		//	{
-				//其他人坐庄
-		//		m_nWaitBanker = 0;
-		//	}
-
-			return false;
-		}
-	case IDI_REQUEST_BANKER:	//申请上庄
-		{
-			m_pIAndroidUserItem->KillGameTimer(nTimerID);
-
-			m_pIAndroidUserItem->SendSocketData(SUB_C_APPLY_BANKER);
-
-			return false;
-		}
-	case IDI_GIVEUP_BANKER:		//申请下庄
-		{
-			m_pIAndroidUserItem->KillGameTimer(nTimerID);
-
-			m_pIAndroidUserItem->SendSocketData(SUB_C_CANCEL_BANKER);
-
-			return false;
-		}
-	default:
-		{
-			if (nTimerID >= IDI_PLACE_JETTON && nTimerID <= IDI_PLACE_JETTON+MAX_CHIP_TIME)
-			{
-				srand(GetTickCount());
-
-				//变量定义
-				int nRandNum = 0, nChipArea = 0, nCurChip = 0, nACTotal = 0, nCurJetLmt[2] = {};
-				LONGLONG lMaxChipLmt = __min(m_lMaxChipBanker, m_lMaxChipUser);			//最大可下注值
-
-				CString strLog;
-// 				strLog.Format(L"ANDROIDJETTON m_lMaxChipBanker:%I64d,m_lMaxChipUser:%I64d",m_lMaxChipBanker,m_lMaxChipUser);
-// 				OutputDebugString(strLog);
-				WORD wMyID = m_pIAndroidUserItem->GetChairID();
-				for (int i = 0; i < AREA_COUNT; i++)
-					nACTotal += m_RobotInfo.nAreaChance[i];
-
-				//统计次数
-				m_nChipTimeCount++;
-
-				//检测退出
-				if (lMaxChipLmt < m_RobotInfo.nChip[m_nChipLimit[0]])
-				{
-					strLog.Format(L"ANDROIDJETTON 1 lMaxChipLmt:%I64d,nChip:%d, m_lMaxChipBanker:%I64d,m_lMaxChipUser:%I64d",lMaxChipLmt,m_RobotInfo.nChip[m_nChipLimit[0]],m_lMaxChipBanker,m_lMaxChipUser);
-					OutputDebugString(strLog);
-					return false;
-				}
-				for (int i = 0; i < AREA_COUNT; i++)
-				{
-					if (m_lAreaChip[i] >= m_RobotInfo.nChip[m_nChipLimit[0]])	break;
-					if (i == AREA_COUNT-1)
-					{
-						strLog.Format(L"ANDROIDJETTON 2 i:%d,area:%d",i,AREA_COUNT-1);
-						OutputDebugString(strLog);
-
-						return false;
-					}
-				}
-
-				//下注区域
-				ASSERT(nACTotal>0);
-				nChipArea = 0;
-				static int nStFluc = 1;				//随机辅助
-				//if (nACTotal <= 0)	return false;
-				//do {
-				//	nRandNum = (rand()+wMyID+nStFluc*3) % nACTotal;
-				//	for (int i = 0; i < AREA_COUNT; i++)
-				//	{
-				//		nRandNum -= m_RobotInfo.nAreaChance[i];
-				//		if (nRandNum < 0)
-				//		{
-				//			nChipArea = i;
-				//			break;
-				//		}
-				//	}
-				//}
-				//while (m_lAreaChip[nChipArea] < m_RobotInfo.nChip[m_nChipLimit[0]]);
-
-				LONGLONG lLeaveScore = 0;
-				lLeaveScore = (m_lMaxChipBanker-m_lAreaChip1[nChipArea]);
-
-				lMaxChipLmt = __min(lLeaveScore, m_lMaxChipUser);
-				if (lMaxChipLmt < m_RobotInfo.nChip[m_nChipLimit[0]])
-				{
-					strLog.Format(L"ANDROIDJETTON 3 lMaxChipLmt:%I64d,nChip:%d, m_lMaxChipBanker:%I64d,m_lMaxChipUser:%I64d",lMaxChipLmt,m_RobotInfo.nChip[m_nChipLimit[0]],m_lMaxChipBanker,m_lMaxChipUser);
-					OutputDebugString(strLog);
-					return false;
-				}
-				nStFluc = nStFluc%3 + 1;
-
-				//下注大小
-				if (m_nChipLimit[0] == m_nChipLimit[1])
-					nCurChip = m_nChipLimit[0];
-				else
-				{
-					//设置变量
-					lMaxChipLmt = __min(lMaxChipLmt, m_lAreaChip[nChipArea]);
-					nCurJetLmt[0] = m_nChipLimit[0];
-					nCurJetLmt[1] = m_nChipLimit[0];
-
-					//计算当前最大筹码
-					for (int i = m_nChipLimit[1]; i > m_nChipLimit[0]; i--)
-					{
-						if (lMaxChipLmt > m_RobotInfo.nChip[i]) 
-						{
-							nCurJetLmt[1] = i;
-							break;
-						}
-					}
-
-					//随机下注
-					nRandNum = (rand()+wMyID) % (nCurJetLmt[1]-nCurJetLmt[0]+1);
-					nCurChip = nCurJetLmt[0] + nRandNum;
-
-					//多下控制 (当庄家金币较少时会尽量保证下足次数)
-					if (m_nChipTimeCount < m_nChipTime)
-					{
-						LONGLONG lLeftBet = LONGLONG( (lMaxChipLmt-m_RobotInfo.nChip[nCurChip])/(m_nChipTime-m_nChipTimeCount) );
-
-						//不够次数 (即全用最小限制筹码下注也少了)
-						if (lLeftBet < m_RobotInfo.nChip[m_nChipLimit[0]] && nCurChip > m_nChipLimit[0])
-							nCurChip--;
-					}
-				}
-
-				/*ASSERT( MyDebug(TEXT("机器人下注 %d 下注次数 [%d/%d] 下注 [%d %d] 范围 [%d %d] 限制 [%I64d %I64d %I64d]"), wMyID, nTimerID-IDI_PLACE_JETTON, m_nChipTime, 
-					nChipArea, m_RobotInfo.nChip[nCurChip], m_nChipLimit[0], m_nChipLimit[1], m_lMaxChipBanker, m_lMaxChipUser, lMaxChipLmt) );*/
-
-				//变量定义
-				CMD_C_PlaceJetton PlaceBet = {};
-
-				//构造变量
-				PlaceBet.cbJettonArea = nChipArea;		//区域宏从1开始
-				PlaceBet.lJettonScore = m_RobotInfo.nChip[nCurChip];
-
-				//发送消息
-				m_pIAndroidUserItem->SendSocketData(SUB_C_PLACE_JETTON, &PlaceBet, sizeof(PlaceBet));
-			}
-
-			m_pIAndroidUserItem->KillGameTimer(nTimerID);
-			return false;
-		}
-	}
-	return false;
-}
-
-//游戏消息
-bool CAndroidUserItemSink::OnEventGameMessage(WORD wSubCmdID, void * pBuffer, WORD wDataSize)
-{
-	switch (wSubCmdID)
-	{
-	case SUB_S_GAME_FREE:			//游戏空闲 
-		{
-			return OnSubGameFree(pBuffer, wDataSize);
-		}
-	case SUB_S_GAME_START:			//游戏开始
-		{
-			return OnSubGameStart(pBuffer, wDataSize);
-		}
-	case SUB_S_PLACE_JETTON:		//用户加注
-		{
-			return OnSubPlaceBet(pBuffer, wDataSize);
-		}
-	case SUB_S_APPLY_BANKER:		//申请做庄 
-		{
-			return OnSubUserApplyBanker(pBuffer,wDataSize);
-		}
-	case SUB_S_CANCEL_BANKER:		//取消做庄 
-		{
-			return OnSubUserCancelBanker(pBuffer,wDataSize);
-		}
-	case SUB_S_CHANGE_BANKER:		//切换庄家 
-		{
-			return OnSubChangeBanker(pBuffer,wDataSize);
-		}
-	case SUB_S_GAME_END:			//游戏结束 
-		{
-			return OnSubGameEnd(pBuffer, wDataSize);
-		}
-	case SUB_S_SEND_RECORD:			//游戏记录 (忽略)
-		{
-			return true;
-		}
-	case SUB_S_PLACE_JETTON_FAIL:	//下注失败 (忽略)
-		{
-			return true;
-		}
-	}
-
-	//错误断言
-//	ASSERT(FALSE);
-
+	//查询接口
+	m_pIAndroidUserItem=QUERY_OBJECT_PTR_INTERFACE(pIUnknownEx,IAndroidUserItem);
+	if (m_pIAndroidUserItem==NULL) return false;
 	return true;
 }
 
 //游戏消息
 bool CAndroidUserItemSink::OnEventFrameMessage(WORD wSubCmdID, void * pData, WORD wDataSize)
 {
-	return true;
-}
-
-//场景消息
-bool CAndroidUserItemSink::OnEventSceneMessage(BYTE cbGameStatus, bool bLookonOther, void * pData, WORD wDataSize)
-{
-	switch (cbGameStatus)
-	{
-	case GAME_STATUS_FREE:			//空闲状态
-		{
-			//效验数据
-			ASSERT(wDataSize==sizeof(CMD_S_StatusFree));
-			if (wDataSize!=sizeof(CMD_S_StatusFree)) return false;
-
-			//消息处理
-			CMD_S_StatusFree * pStatusFree=(CMD_S_StatusFree *)pData;
-
-			m_lUserLimitScore = pStatusFree->lUserMaxScore;
-			memcpy(m_lAreaLimitScore,pStatusFree->lAreaLimitScore,sizeof(m_lAreaLimitScore));
-			m_lBankerCondition = pStatusFree->lApplyBankerCondition;
-
-			memcpy(m_szRoomName, pStatusFree->szRoomName, sizeof(m_szRoomName));
-
-			ReadConfigInformation(m_RobotInfo.szCfgFileName, m_szRoomName, true);
-
-			//MyDebug(TEXT("机器人上庄(Free) %d [%d %d] [%d %d]"), m_pIAndroidUserItem->GetChairID(), m_nWaitBanker, 
-			//	m_nRobotWaitBanker, m_stlApplyBanker, m_nRobotApplyBanker);
-
-			//上庄处理
-			if (pStatusFree->wBankerUser == INVALID_CHAIR)
-			{
-				if (m_bRobotBanker && m_nRobotWaitBanker == 0  && m_stlApplyBanker < m_nRobotApplyBanker)
-				{
-					//合法判断
-					IServerUserItem *pIUserItemBanker = m_pIAndroidUserItem->GetMeUserItem();
-					if (pIUserItemBanker->GetUserScore() > m_lBankerCondition) 
-					{
-						//机器人上庄
-						m_nBankerCount = 0;
-						m_stlApplyBanker++;
-						
-						BYTE cbTime = (pStatusFree->cbTimeLeave>0?(rand()%pStatusFree->cbTimeLeave+1):2);
-						if (cbTime == 0) cbTime = 2;
-
-						m_pIAndroidUserItem->SetGameTimer(IDI_REQUEST_BANKER, cbTime);
-					}
-				}
-			}
-
-			return true;
-		}
-	case GAME_STATUS_PLAY:		//游戏状态
-	case GS_GAME_END:		//结束状态
-		{
-			//效验数据
-			ASSERT(wDataSize==sizeof(CMD_S_StatusPlay));
-			if (wDataSize!=sizeof(CMD_S_StatusPlay)) return false;
-
-			//消息处理
-			CMD_S_StatusPlay * pStatusPlay=(CMD_S_StatusPlay *)pData;
-
-			//庄家信息
-			m_wCurrentBanker = pStatusPlay->wBankerUser;
-			m_lUserLimitScore = pStatusPlay->lUserMaxScore;
-			memcpy(m_lAreaLimitScore,pStatusPlay->lAreaScoreLimit,sizeof(m_lAreaLimitScore));
-			m_lBankerCondition = pStatusPlay->lApplyBankerCondition;
-
-			memcpy(m_szRoomName, pStatusPlay->szRoomName, sizeof(m_szRoomName));
-
-			ReadConfigInformation(m_RobotInfo.szCfgFileName, m_szRoomName, true);
-
-			return true;
-		}
-	}
-
 	return true;
 }
 
@@ -515,439 +562,15 @@ void CAndroidUserItemSink::OnEventUserStatus(IAndroidUserItem * pIAndroidUserIte
 	return;
 }
 
-
-
-//游戏空闲
-bool CAndroidUserItemSink::OnSubGameFree(const void * pBuffer, WORD wDataSize)
+//用户段位
+void CAndroidUserItemSink::OnEventUserSegment(IAndroidUserItem * pIAndroidUserItem, bool bLookonUser)
 {
-	//读取配置
-	if (m_bRefreshCfg)
-		ReadConfigInformation(m_RobotInfo.szCfgFileName, m_szRoomName, false);
-
-	//消息处理
-	CMD_S_GameFree* pGameFree=(CMD_S_GameFree *)pBuffer;
-
-	m_cbTimeLeave = pGameFree->cbTimeLeave;
-
-	bool bMeGiveUp = false;
-	if (m_wCurrentBanker == m_pIAndroidUserItem->GetChairID())
-	{
-		m_nBankerCount++;
-		if ( m_nBankerCount >= m_nRobotBankerCount )
-		{
-			//机器人走庄
-			m_nBankerCount = 0;
-			m_pIAndroidUserItem->SetGameTimer(IDI_GIVEUP_BANKER, rand()%2 + 1);
-
-			bMeGiveUp = true;
-		}
-	}
-
-	//检查上庄
-	if (m_wCurrentBanker != m_pIAndroidUserItem->GetChairID() || bMeGiveUp)
-	{
-		m_cbTimeLeave = pGameFree->cbTimeLeave - 3;
-		m_pIAndroidUserItem->SetGameTimer(IDI_CHECK_BANKER, 3);
-	}
-
-		//银行操作
-	if (pGameFree->cbTimeLeave > 2)
-		m_pIAndroidUserItem->SetGameTimer(IDI_BANK_OPERATE, 2);
-	return true;
-}
-
-//游戏开始
-bool CAndroidUserItemSink::OnSubGameStart(const void * pBuffer, WORD wDataSize)
-{	
-	//效验数据
-	ASSERT(wDataSize==sizeof(CMD_S_GameStart));
-	if (wDataSize!=sizeof(CMD_S_GameStart)) return false;
-
-	//消息处理
-	CMD_S_GameStart * pGameStart=(CMD_S_GameStart *)pBuffer;
-
-	srand(GetTickCount());
-
-	//自己当庄或无下注机器人
-	if (pGameStart->wBankerUser == m_pIAndroidUserItem->GetChairID()/* || pGameStart->nChipRobotCount <= 0*/)
-		return true;
-
-	//设置变量
-	m_lMaxChipBanker = pGameStart->lBankerScore/m_RobotInfo.nMaxTime;
-	m_lMaxChipUser = pGameStart->lUserMaxScore/m_RobotInfo.nMaxTime;
-	m_wCurrentBanker = pGameStart->wBankerUser;
-	m_nChipTimeCount = 0;
-	ZeroMemory(m_nChipLimit, sizeof(m_nChipLimit));
-	ZeroMemory(m_lAreaChip1, sizeof(m_lAreaChip1));
-	for (int i = 0; i < AREA_COUNT; i++)
-		m_lAreaChip[i] = m_lAreaLimitScore[i];
-
-	//系统当庄
-	if (pGameStart->wBankerUser == INVALID_CHAIR)
-	{
-		m_stlApplyBanker = 0;
-		m_lMaxChipBanker = 2147483647/m_RobotInfo.nMaxTime;
-	}
-	else
-		m_lMaxChipUser = __min( m_lMaxChipUser, m_lMaxChipBanker );
-
-	CString strLog;
-	strLog.Format(L"ANDROIDJETTON m_lMaxChipBanker:%I64d,m_lMaxChipUser:%I64d,lBankerScore:%I64d,lUserMaxScore:%I64d,nMaxTime:%d",m_lMaxChipBanker,m_lMaxChipUser,pGameStart->lBankerScore,pGameStart->lUserMaxScore,m_RobotInfo.nMaxTime);
-	OutputDebugString(strLog);
-
-
-	//计算下注次数
-	int nElapse = 0;												
-	WORD wMyID = m_pIAndroidUserItem->GetChairID();
-
-	if (m_nRobotBetTimeLimit[0] == m_nRobotBetTimeLimit[1])
-		m_nChipTime = m_nRobotBetTimeLimit[0];
-	else
-		m_nChipTime = (rand()+wMyID)%(m_nRobotBetTimeLimit[1]-m_nRobotBetTimeLimit[0]+1) + m_nRobotBetTimeLimit[0];
-	ASSERT(m_nChipTime>=0);		
-	if (m_nChipTime <= 0)	return false;								//的确,2个都带等于
-	if (m_nChipTime > MAX_CHIP_TIME)	m_nChipTime = MAX_CHIP_TIME;	//限定MAX_CHIP次下注
-
-	//计算范围
-	if (!CalcBetRange(__min(m_lMaxChipBanker, m_lMaxChipUser), m_lRobotBetLimit, m_nChipTime, m_nChipLimit))
-		return true;
-
-	//设置时间
-	int nTimeGrid = int(pGameStart->cbTimeLeave-2)*800/m_nChipTime;		//时间格,前2秒不下注,所以-2,800表示机器人下注时间范围千分比
-	for (int i = 0; i < m_nChipTime; i++)
-	{
-		int nRandRage = int( nTimeGrid * i / (1500*sqrt((double)m_nChipTime)) ) + 1;		//波动范围
-		nElapse = 2 + (nTimeGrid*i)/1000 + ( (rand()+wMyID)%(nRandRage*2) - (nRandRage-1) );
-		ASSERT(nElapse>=2&&nElapse<=pGameStart->cbTimeLeave);
-		if (nElapse < 2 || nElapse > pGameStart->cbTimeLeave)	continue;
-		
-		m_pIAndroidUserItem->SetGameTimer(IDI_PLACE_JETTON+i+1, nElapse);
-	}
-
-	//ASSERT( MyDebug(TEXT("机器人 %d 下注次数 %d 范围 [%d %d] 总人数 %d 限制 [%I64d %I64d] 上庄 [%d %d]"), wMyID, m_nChipTime, m_nChipLimit[0], m_nChipLimit[1], 
-	//	pGameStart->nChipRobotCount, m_lMaxChipBanker, m_lMaxChipUser, m_stlApplyBanker, m_nRobotApplyBanker) );
-
-	return true;
-}
-
-//用户加注
-bool CAndroidUserItemSink::OnSubPlaceBet(const void * pBuffer, WORD wDataSize)
-{
-	//效验数据
-	ASSERT(wDataSize==sizeof(CMD_S_PlaceJetton));
-	if (wDataSize!=sizeof(CMD_S_PlaceJetton)) return false;
-
-	//消息处理
-	CMD_S_PlaceJetton * pPlaceBet=(CMD_S_PlaceJetton *)pBuffer;
-
-	//设置变量
-//	m_lMaxChipBanker -= pPlaceBet->lBetScore;
-
-//	CString strLog;
-
-	m_lAreaChip[pPlaceBet->cbJettonArea-1] -= pPlaceBet->lJettonScore;
-	m_lAreaChip1[pPlaceBet->cbJettonArea-1] += pPlaceBet->lJettonScore;
-	if (pPlaceBet->wChairID == m_pIAndroidUserItem->GetChairID())
-		m_lMaxChipUser -= pPlaceBet->lJettonScore;
-
-	return true;
-}
-
-//下注失败
-bool CAndroidUserItemSink::OnSubPlaceBetFail(const void * pBuffer, WORD wDataSize)
-{
-	return true;
-}
-
-//游戏结束
-bool CAndroidUserItemSink::OnSubGameEnd(const void * pBuffer, WORD wDataSize)
-{
-	//效验数据
-	ASSERT(wDataSize==sizeof(CMD_S_GameEnd));
-	if (wDataSize!=sizeof(CMD_S_GameEnd)) return false;
-
-	//消息处理
-	CMD_S_GameEnd * pGameEnd=(CMD_S_GameEnd *)pBuffer;
-
-	return true;
-}
-
-//申请做庄
-bool CAndroidUserItemSink::OnSubUserApplyBanker(const void * pBuffer, WORD wDataSize)
-{
-	//效验数据
-	ASSERT(wDataSize==sizeof(CMD_S_ApplyBanker));
-	if (wDataSize!=sizeof(CMD_S_ApplyBanker)) return false;
-
-	//消息处理
-	CMD_S_ApplyBanker * pApplyBanker=(CMD_S_ApplyBanker *)pBuffer;
-
-	//自己判断
-	if (m_pIAndroidUserItem->GetChairID()==pApplyBanker->wApplyUser) 
-		m_bMeApplyBanker=true;
-
-	return true;
-}
-
-//取消做庄
-bool CAndroidUserItemSink::OnSubUserCancelBanker(const void * pBuffer, WORD wDataSize)
-{
-	//效验数据
-	ASSERT(wDataSize==sizeof(CMD_S_CancelBanker));
-	if (wDataSize!=sizeof(CMD_S_CancelBanker)) return false;
-
-	//消息处理
-	CMD_S_CancelBanker * pCancelBanker=(CMD_S_CancelBanker *)pBuffer;
-
-	//自己判断
-	if ( m_pIAndroidUserItem->GetMeUserItem()->GetChairID() == pCancelBanker->wChairID ) 
-		m_bMeApplyBanker=false;
-
-	return true;
-}
-
-//切换庄家
-bool CAndroidUserItemSink::OnSubChangeBanker(const void * pBuffer, WORD wDataSize)
-{
-	//效验数据
-	ASSERT(wDataSize==sizeof(CMD_S_ChangeBanker));
-	if (wDataSize!=sizeof(CMD_S_ChangeBanker)) return false;
-
-	//消息处理
-	CMD_S_ChangeBanker * pChangeBanker = (CMD_S_ChangeBanker *)pBuffer;
-
-	if ( m_wCurrentBanker == m_pIAndroidUserItem->GetChairID() && m_wCurrentBanker != pChangeBanker->wBankerUser )
-	{
-		m_stlApplyBanker--;
-		m_bMeApplyBanker = false;
-	}
-	m_wCurrentBanker = pChangeBanker->wBankerUser;
-	m_nWaitBanker = 0;
-
-	return true;
-}
-
-//读取配置
-void CAndroidUserItemSink::ReadConfigInformation(TCHAR szFileName[], TCHAR szRoomName[], bool bReadFresh)
-{
-	//设置文件名
-	TCHAR szPath[MAX_PATH] = TEXT("");
-	TCHAR szConfigFileName[MAX_PATH] = TEXT("");
-	TCHAR OutBuf[255] = TEXT("");
-	GetCurrentDirectory(sizeof(szPath), szPath);
-	_sntprintf(szConfigFileName, CountArray(szConfigFileName), TEXT("%s\\%s"), szPath, szFileName);
-
-	//每盘刷新
-	if (bReadFresh)
-	{
-		//每盘刷新
-		BYTE cbRefreshCfg = GetPrivateProfileInt(szRoomName, TEXT("Refresh"), 0, szConfigFileName);
-		m_bRefreshCfg = cbRefreshCfg?true:false;
-	}
-
-	//筹码限制
-	ZeroMemory(OutBuf, sizeof(OutBuf));
-	GetPrivateProfileString(szRoomName, TEXT("RobotMaxBet"), TEXT("1000"), OutBuf, 255, szConfigFileName);
-	_sntscanf(OutBuf, lstrlen(OutBuf), TEXT("%I64d"), &m_lRobotBetLimit[1]);
-
-	ZeroMemory(OutBuf, sizeof(OutBuf));
-	GetPrivateProfileString(szRoomName, TEXT("RobotMinBet"), TEXT("1"), OutBuf, 255, szConfigFileName);
-	_sntscanf(OutBuf, lstrlen(OutBuf), TEXT("%I64d"), &m_lRobotBetLimit[0]);
-
-	if (m_lRobotBetLimit[1] > 1000)					m_lRobotBetLimit[1] = 1000;
-	if (m_lRobotBetLimit[0] < 1)						m_lRobotBetLimit[0] = 1;
-	if (m_lRobotBetLimit[1] < m_lRobotBetLimit[0])	m_lRobotBetLimit[1] = m_lRobotBetLimit[0];
-
-	//次数限制
-	m_nRobotBetTimeLimit[0] = GetPrivateProfileInt(szRoomName, TEXT("RobotMinBetTime"), 4, szConfigFileName);;
-	m_nRobotBetTimeLimit[1] = GetPrivateProfileInt(szRoomName, TEXT("RobotMaxBetTime"), 8, szConfigFileName);;
-
-	if (m_nRobotBetTimeLimit[0] < 0)							m_nRobotBetTimeLimit[0] = 0;
-	if (m_nRobotBetTimeLimit[1] < m_nRobotBetTimeLimit[0])		m_nRobotBetTimeLimit[1] = m_nRobotBetTimeLimit[0];
-
-	//是否坐庄
-	m_bRobotBanker = (GetPrivateProfileInt(szRoomName, TEXT("RobotBanker"), 0, szConfigFileName) == 1);
-
-	//坐庄次数
-	m_nRobotBankerCount = GetPrivateProfileInt(szRoomName, TEXT("RobotBankerCount"), 3, szConfigFileName);
-
-	//空盘重申
-	m_nRobotWaitBanker = GetPrivateProfileInt(szRoomName, TEXT("RobotWaitBanker"), 3, szConfigFileName);
-
-	//最多个数
-	m_nRobotApplyBanker = GetPrivateProfileInt(szRoomName, TEXT("RobotApplyBanker"), 3, szConfigFileName);
-
-	//最少个数
-	m_nRobotListMinCount = GetPrivateProfileInt(szRoomName, TEXT("RobotListMinCount"), 2, szConfigFileName);
-	//降低限制
-	m_bReduceBetLimit = (GetPrivateProfileInt(szRoomName, TEXT("RobotReduceLimit"), 0, szConfigFileName)!=0);
-
-	//分数限制
-	m_lRobotScoreRange[0] = GetPrivateProfileInt(szRoomName, _T("RobotScoreMin"), 100, szConfigFileName);
-	m_lRobotScoreRange[1] = GetPrivateProfileInt(szRoomName, _T("RobotScoreMax"), 500, szConfigFileName);
-
-	if (m_lRobotScoreRange[1] < m_lRobotScoreRange[0])	m_lRobotScoreRange[1] = m_lRobotScoreRange[0];
-
-	//提款数额
-	m_lRobotBankGetScore = GetPrivateProfileInt(szRoomName, _T("RobotBankGet"), 300, szConfigFileName);
-
-	//提款数额 (庄家)
-	m_lRobotBankGetScoreBanker = GetPrivateProfileInt(szRoomName, _T("RobotBankGetBanker"), 500, szConfigFileName);
-
-	//存款倍数
-	m_nRobotBankStorageMul = GetPrivateProfileInt(szRoomName, _T("RobotBankStoMul"), 20, szConfigFileName);
-
-	//MyDebug(TEXT("机器人 读取配置 [%I64d %I64d %d %d] %d [%d %d %d] 下注 %d 下降 %d"), m_lRobotBetLimit[0], m_lRobotBetLimit[1],
-	//	m_nRobotBetTimeLimit, m_nRobotBetTimeLimit, m_bRobotBanker, m_nRobotBankerCount, m_nRobotWaitBanker, m_nRobotApplyBanker, m_bReduceBetLimit);
-
-	//区域概率
-	m_RobotInfo.nAreaChance[0] = GetPrivateProfileInt(szRoomName, TEXT("AreaChance1"), 3, szConfigFileName);
-	m_RobotInfo.nAreaChance[1] = GetPrivateProfileInt(szRoomName, TEXT("AreaChance2"), 0, szConfigFileName);
-	m_RobotInfo.nAreaChance[2] = GetPrivateProfileInt(szRoomName, TEXT("AreaChance3"), 3, szConfigFileName);
-	m_RobotInfo.nAreaChance[3] = GetPrivateProfileInt(szRoomName, TEXT("AreaChance4"), 1, szConfigFileName);
-	m_RobotInfo.nAreaChance[4] = GetPrivateProfileInt(szRoomName, TEXT("AreaChance5"), 1, szConfigFileName);
-	m_RobotInfo.nAreaChance[5] = GetPrivateProfileInt(szRoomName, TEXT("AreaChance6"), 0, szConfigFileName);
-	m_RobotInfo.nAreaChance[6] = GetPrivateProfileInt(szRoomName, TEXT("AreaChance7"), 0, szConfigFileName);
-	m_RobotInfo.nAreaChance[7] = GetPrivateProfileInt(szRoomName, TEXT("AreaChance8"), 0, szConfigFileName);
-}
-
-//计算范围	(返回值表示是否可以通过下降下限达到下注)
-bool CAndroidUserItemSink::CalcBetRange(LONGLONG lMaxScore, LONGLONG lChipLmt[], int & nChipTime, int lJetLmt[])
-{
-	//定义变量
-	bool bHaveSetMinChip = false;
-
-	//不够一注
-	if (lMaxScore < m_RobotInfo.nChip[0])	return false;
-
-	//配置范围
-	for (int i = 0; i < CountArray(m_RobotInfo.nChip); i++)
-	{
-		if (!bHaveSetMinChip && m_RobotInfo.nChip[i] >= lChipLmt[0])
-		{ 
-			lJetLmt[0] = i;
-			bHaveSetMinChip = true;
-		}
-		if (m_RobotInfo.nChip[i] <= lChipLmt[1])
-			lJetLmt[1] = i;
-	}
-	if (lJetLmt[0] > lJetLmt[1])	lJetLmt[0] = lJetLmt[1];
-
-	//是否降低下限
-	if (m_bReduceBetLimit)
-	{
-		if (nChipTime * m_RobotInfo.nChip[lJetLmt[0]] > lMaxScore)
-		{
-			//是否降低下注次数
-			if (nChipTime * m_RobotInfo.nChip[0] > lMaxScore)
-			{
-				nChipTime = int(lMaxScore/m_RobotInfo.nChip[0]);
-				lJetLmt[0] = 0;
-				lJetLmt[1] = 0;
-			}
-			else
-			{
-				//降低到合适下限
-				while (nChipTime * m_RobotInfo.nChip[lJetLmt[0]] > lMaxScore)
-				{
-					lJetLmt[0]--;
-					ASSERT(lJetLmt[0]>=0);
-				}
-			}
-		}
-	}
-
-	return true;
-}
-
-//输出信息
-void RecordMessage(CString szinfo,DWORD id)
-{
-	if(!szinfo.IsEmpty())
-		szinfo.Replace(TEXT("#"),TEXT("\r\n"));
-	
-	COleDateTime timeNow, dateNow;
-	timeNow = COleDateTime::GetCurrentTime();     // 获取当前日期时间
-	dateNow = COleDateTime::GetCurrentTime();     // 同样获取当前日期时间
-	CString sTime = timeNow.Format(VAR_TIMEVALUEONLY);     // 获取当前时间
-	CString sDate = dateNow.Format(VAR_DATEVALUEONLY);     // 获取当前日期
-
-	TCHAR tchBuffer[MAX_PATH ]; 
-	LPTSTR lpszCurDir;
-	lpszCurDir = tchBuffer; 
-	GetCurrentDirectory(MAX_PATH , lpszCurDir);//得到当前程序路径
-
-	CString Filep = lpszCurDir;
-	Filep.AppendFormat(TEXT("\\%s"),GAME_NAME);
-
-	//创建文件夹	游戏分类
-	if   (!PathIsDirectory(Filep)   )   
-	{
-		 if   (!CreateDirectory(Filep,   NULL   )   )   
-		 {
-			return;
-		 }
-	}
-	Filep.AppendFormat(TEXT("\\USERID_%ld"),id);
-
-	//创建文件夹	桌子分类
-	if   (!PathIsDirectory(Filep)   )   
-	{
-		 if   (!CreateDirectory(Filep,   NULL   )   )   
-		 {
-			return;
-		 }
-	}
-	Filep.AppendFormat(TEXT("\\%s"),sDate);
-	
-	//创建文件夹	日期分类
-	if   (!PathIsDirectory(Filep)   )   
-	{
-		 if   (!CreateDirectory(Filep,   NULL   )   )   
-		 {
-			return;
-		 }
-	}
-
-	
-	CString FileName=TEXT("");     // 文件名 = 日期_时间.txt
-	FileName.AppendFormat(TEXT("%s\\%s.txt"),Filep,sTime);
-
-	TCHAR pFilePath[MAX_PATH];
-	LPCTSTR filepath = FileName;
-	int FilePathLength = FileName.GetLength();     // 获得文件名长度，CFile不能用CString，只能用string做参数，要做转换
-	int i=0;
-	for( i=0; i < FilePathLength ; i++)
-	{
-		pFilePath[i] = FileName.GetAt(i);     // CString -> string
-		if( (pFilePath[i] == TEXT(':')) && (i != 1))     // 剔除':'等不能作为文件名的符号,并保留根目录后的冒号
-			pFilePath[i] = '-';
-	}
-	pFilePath[i] = '\0';     // 文件名结束
-
-	CFile File;
-	if ((File.Open(pFilePath,CFile::modeWrite)==FALSE)&&
-		(File.Open(pFilePath,CFile::modeWrite|CFile::modeCreate)==FALSE))
-	{
-		ASSERT(FALSE);
-		return;
-	}
-
-	//梦成网络
-	ULONGLONG dwFileLen = File.GetLength();
-	if (0 == dwFileLen) // 文件为空时写入UNICODE字节序标记
-	{
-		const unsigned char LeadBytes[]  = {0xff, 0xfe};
-		File.Write(LeadBytes, sizeof(LeadBytes));
-	}
-
-	File.SeekToEnd();
-	File.Write(szinfo.GetBuffer(),szinfo.GetLength()*2);
-
-	szinfo.ReleaseBuffer();
-	File.Flush();
-	File.Close();
-
 	return;
 }
-//////////////////////////////////////////////////////////////////////////
+
+////所有玩家都开始了
+//void CAndroidUserItemSink::OnEventAllUserStart(IAndroidUserItem * pIAndroidUserItem, bool bLookonUser)
+//{
+//	return ;
+//}
+////////////////////////////////////////////////////////////////////////////////

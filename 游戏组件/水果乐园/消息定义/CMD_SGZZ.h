@@ -49,6 +49,39 @@
 #define	PATH_STEP_NUMBER		24									//转轴格子数
 #define JETTON_AREA_COUNT		8									//下注区域数量
 
+//中奖区域
+#define	AREA_0 0//桔子
+#define	AREA_1 1//铃铛
+#define	AREA_2 2//BAR
+#define	AREA_3 3//BAR
+#define	AREA_4 4//苹果
+#define	AREA_5 5//2倍区，苹果
+#define	AREA_6 6//木瓜
+#define	AREA_7 7//西瓜
+#define	AREA_8 8//2倍区，西瓜
+#define	AREA_9 9//好运
+#define	AREA_10 10//苹果
+#define	AREA_11 11//2倍区，桔子
+#define	AREA_12 12//桔子
+#define	AREA_13 13//铃铛
+#define	AREA_14 14//2倍区，双七
+#define	AREA_15 15//双七
+#define	AREA_16 16//苹果
+#define	AREA_17 17//2倍区，木瓜
+#define	AREA_18 18//木瓜
+#define	AREA_19 19//星星
+#define	AREA_20 20//2倍区，星星
+#define	AREA_21 21//好运
+#define	AREA_22 22//苹果
+#define	AREA_23 23//2倍区，铃铛
+
+#define	GOOD_LUCK_TYPE_0 0//吃分
+#define	GOOD_LUCK_TYPE_1 1//大三元
+#define	GOOD_LUCK_TYPE_2 2//大四喜
+#define	GOOD_LUCK_TYPE_3 3//小三元
+#define	GOOD_LUCK_TYPE_4 4//跑火车
+#define	GOOD_LUCK_TYPE_5 5//随机打枪
+
 //记录信息
 struct tagServerGameRecord
 {
