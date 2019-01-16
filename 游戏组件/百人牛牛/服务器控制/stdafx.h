@@ -44,6 +44,32 @@
 #include "..\消息定义\CMD_OxBattle.h"
 #include "..\..\..\服务器组件\游戏服务\GameServiceHead.h"
 
+//////////////////////////////////////////////////////////////////////////////////
+
+#if _MSC_VER == 1400
+
+//////////////////////////////////////////////////////////////////////////////////
+
+#ifndef _DEBUG
+#ifndef _UNICODE
+	#pragma comment (lib,"../../../VC8链接库/Ansi/KernelEngine.lib")
+#else
+	#pragma comment (lib,"../../../VC8链接库/Unicode/KernelEngine.lib")
+#endif
+#else
+#ifndef _UNICODE
+	#pragma comment (lib,"../../../VC8链接库/Ansi/KernelEngineD.lib")
+#else
+	#pragma comment (lib,"../../../VC8链接库/Unicode/KernelEngineD.lib")
+#endif
+#endif
+
+//////////////////////////////////////////////////////////////////////////////////
+
+#else
+
+//////////////////////////////////////////////////////////////////////////////////
+
 #ifndef _DEBUG
 #ifndef _UNICODE
 #pragma comment (lib,"../../../链接库/Ansi/KernelEngine.lib")
@@ -57,4 +83,6 @@
 #pragma comment (lib,"../../../链接库/Unicode/KernelEngineD.lib")
 #endif
 #endif
-//
+//////////////////////////////////////////////////////////////////////////////////
+
+#endif // SDK_CONDITION

@@ -36,28 +36,26 @@
 
 //编译环境
 #include "..\..\SDKCondition.h"
-
-//////////////////////////////////////////////////////////////////////////////////
-
-#ifndef SDK_CONDITION
-
-//////////////////////////////////////////////////////////////////////////////////
-//开发环境
-
-//平台环境
+//组件头文件
+#include "..\消息定义\CMD_OxBattle.h"
 #include "..\..\..\服务器组件\游戏服务\GameServiceHead.h"
+//////////////////////////////////////////////////////////////////////////////////
+
+#if _MSC_VER == 1400
+
+//////////////////////////////////////////////////////////////////////////////////
 
 #ifndef _DEBUG
 #ifndef _UNICODE
-	#pragma comment (lib,"../../../链接库/Ansi/KernelEngine.lib")
+	#pragma comment (lib,"../../../VC8链接库/Ansi/KernelEngine.lib")
 #else
-	#pragma comment (lib,"../../../链接库/Unicode/KernelEngine.lib")
+	#pragma comment (lib,"../../../VC8链接库/Unicode/KernelEngine.lib")
 #endif
 #else
 #ifndef _UNICODE
-	#pragma comment (lib,"../../../链接库/Ansi/KernelEngineD.lib")
+	#pragma comment (lib,"../../../VC8链接库/Ansi/KernelEngineD.lib")
 #else
-	#pragma comment (lib,"../../../链接库/Unicode/KernelEngineD.lib")
+	#pragma comment (lib,"../../../VC8链接库/Unicode/KernelEngineD.lib")
 #endif
 #endif
 
@@ -66,33 +64,25 @@
 #else
 
 //////////////////////////////////////////////////////////////////////////////////
-//系统环境
-
-//平台环境
-#include "..\..\..\..\系统模块\服务器组件\游戏服务\GameServiceHead.h"
 
 #ifndef _DEBUG
 #ifndef _UNICODE
-	#pragma comment (lib,"../../../../系统模块/链接库/Ansi/KernelEngine.lib")
+#pragma comment (lib,"../../../链接库/Ansi/KernelEngine.lib")
 #else
-	#pragma comment (lib,"../../../../系统模块/链接库/Unicode/KernelEngine.lib")
+#pragma comment (lib,"../../../链接库/Unicode/KernelEngine.lib")
 #endif
 #else
 #ifndef _UNICODE
-	#pragma comment (lib,"../../../../系统模块/链接库/Ansi/KernelEngineD.lib")
+#pragma comment (lib,"../../../链接库/Ansi/KernelEngineD.lib")
 #else
-	#pragma comment (lib,"../../../../系统模块/链接库/Unicode/KernelEngineD.lib")
+#pragma comment (lib,"../../../链接库/Unicode/KernelEngineD.lib")
 #endif
 #endif
-
 //////////////////////////////////////////////////////////////////////////////////
 
 #endif // SDK_CONDITION
 
-
-//组件头文件
-#include "..\消息定义\CMD_OxBattle.h"
-#define USE_RS_PRINT
+//#define USE_RS_PRINT
 #include<cstdlib>
 #include<ctime>
 #include<fstream>

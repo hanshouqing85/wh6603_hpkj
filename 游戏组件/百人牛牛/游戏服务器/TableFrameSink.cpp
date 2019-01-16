@@ -305,7 +305,11 @@ bool  CTableFrameSink::OnEventGameConclude(WORD wChairID, IServerUserItem * pISe
 					DispatchTableCard();
 					lBankerWinScore=CalculateScore();
 					CTime tm=CTime::GetCurrentTime();
-					bool bValid =true;// m_list.HpTest(m_nTotalWin, m_nTotalPay, tm.GetMinute(), 10);
+#if _MSC_VER == 1400
+                    bool bValid =m_list.HpTest(m_nTotalWin, m_nTotalPay, tm.GetMinute(), 10);
+#else
+					bool bValid =true;
+#endif
 					if(bValid)
 						break;
 				}	
@@ -313,9 +317,9 @@ bool  CTableFrameSink::OnEventGameConclude(WORD wChairID, IServerUserItem * pISe
 
 				CTime tm=CTime::GetCurrentTime();
 				m_list.HpGetResult(m_nTotalWin, m_nTotalPay, tm.GetMinute(), 0);
-#if 0
+#if _MSC_VER == 1400
 				CString strLog;
-				strLog.Format(L"%I64d - %I64d: %ld \n", m_list.GetWinSum(), m_list.GetTotalSum(), m_list.GetWinRate());
+				strLog.Format(_T("%I64d - %I64d: %ld \n"), m_list.GetWinSum(), m_list.GetTotalSum(), m_list.GetWinRate());
 				OutputDebugString(strLog);		
 #endif
 				GameCheat();
@@ -2087,7 +2091,7 @@ void CTableFrameSink::ReadConfigInformation(bool bReadFresh)
 
 	//ÉÏ×¯Ìõ¼þ
 	ZeroMemory(OutBuf, sizeof(OutBuf));
-	GetPrivateProfileString(m_szRoomName, TEXT("Score"), _T("100"), OutBuf, 255, m_szConfigFileName);
+	GetPrivateProfileString(m_szRoomName, TEXT("Score"), _T("10000"), OutBuf, 255, m_szConfigFileName);
 	myscanf(OutBuf, mystrlen(OutBuf), _T("%I64d"), &m_lApplyBankerCondition);
 
 	if(m_lSysBankerScore<m_lApplyBankerCondition)
