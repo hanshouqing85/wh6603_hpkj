@@ -241,7 +241,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../../../运行/ServDebugUnicode/LandAndroid.dll"
+				OutputFile="../../../VC8运行/ServDebugUnicode/LandAndroid.dll"
 				LinkIncremental="2"
 				ModuleDefinitionFile=".\AndroidServiceD.def"
 				GenerateDebugInformation="true"
@@ -325,7 +325,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../../../运行/ServReleaseUnicode/LandAndroid.dll"
+				OutputFile="../../../VC8运行/ServReleaseUnicode/LandAndroid.dll"
 				LinkIncremental="1"
 				ModuleDefinitionFile=".\AndroidService.def"
 				GenerateDebugInformation="true"
