@@ -530,8 +530,13 @@ bool CAndroidUserItemSink::OnSubAddScore(const void * pBuffer, WORD wDataSize)
 	m_lTurnMaxScore = pAddScore->lTurnMaxScore;
 	m_lAddLessScore = pAddScore->lAddLessScore;
 
+#if _MSC_VER == 1400
+	if(abs((double)pAddScore->lAddScoreCount-m_lTurnMaxScore)<0.001)
+		m_bShowHand = true;
+#else
 	if(abs(pAddScore->lAddScoreCount-m_lTurnMaxScore)<0.001)
 		m_bShowHand = true;
+#endif
 
 	m_lBeforeScore = pAddScore->lAddScoreCount;
 

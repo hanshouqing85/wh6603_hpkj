@@ -47,7 +47,9 @@ typedef void * POINTER_64 PVOID64;
 //////////////////////////////////////////////////////////////////////////
 //编译环境
 #include "..\..\SDKCondition.h"
-
+//组件头文件
+#include "..\消息定义\CMD_DZShowHand.h"
+#include "..\..\..\服务器组件\游戏服务\GameServiceHead.h"
 //////////////////////////////////////////////////////////////////////////////////
 
 #if _MSC_VER == 1400
@@ -89,9 +91,6 @@ typedef void * POINTER_64 PVOID64;
 
 #endif // SDK_CONDITION
 
-//组件头文件
-#include "..\消息定义\CMD_DZShowHand.h"
-#include "..\..\..\服务器组件\游戏服务\GameServiceHead.h"
 #define USE_RS_PRINT
 #include<cstdlib>
 #include<ctime>

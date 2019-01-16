@@ -42,30 +42,29 @@
 
 #define  __BANKER___
 
-//组件头文件
 //编译环境
 #include "..\..\SDKCondition.h"
-
-#ifdef SDK_CONDITION
+//组件头文件
+#include "..\..\..\服务器组件\游戏服务\GameServiceHead.h"
+#include "..\消息定义\CMD_OxBattle.h"
 
 //////////////////////////////////////////////////////////////////////////////////
-//开发环境
 
-//平台环境
-#include "..\消息定义\CMD_OxBattle.h"
-#include "..\..\..\开发库\Include\GameServiceHead.h"
+#if _MSC_VER == 1400
+
+//////////////////////////////////////////////////////////////////////////////////
 
 #ifndef _DEBUG
 #ifndef _UNICODE
-#pragma comment (lib,"../../../开发库/Lib/Ansi/KernelEngine.lib")
+	#pragma comment (lib,"../../../VC8链接库/Ansi/KernelEngine.lib")
 #else
-#pragma comment (lib,"../../../开发库/Lib/Unicode/KernelEngine.lib")
+	#pragma comment (lib,"../../../VC8链接库/Unicode/KernelEngine.lib")
 #endif
 #else
 #ifndef _UNICODE
-#pragma comment (lib,"../../../开发库/Lib/Ansi/KernelEngineD.lib")
+	#pragma comment (lib,"../../../VC8链接库/Ansi/KernelEngineD.lib")
 #else
-#pragma comment (lib,"../../../开发库/Lib/Unicode/KernelEngineD.lib")
+	#pragma comment (lib,"../../../VC8链接库/Unicode/KernelEngineD.lib")
 #endif
 #endif
 
@@ -74,11 +73,6 @@
 #else
 
 //////////////////////////////////////////////////////////////////////////////////
-//系统环境
-
-//平台环境
-#include "..\消息定义\CMD_OxBattle.h"
-#include "..\..\..\服务器组件\游戏服务\GameServiceHead.h"
 
 #ifndef _DEBUG
 #ifndef _UNICODE
@@ -93,9 +87,8 @@
 #pragma comment (lib,"../../../链接库/Unicode/KernelEngineD.lib")
 #endif
 #endif
-
 //////////////////////////////////////////////////////////////////////////////////
 
-#endif
+#endif // SDK_CONDITION
 
 

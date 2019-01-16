@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="百人牛牛客户端"
+	Name="德州扑克客户端"
 	ProjectGUID="{F2D70F30-23FC-4973-A798-AED329359B33}"
-	RootNamespace="百人牛牛"
+	RootNamespace="德州扑克客户端"
 	Keyword="MFCProj"
 	>
 	<Platforms>
@@ -22,7 +22,7 @@
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="2"
-			CharacterSet="1"
+			CharacterSet="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -44,7 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_BANK_"
+				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -68,7 +68,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../../../VC8运行/ClientDebugUnicode/OxBattle.exe"
+				OutputFile="../../../../运行/Debug/Ansi/DZShowHand.exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -97,7 +97,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine=""
+				CommandLine="mkdir ..\..\..\发布组件\客户端组件\Debug\Ansi&#x0D;&#x0A;copy /y ..\..\..\..\运行\Debug\Ansi\$(TargetFileName) ..\..\..\发布组件\客户端组件\Debug\Ansi\$(TargetFileName)&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -128,7 +128,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_BANK_"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="true"
@@ -151,7 +151,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../../../../运行/Release/Ansi/OxBattle.EXE"
+				OutputFile="../../../../运行/Release/Ansi/DZShowHand.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -182,6 +182,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="mkdir ..\..\..\发布组件\客户端组件\Release\Ansi&#x0D;&#x0A;copy /y ..\..\..\..\运行\Release\Ansi\$(TargetFileName) ..\..\..\发布组件\客户端组件\Release\Ansi\$(TargetFileName)&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -213,7 +214,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_BANK_;_UNICODE"
+				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_UNICODE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -237,7 +238,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../../../VC8运行/ClientDebugUnicode/OxBattle.exe"
+				OutputFile="../../../VC8运行/ClientDebugUnicode/DZShowHand.exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -266,7 +267,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine=""
+				CommandLine="&#x0D;&#x0A;"
+				ExcludedFromBuild="false"
 			/>
 		</Configuration>
 		<Configuration
@@ -297,9 +299,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/wd4430"
 				AdditionalIncludeDirectories="..\..\..\..\游戏组件\开发库\DX9SDK\Include"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_BANK_;_UNICODE"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_UNICODE"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="true"
@@ -307,7 +308,6 @@
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
-				CompileAs="2"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -323,7 +323,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../../../VC8运行/ClientReleaseUnicode/OxBattle.exe"
+				OutputFile="../../../VC8运行/ClientReleaseUnicode/DZShowHand.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -336,7 +336,6 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				EmbedManifest="true"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -356,7 +355,6 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				CommandLine=""
-				ExcludedFromBuild="true"
 			/>
 		</Configuration>
 	</Configurations>
@@ -369,55 +367,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\ApplyUserList.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\BassMusicManager.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\CardControl.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\CMyListCtrl.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug_Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release_Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\DirectSound.cpp"
 				>
 			</File>
 			<File
@@ -433,7 +383,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\游戏服务器\GameLogic.cpp"
+				RelativePath=".\GameLogic.cpp"
 				>
 			</File>
 			<File
@@ -441,11 +391,27 @@
 				>
 			</File>
 			<File
-				RelativePath=".\RecordGameList.cpp"
+				RelativePath=".\GoldControl.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\SiceControl.cpp"
+				RelativePath=".\GoldView.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Prompt.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ScoreView.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ShowHand.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SmallCardControl.cpp"
 				>
 			</File>
 			<File
@@ -484,10 +450,6 @@
 					/>
 				</FileConfiguration>
 			</File>
-			<File
-				RelativePath=".\ZhuangControl.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="头文件"
@@ -495,27 +457,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\ApplyUserList.h"
-				>
-			</File>
-			<File
-				RelativePath=".\BassMusicManager.h"
-				>
-			</File>
-			<File
 				RelativePath=".\CardControl.h"
 				>
 			</File>
 			<File
-				RelativePath="..\消息定义\CMD_OxBattle.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CMyListCtrl.h"
-				>
-			</File>
-			<File
-				RelativePath=".\DirectSound.h"
+				RelativePath="..\消息定义\CMD_DZShowHand.h"
 				>
 			</File>
 			<File
@@ -531,11 +477,23 @@
 				>
 			</File>
 			<File
-				RelativePath="..\游戏服务器\GameLogic.h"
+				RelativePath=".\GameLogic.h"
 				>
 			</File>
 			<File
-				RelativePath=".\RecordGameList.h"
+				RelativePath=".\GameOption.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GoldControl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GoldView.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Prompt.h"
 				>
 			</File>
 			<File
@@ -543,15 +501,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\SiceControl.h"
+				RelativePath=".\ScoreView.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ShowHand.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SmallCardControl.h"
 				>
 			</File>
 			<File
 				RelativePath=".\Stdafx.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ZhuangControl.h"
 				>
 			</File>
 		</Filter>
@@ -561,99 +523,51 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
-				RelativePath=".\Res\APPLY_USER_BACK.bmp"
+				RelativePath=".\Res\AUTO_START_FALSE .bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\APPY_USER_BACK.bmp"
+				RelativePath=".\Res\AUTO_START_FALSE.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\BANKER_INFO.bmp"
+				RelativePath=".\Res\AUTO_START_TRUE.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\bitmap3.bmp"
+				RelativePath=".\Res\BT_ADD.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\BT_APPLY_BANKER.bmp"
+				RelativePath=".\Res\BT_CANCEL.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\BT_AUTO_OPEN_CARD.bmp"
+				RelativePath=".\Res\BT_EXIT.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\BT_BANK.bmp"
+				RelativePath=".\Res\BT_FOLLOW.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Bt_cancel_apply.bmp"
+				RelativePath=".\Res\BT_GIVEUP.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\BT_CANCEL_BANKER.bmp"
+				RelativePath=".\Res\BT_MAX.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\BT_CHART.bmp"
+				RelativePath=".\Res\BT_MIN.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\BT_CHART_CLOSE.bmp"
+				RelativePath=".\Res\BT_NO1.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\BT_CONTINUE_CARD.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\BT_DRAW.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\BT_JETTON_1.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\BT_JETTON_10.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\BT_JETTON_100.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\BT_JETTON_1000.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\BT_JETTON_10000.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\BT_JETTON_100000.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\Bt_jetton_1000000.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\Bt_jetton_500.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\Bt_jetton_50000.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\Bt_jetton_500000.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\Bt_jetton_5000000.bmp"
+				RelativePath=".\Res\BT_OK.bmp"
 				>
 			</File>
 			<File
@@ -661,207 +575,51 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\BT_S.bmp"
+				RelativePath=".\Res\BT_PASS.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\BT_SCORE_MOVE_L.bmp"
+				RelativePath=".\Bt_pass_card.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\BT_SCORE_MOVE_R.bmp"
+				RelativePath=".\Res\Bt_pass_card.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\BT_STORAGE.bmp"
+				RelativePath=".\Res\BT_SHOWHAND.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\BT_X.bmp"
+				RelativePath=".\Res\BT_SITDOWN.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\CARDTYPE.bmp"
+				RelativePath=".\Res\BT_START.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\CHANGE_BANKER.bmp"
+				RelativePath=".\Res\BT_YES1.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\CHART_BACK.bmp"
+				RelativePath=".\Res\CARD.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\CONTINUE_CARD.bmp"
+				RelativePath=".\Res\CARD_CUR.cur"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\cursor1.cur"
+				RelativePath=".\Res\CARD_MASK.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\DISPATCH_CARD.bmp"
+				RelativePath=".\Res\D.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\FRAME_0LD_PING_JIA.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_0LD_TONG_DIAN_PING.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_0LD_XIAN_JIA.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_0LD_XIAN_TIAN_WANG.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_0LD_ZHUANG_JIA.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_0LD_ZHUANG_TIAN_WANG.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_DAO_EMN.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_DAO_EMN_EX.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_DI_MEN.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_DI_MEN_EX.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_DUI_MEN.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_DUI_MEN_EX.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_HUANG_MEN.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_HUANG_MEN_EX.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_JIAO_L.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_JIAO_L_EX.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_JIAO_R.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_JIAO_R_EX.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_L.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_M.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_PING_JIA.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_QIAO.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_QIAO_EX.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_R.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_SHUN_MEN.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_SHUN_MEN_EX.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_TIAN_MEN.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_TIAN_MEN_EX.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_TONG_DIAN_PING.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_XIAN_JIA.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_XIAN_JIA_TOP.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_XIAN_TIAN_WANG.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_XUAN_MEN.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_XUAN_MEN_EX.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_ZHUANG_JIA.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_ZHUANG_JIA_TOP.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\FRAME_ZHUANG_TIAN_WANG.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\GAME_CARD.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\Game_end.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\Game_end_frame.bmp"
+				RelativePath=".\Res\FRAME.bmp"
 				>
 			</File>
 			<File
@@ -869,11 +627,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\GAME_POINT.bmp"
+				RelativePath=".\Res\GAME_WIN.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\GameClient.ico"
+				RelativePath=".\res\GameClient.ico"
 				>
 			</File>
 			<File
@@ -885,111 +643,55 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\HAND.bmp"
+				RelativePath=".\Res\human.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\JETTOM_VIEW.bmp"
+				RelativePath=".\Res\LEFT.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\ME_BANKER.bmp"
+				RelativePath=".\Res\LEFT_TIME.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\ME_SCORE.bmp"
+				RelativePath=".\Res\MAX.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\ME_SCORE_NUMBER.bmp"
+				RelativePath=".\Res\MID.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\NO_BANKER.bmp"
+				RelativePath=".\Res\NUMBER.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\S_ZHUANG.bmp"
+				RelativePath=".\Res\RIGHT.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\SCORE_1.cur"
+				RelativePath=".\Res\RIGHT_TIME.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\SCORE_10.cur"
+				RelativePath=".\Res\SCORE.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\SCORE_100.cur"
+				RelativePath=".\Res\SHOWHAND_COMFIRE.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\SCORE_1000.cur"
+				RelativePath=".\Res\SMALL_CARD.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\SCORE_10000.cur"
+				RelativePath=".\Res\TIME_ARROWHEAD.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\SCORE_100000.cur"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\SCORE_1000000.cur"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\SCORE_500.cur"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\SCORE_50000.cur"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\SCORE_500000.cur"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\SCORE_5000000.cur"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\SCORE_BACK.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\SCORE_NUMBER.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\SICE_1.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\SICE_2.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\SICE_3.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\SICE_4.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\SICE_5.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\SICE_6.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\Res\TIME_FLAG.bmp"
+				RelativePath=".\Res\TITLE.bmp"
 				>
 			</File>
 			<File
@@ -1001,100 +703,108 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\WIN_FLAGS.bmp"
+				RelativePath=".\Res\wave2.bin"
 				>
 			</File>
 		</Filter>
 		<File
-			RelativePath=".\Res\Sound\ADD_GOLD.wav"
+			RelativePath=".\Res\Add_score.wav"
 			>
 		</File>
 		<File
-			RelativePath=".\Res\ADD_GOLD.wav"
+			RelativePath=".\Res\CARD.png"
 			>
 		</File>
 		<File
-			RelativePath=".\Res\Sound\ADD_GOLD_EX.wav"
+			RelativePath=".\Res\CARD_MASK.png"
 			>
 		</File>
 		<File
-			RelativePath=".\Res\Sound\BACK_GROUND.wav"
+			RelativePath=".\Res\D.png"
 			>
 		</File>
 		<File
-			RelativePath=".\Res\CHART_PING.png"
+			RelativePath=".\Res\FOLLOW.wav"
 			>
 		</File>
 		<File
-			RelativePath=".\Res\CHART_PING_EX.png"
+			RelativePath=".\Res\Game_end.wav"
 			>
 		</File>
 		<File
-			RelativePath=".\Res\CHART_XIAN.png"
+			RelativePath=".\Res\GAME_LOST.wav"
 			>
 		</File>
 		<File
-			RelativePath=".\Res\CHART_XIAN_EX.png"
+			RelativePath=".\Res\Game_start.wav"
 			>
 		</File>
 		<File
-			RelativePath=".\Res\CHART_ZHUANG.png"
+			RelativePath=".\Res\Game_warn.wav"
 			>
 		</File>
 		<File
-			RelativePath=".\Res\CHART_ZHUANG_EX.png"
+			RelativePath=".\Res\GAME_WIN.wav"
 			>
 		</File>
 		<File
-			RelativePath=".\Res\Sound\CHEER1.wav"
+			RelativePath=".\res\GameClient.manifest"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug_Unicode|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release_Unicode|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath=".\Res\GIVE_UP.wav"
 			>
 		</File>
 		<File
-			RelativePath=".\Res\Sound\CHEER2.wav"
+			RelativePath=".\Res\MAX.png"
 			>
 		</File>
 		<File
-			RelativePath=".\Res\Sound\CHEER3.wav"
+			RelativePath=".\Res\NO_ADD.wav"
 			>
 		</File>
 		<File
-			RelativePath=".\Res\Sound\DISPATCH_CARD.wav"
+			RelativePath=".\Res\PASS_CARD.wav"
 			>
 		</File>
 		<File
-			RelativePath=".\Res\Sound\END_DRAW.wav"
+			RelativePath=".\ReadMe.txt"
 			>
 		</File>
 		<File
-			RelativePath=".\Res\Sound\END_LOST.wav"
-			>
-		</File>
-		<File
-			RelativePath=".\Res\Sound\END_WIN.wav"
-			>
-		</File>
-		<File
-			RelativePath=".\Res\FIRE_EFFECT.png"
-			>
-		</File>
-		<File
-			RelativePath=".\Res\GAME_END.wav"
-			>
-		</File>
-		<File
-			RelativePath=".\Res\Sound\GAME_START.wav"
-			>
-		</File>
-		<File
-			RelativePath=".\Res\GAME_START.wav"
-			>
-		</File>
-		<File
-			RelativePath=".\Res\Sound\OUT_CARD.wav"
-			>
-		</File>
-		<File
-			RelativePath=".\Res\PLACE_JETTON.wav"
+			RelativePath=".\Res\SCORE.png"
 			>
 		</File>
 		<File
@@ -1102,15 +812,15 @@
 			>
 		</File>
 		<File
-			RelativePath=".\Res\STOP_JETTON.wav"
+			RelativePath=".\Res\SHOW_HAND.wav"
 			>
 		</File>
 		<File
-			RelativePath=".\Res\Sound\TIME_WARIMG.wav"
+			RelativePath=".\Res\SMALL_CARD.png"
 			>
 		</File>
 		<File
-			RelativePath=".\Res\TWO_PAIR_FLAG.png"
+			RelativePath=".\Res\TIME_ARROWHEAD.png"
 			>
 		</File>
 	</Files>

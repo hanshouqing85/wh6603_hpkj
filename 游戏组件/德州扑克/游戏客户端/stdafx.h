@@ -46,43 +46,42 @@ typedef void * POINTER_64 PVOID64;
 
 //编译环境
 #include "..\..\SDKCondition.h"
-
+//组件头文件
+#include "..\..\..\客户端组件\游戏框架\GameFrameHead.h"
+#include "..\消息定义\CMD_DZShowHand.h"
 //////////////////////////////////////////////////////////////////////////////////
 
-#ifdef SDK_CONDITION
+#if _MSC_VER == 1400
 
 //////////////////////////////////////////////////////////////////////////////////
-//开发环境
-
-#include "..\..\..\开发库\Include\GameFrameHead.h"
 
 #ifndef _DEBUG
 #ifndef _UNICODE
-#pragma comment (lib,"../../../开发库/Lib/Ansi/WHImage.lib")
-#pragma comment (lib,"../../../开发库/Lib/Ansi/GameFrame.lib")
-#pragma comment (lib,"../../../开发库/Lib/Ansi/GameEngine.lib")
-#pragma comment (lib,"../../../开发库/Lib/Ansi/SkinControl.lib")
-#pragma comment (lib,"../../../开发库/Lib/Ansi/ServiceCore.lib")
+#pragma comment (lib,"../../../VC8链接库/Ansi/WHImage.lib")
+#pragma comment (lib,"../../../VC8链接库/Ansi/GameFrame.lib")
+#pragma comment (lib,"../../../VC8链接库/Ansi/GameEngine.lib")
+#pragma comment (lib,"../../../VC8链接库/Ansi/SkinControl.lib")
+#pragma comment (lib,"../../../VC8链接库/Ansi/ServiceCore.lib")
 #else
-#pragma comment (lib,"../../../开发库/Lib/Unicode/WHImage.lib")
-#pragma comment (lib,"../../../开发库/Lib/Unicode/GameFrame.lib")
-#pragma comment (lib,"../../../开发库/Lib/Unicode/GameEngine.lib")
-#pragma comment (lib,"../../../开发库/Lib/Unicode/SkinControl.lib")
-#pragma comment (lib,"../../../开发库/Lib/Unicode/ServiceCore.lib")
+#pragma comment (lib,"../../../VC8链接库/Unicode/WHImage.lib")
+#pragma comment (lib,"../../../VC8链接库/Unicode/GameFrame.lib")
+#pragma comment (lib,"../../../VC8链接库/Unicode/GameEngine.lib")
+#pragma comment (lib,"../../../VC8链接库/Unicode/SkinControl.lib")
+#pragma comment (lib,"../../../VC8链接库/Unicode/ServiceCore.lib")
 #endif
 #else
 #ifndef _UNICODE
-#pragma comment (lib,"../../../开发库/Lib/Ansi/WHImageD.lib")
-#pragma comment (lib,"../../../开发库/Lib/Ansi/GameFrameD.lib")
-#pragma comment (lib,"../../../开发库/Lib/Ansi/GameEngineD.lib")
-#pragma comment (lib,"../../../开发库/Lib/Ansi/SkinControlD.lib")
-#pragma comment (lib,"../../../开发库/Lib/Ansi/ServiceCoreD.lib")
+#pragma comment (lib,"../../../VC8链接库/Ansi/WHImageD.lib")
+#pragma comment (lib,"../../../VC8链接库/Ansi/GameFrameD.lib")
+#pragma comment (lib,"../../../VC8链接库/Ansi/GameEngineD.lib")
+#pragma comment (lib,"../../../VC8链接库/Ansi/SkinControlD.lib")
+#pragma comment (lib,"../../../VC8链接库/Ansi/ServiceCoreD.lib")
 #else
-#pragma comment (lib,"../../../开发库/Lib/Unicode/WHImageD.lib")
-#pragma comment (lib,"../../../开发库/Lib/Unicode/GameFrameD.lib")
-#pragma comment (lib,"../../../开发库/Lib/Unicode/GameEngineD.lib")
-#pragma comment (lib,"../../../开发库/Lib/Unicode/SkinControlD.lib")
-#pragma comment (lib,"../../../开发库/Lib/Unicode/ServiceCoreD.lib")
+#pragma comment (lib,"../../../VC8链接库/Unicode/WHImageD.lib")
+#pragma comment (lib,"../../../VC8链接库/Unicode/GameFrameD.lib")
+#pragma comment (lib,"../../../VC8链接库/Unicode/GameEngineD.lib")
+#pragma comment (lib,"../../../VC8链接库/Unicode/SkinControlD.lib")
+#pragma comment (lib,"../../../VC8链接库/Unicode/ServiceCoreD.lib")
 #endif
 #endif
 
@@ -91,9 +90,6 @@ typedef void * POINTER_64 PVOID64;
 #else
 
 //////////////////////////////////////////////////////////////////////////////////
-//系统环境
-
-#include "..\..\..\客户端组件\游戏框架\GameFrameHead.h"
 
 #ifndef _DEBUG
 #ifndef _UNICODE
@@ -131,6 +127,5 @@ typedef void * POINTER_64 PVOID64;
 
 //////////////////////////////////////////////////////////////////////////////////
 
-#include "..\消息定义\CMD_DZShowHand.h"
 
 //////////////////////////////////////////////////////////////////////////////////
