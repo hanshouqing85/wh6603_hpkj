@@ -33,9 +33,9 @@ CGameServiceManager::CGameServiceManager()
 	m_GameServiceAttrib.dwServerVersion=VERSION_SERVER;
 	m_GameServiceAttrib.dwClientVersion=VERSION_CLIENT;
 	lstrcpyn(m_GameServiceAttrib.szGameName,GAME_NAME,CountArray(m_GameServiceAttrib.szGameName));
-	lstrcpyn(m_GameServiceAttrib.szDataBaseName,TEXT("QPLandDB"),CountArray(m_GameServiceAttrib.szDataBaseName));
-	lstrcpyn(m_GameServiceAttrib.szClientEXEName,TEXT("Land.EXE"),CountArray(m_GameServiceAttrib.szClientEXEName));
-	lstrcpyn(m_GameServiceAttrib.szServerDLLName,TEXT("LandServer.DLL"),CountArray(m_GameServiceAttrib.szServerDLLName));
+	lstrcpyn(m_GameServiceAttrib.szDataBaseName,szTreasureDB,CountArray(m_GameServiceAttrib.szDataBaseName));
+	lstrcpyn(m_GameServiceAttrib.szClientEXEName,TEXT("Land.exe"),CountArray(m_GameServiceAttrib.szClientEXEName));
+	lstrcpyn(m_GameServiceAttrib.szServerDLLName,TEXT("LandServer.dll"),CountArray(m_GameServiceAttrib.szServerDLLName));
 
 	return;
 }

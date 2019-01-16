@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="游戏引擎"
-	ProjectGUID="{C9ECA6E4-8C5D-4BAA-AEB1-A920AD3EB90C}"
-	RootNamespace="游戏引擎"
+	Name="游戏服务器"
+	ProjectGUID="{390B89DC-4355-442B-AD09-91F6D9AF32DD}"
+	RootNamespace="游戏服务器"
 	Keyword="MFCDLLProj"
 	>
 	<Platforms>
@@ -44,12 +44,12 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_AFXEXT;PROCESS_CONTROL_DLL"
+				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_AFXEXT"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				TreatWChar_tAsBuiltInType="true"
-				UsePrecompiledHeader="2"
+				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="4"
@@ -68,12 +68,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../../../运行/Debug/Ansi/ProcessControlD.dll"
+				OutputFile="../../../../运行/Debug/Ansi/LandServer.dll"
 				LinkIncremental="2"
-				ModuleDefinitionFile=".\ProcessControlD.def"
+				ModuleDefinitionFile=".\GameServer.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
-				ImportLibrary="../../链接库/Ansi/ProcessControlD.lib"
+				ImportLibrary="$(OutDir)/GameServer.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -99,6 +99,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="mkdir ..\..\..\发布组件\服务器组件\Debug\Ansi&#x0D;&#x0A;copy /y ..\..\..\..\运行\Debug\Ansi\$(TargetFileName) ..\..\..\发布组件\服务器组件\Debug\Ansi\$(TargetFileName)&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -129,10 +130,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_AFXEXT;PROCESS_CONTROL_DLL"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_AFXEXT"
 				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="true"
-				UsePrecompiledHeader="2"
+				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
@@ -151,14 +152,14 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../../../运行/Release/Ansi/ProcessControl.dll"
+				OutputFile="../../../../运行/Release/Ansi/LandServer.dll"
 				LinkIncremental="1"
-				ModuleDefinitionFile=".\ProcessControl.def"
+				ModuleDefinitionFile=".\GameServer.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="../../链接库/Ansi/ProcessControl.lib"
+				ImportLibrary="$(OutDir)/GameServer.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -184,6 +185,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="mkdir ..\..\..\发布组件\服务器组件\Release\\Ansi&#x0D;&#x0A;copy /y ..\..\..\..\运行\Release\Ansi\$(TargetFileName) ..\..\..\发布组件\服务器组件\Release\Ansi\$(TargetFileName)&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -215,12 +217,12 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_AFXEXT;GAME_ENGINE_DLL"
+				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_AFXEXT;_UNICODE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				TreatWChar_tAsBuiltInType="true"
-				UsePrecompiledHeader="1"
+				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="4"
@@ -239,12 +241,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../../VC8运行/ClientDebugUnicode/GameEngineD.dll"
-				LinkIncremental="1"
-				ModuleDefinitionFile=".\GameEngineD.def"
+				OutputFile="../../../VC8运行/ServDebugUnicode/LandServer.dll"
+				LinkIncremental="2"
+				ModuleDefinitionFile=".\GameServer.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
-				ImportLibrary="../../VC8链接库/Unicode/GameEngineD.lib"
+				ImportLibrary="$(OutDir)/GameServer.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -270,7 +272,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				ExcludedFromBuild="true"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
@@ -301,10 +303,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_AFXEXT;GAME_ENGINE_DLL"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_AFXEXT;_UNICODE"
 				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="true"
-				UsePrecompiledHeader="1"
+				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
@@ -323,14 +325,14 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../../VC8运行/ClientReleaseUnicode/GameEngine.dll"
+				OutputFile="../../../VC8运行/ServReleaseUnicode/LandServer.dll"
 				LinkIncremental="1"
-				ModuleDefinitionFile=".\GameEngine.def"
+				ModuleDefinitionFile=".\GameServer.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="../../VC8链接库/Unicode/GameEngine.lib"
+				ImportLibrary="$(OutDir)/GameServer.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -356,6 +358,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine=""
 			/>
 		</Configuration>
 	</Configurations>
@@ -368,59 +371,63 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\D3DDevice.cpp"
+				RelativePath=".\DlgCustomRule.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\D3DDirect.cpp"
+				RelativePath=".\GameLogic.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\D3DFont.cpp"
+				RelativePath=".\GameServer.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\D3DSound.cpp"
+				RelativePath=".\GameServiceManager.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\D3DSprite.cpp"
+				RelativePath=".\HistoryScore.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\D3DTexture.cpp"
+				RelativePath=".\Stdafx.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug_Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release_Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GameEngine.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\LapseCount.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\stdafx.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\TextureManager.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\TraceDebug.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\VirtualButton.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\VirtualEngine.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\VirtualWindow.cpp"
+				RelativePath=".\TableFrameSink.cpp"
 				>
 			</File>
 		</Filter>
@@ -430,63 +437,39 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\D3DDevice.h"
+				RelativePath="..\消息定义\CMD_Game.h"
 				>
 			</File>
 			<File
-				RelativePath=".\D3DDirect.h"
+				RelativePath=".\DlgCustomRule.h"
 				>
 			</File>
 			<File
-				RelativePath=".\D3DFont.h"
+				RelativePath=".\GameLogic.h"
 				>
 			</File>
 			<File
-				RelativePath=".\D3DSound.h"
+				RelativePath=".\GameServiceManager.h"
 				>
 			</File>
 			<File
-				RelativePath=".\D3DSprite.h"
+				RelativePath=".\HistoryScore.h"
 				>
 			</File>
 			<File
-				RelativePath=".\D3DTexture.h"
+				RelativePath=".\Resource.h"
 				>
 			</File>
 			<File
-				RelativePath=".\GameEngineHead.h"
+				RelativePath=".\ServerControl.h"
 				>
 			</File>
 			<File
-				RelativePath=".\LapseCount.h"
+				RelativePath=".\Stdafx.h"
 				>
 			</File>
 			<File
-				RelativePath=".\resource.h"
-				>
-			</File>
-			<File
-				RelativePath=".\stdafx.h"
-				>
-			</File>
-			<File
-				RelativePath=".\TextureManager.h"
-				>
-			</File>
-			<File
-				RelativePath=".\TraceDebug.h"
-				>
-			</File>
-			<File
-				RelativePath=".\VirtualButton.h"
-				>
-			</File>
-			<File
-				RelativePath=".\VirtualEngine.h"
-				>
-			</File>
-			<File
-				RelativePath=".\VirtualWindow.h"
+				RelativePath=".\TableFrameSink.h"
 				>
 			</File>
 		</Filter>
@@ -496,7 +479,15 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
-				RelativePath=".\GameEngine.rc"
+				RelativePath=".\Res\GameClient.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\GameServer.rc"
+				>
+			</File>
+			<File
+				RelativePath=".\res\GameServer.rc2"
 				>
 			</File>
 		</Filter>
