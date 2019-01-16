@@ -44,6 +44,7 @@
 
 //组件头文件
 #include "..\消息定义\CMD_SGZZ.h"
+#include "..\..\..\服务器组件\游戏服务\GameServiceHead.h"
 
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -86,9 +87,6 @@
 
 #endif
 
-//组件头文件
-#include "..\消息定义\CMD_SGZZ.h"
-#include "..\..\..\服务器组件\游戏服务\GameServiceHead.h"
 #define USE_RS_PRINT
 #include<cstdlib>
 #include<ctime>

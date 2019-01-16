@@ -241,7 +241,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../../../VC8运行/ServDebugUnicode/SGLYAndroid.dll"
+				OutputFile="../../../运行/ServDebugUnicode/SGLYAndroid.dll"
 				LinkIncremental="2"
 				ModuleDefinitionFile=".\AndroidServiceD.def"
 				GenerateDebugInformation="true"
@@ -326,7 +326,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../../../VC8运行/ServReleaseUnicode/SGLYAndroid.dll"
+				OutputFile="../../../运行/ServReleaseUnicode/SGLYAndroid.dll"
 				LinkIncremental="1"
 				ModuleDefinitionFile=".\AndroidService.def"
 				GenerateDebugInformation="true"

@@ -47,6 +47,48 @@
 #include "..\..\..\¿Í»§¶Ë×é¼þ\ÓÎÏ·¿ò¼Ü\GameFrameHead.h"
 #define NAME_LEN 64
 
+#if _MSC_VER == 1400
+
+//////////////////////////////////////////////////////////////////////////////////
+
+#ifndef _DEBUG
+#ifndef _UNICODE
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Ansi/WHImage.lib")
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Ansi/GameFrame.lib")
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Ansi/GameEngine.lib")
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Ansi/SkinControl.lib")
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Ansi/ShareControl.lib")
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Ansi/ServiceCore.lib")
+#else
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Unicode/WHImage.lib")
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Unicode/GameFrame.lib")
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Unicode/GameEngine.lib")
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Unicode/SkinControl.lib")
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Unicode/ShareControl.lib")
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Unicode/ServiceCore.lib")
+#endif
+#else
+#ifndef _UNICODE
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Ansi/WHImageD.lib")
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Ansi/GameFrameD.lib")
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Ansi/GameEngineD.lib")
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Ansi/SkinControlD.lib")
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Ansi/ShareControlD.lib")
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Ansi/ServiceCoreD.lib")
+#else
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Unicode/WHImageD.lib")
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Unicode/GameFrameD.lib")
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Unicode/GameEngineD.lib")
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Unicode/SkinControlD.lib")
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Unicode/ShareControlD.lib")
+#pragma comment (lib,"../../../VC8Á´½Ó¿â/Unicode/ServiceCoreD.lib")
+#endif
+#endif
+
+//////////////////////////////////////////////////////////////////////////////////
+
+#else
+
 #ifndef _DEBUG
 #ifndef _UNICODE
 #pragma comment (lib,"../../../Á´½Ó¿â/Ansi/WHImage.lib")
@@ -80,8 +122,11 @@
 #pragma comment (lib,"../../../Á´½Ó¿â/Unicode/ServiceCoreD.lib")
 #endif
 #endif
+//////////////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////
+#endif // SDK_CONDITION
+
+//////////////////////////////////////////////////////////////////////////////////
 //#define SCORECHIPRATIO			100
 //#define CHIPTOSCORE(chip)		(chip*SCORECHIPRATIO)
 //#define SCORETOCHIP(score)		(score/SCORECHIPRATIO)
