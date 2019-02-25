@@ -134,14 +134,17 @@ public:
 	//下期期号
 	CString GetNextExpect(int nDelta=0);
 	//下期开奖时间
-	virtual CTime GetNextKjShj(){return GetNextFdShj();}
-	//下期封单时间
-	CTime GetNextFdShj();
+	virtual CTime GetNextKjShj();
 	//离下次封单时间还剩下的时间
 	long GetFdShjDiff();
 	CString GetFdShjDiffDesc();
 
 	bool IsCanCancel(CString qihao);
+
+	//获取期号
+	int GetQiShu(int sec);
+	//获取开奖时间
+	int GetKjShj(int qishu);
 
 public:
 	static TCHAR m_lastExpect[KJ_QIHAO_LENGTH];

@@ -708,7 +708,11 @@ TCHAR CXJSSCRule::m_lastKjShj[KJ_SHIJIAN_LENGTH] = _T("");
 CXJSSCRule::CXJSSCRule(void)
 : timespan_fd_shj(600)
 {
-
+	m_iKjShjFirst=37200;
+	m_iKjShjLast=93600;//第二天的凌晨2时整
+	m_qishu=48;
+	m_timespan=1200;
+	//fenDanDuration = 60;//封单时间
 }
 
 CXJSSCRule::~CXJSSCRule(void)
@@ -716,119 +720,85 @@ CXJSSCRule::~CXJSSCRule(void)
 
 }
 
+int CXJSSCRule::GetQiShu(int sec)
+{
+	int sc=m_iKjShjLast-86400;//时差为2小时
+	int sec1=(sec+86400-sc)%86400;//乌鲁木齐时间sec1比北京时间sec晚两个小时
+	int qishu = 0;
+	if (sec1 < (m_iKjShjFirst-sc)) //001期没开奖
+	{				
+		qishu = 1;
+	}
+	else if (sec1 >= (m_iKjShjFirst-sc) && sec1 < (m_iKjShjLast-sc)) //001期开奖——m_qishu期没开奖
+	{
+		long total = sec1 - (m_iKjShjFirst-sc);
+		qishu = (int)(total / m_timespan+2);
+	}
+	return qishu;
+}
+
+int CXJSSCRule::GetKjShj(int qishu)
+{
+	//等差数列求通项公式
+	if(qishu>=1 && qishu<=m_qishu)
+	{
+	   int iKjShj=m_iKjShjFirst+m_timespan*(qishu-1);//取值范围为[m_iKjShjFirst, m_iKjShjLast]
+	   return iKjShj;
+	}
+	return m_iKjShjFirst;
+}
+
 //下期期号
 CString CXJSSCRule::GetNextExpect(int nDelta)
 {
-
 	CTime t= CTime::GetCurrentTime();
 	t+=m_timeSpan;
-	CString rQh;
-	if (((t.GetHour() == 10 && t.GetMinute()>=10)||(t.GetHour()>10)) && t.GetHour() <= 24)
+	time_t ct=t.GetTime();
+
+	struct tm *my_tm = localtime(&ct);
+    int sec=GetSecByHMS(my_tm->tm_hour,my_tm->tm_min,my_tm->tm_sec);
+	int qishu=GetQiShu(sec);
+	////做出调整
+	//qishu += nDelta;
+ 
+	tm *tmLocal=my_tm;
+	if(sec<m_iKjShjLast-86400)//期号算到前一天的后七期
 	{
-		CTime ct(t.GetYear(), t.GetMonth(), t.GetDay(), 10, 0, 0);
-		CTimeSpan tSpan = t - ct;
-		int nQiHao = 0;
-
-		if (tSpan.GetTotalSeconds() % timespan_fd_shj >= 580)
-		{
-			nQiHao = (int)(tSpan.GetTotalSeconds() / timespan_fd_shj) + 2;
-		}
-		else
-		{
-			nQiHao = (int)(tSpan.GetTotalSeconds() / timespan_fd_shj) + 1;
-		}
-
-		CString tmp = t.Format(_T("%Y%m%d"));
-
-		rQh.Format(_T("%s%02d"), tmp, nQiHao);
-
+	    time_t ct1=GetMorningTime(ct-86400);
+	    tmLocal = localtime(&ct1);
 	}
-	else if (t.GetHour() >= 0 && t.GetHour() < 2)
-	{
-		CTime ct(t.GetYear(), t.GetMonth(), t.GetDay(), 0, 0, 0);
+	char temp[64] = {0};
+	strftime(temp, sizeof(temp), "%Y%m%d",tmLocal);
 
-		CTimeSpan tSpan = t - ct;
-		int nQiHao = 0;
+	char last[64] = {0};
+	sprintf(last, "%s%02d", temp, qishu);
 
-		if (tSpan.GetTotalSeconds() % timespan_fd_shj >= 580)
-		{
-			nQiHao = (int)(tSpan.GetTotalSeconds() / timespan_fd_shj) + 2;
-		}
-		else
-		{
-			nQiHao = (int)(tSpan.GetTotalSeconds() / timespan_fd_shj) + 1;
-		}
-
-		nQiHao+=84;
-		t -= CTimeSpan(1,0,0,0);
-		CString tmp = t.Format(_T("%Y%m%d"));
-
-		rQh.Format(_T("%s%02d"), tmp, nQiHao);
-	}
-	else {
-		rQh.Format(_T("%d%02d%02d01"), t.GetYear(), t.GetMonth(), t.GetDay());
-	}
-
-	return rQh;
+	string str=last;
+	CString ret=CA2T(str.c_str());
+	return ret;
 }
 
-CTime CXJSSCRule::GetNextFdShj()
+CTime CXJSSCRule::GetNextKjShj()
 {
 	CTime t= CTime::GetCurrentTime();
 	t+=m_timeSpan;
-	CString rQh;
-	if (((t.GetHour() == 10 && t.GetMinute()>=10)||(t.GetHour()>10)) && t.GetHour() <= 24)
-	{
-		CTime ct(t.GetYear(), t.GetMonth(), t.GetDay(), 10, 0, 0);
-		CTimeSpan tSpan = t - ct;
-		int nQiHao = 0;
+	time_t ct=t.GetTime();
+	struct tm *my_tm = localtime(&ct);
 
-		if (tSpan.GetTotalSeconds() % timespan_fd_shj >= 580)
-		{
-			nQiHao = (int)(tSpan.GetTotalSeconds() / timespan_fd_shj) + 2;
-		}
-		else
-		{
-			nQiHao = (int)(tSpan.GetTotalSeconds() / timespan_fd_shj) + 1;
-		}
-
-		ct += CTimeSpan(nQiHao * timespan_fd_shj);
-		return ct;
-	}
-	else if ((t.GetHour() >= 10 && t.GetHour() <= 24) || (t.GetHour() >= 0 && t.GetHour() <= 2)){
-		CTime ct(t.GetYear(), t.GetMonth(), t.GetDay(), 0, 0, 0);
-		CTimeSpan tSpan = t - ct;
-		int nQiHao = 0;
-
-		if (tSpan.GetTotalSeconds() % timespan_fd_shj >= 580)
-		{
-			nQiHao = (int)(tSpan.GetTotalSeconds() / timespan_fd_shj) + 2;
-		}
-		else
-		{
-			nQiHao = (int)(tSpan.GetTotalSeconds() / timespan_fd_shj) + 1;
-		}
-
-
-		ct += CTimeSpan(nQiHao * timespan_fd_shj);
-
-		CString strLog;
-		strLog.Format(L"KAIJIANG %d-%d-%d %d:%d:%d",ct.GetYear(),ct.GetMonth(),ct.GetDay(),ct.GetHour(),ct.GetMinute(),ct.GetSecond());
-		OutputDebugString(strLog);
-		return ct;
-	}
-	else {
-		CTime ctm(t.GetYear(), t.GetMonth(), t.GetDay(), 10, 10, 0);
-		return ctm;
-	}
+    int sec=GetSecByHMS(my_tm->tm_hour,my_tm->tm_min,my_tm->tm_sec);
+	
+	int qishu=GetQiShu(sec);
+    int kjshj=GetKjShj(qishu);
+	time_t ct0=GetMorningTime(ct);//凌晨零时整的时间戳
+	time_t t1 = ct0+kjshj;
+	return t1;
 }
 
 long CXJSSCRule::GetFdShjDiff()
 {
-
 	CTime t= CTime::GetCurrentTime();
 	t+=m_timeSpan;
-	CTimeSpan span = GetNextFdShj() - t;
+	CTimeSpan span = GetNextKjShj() - t;
 
 	return (long)span.GetTotalSeconds();
 }
