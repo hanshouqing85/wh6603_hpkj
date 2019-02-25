@@ -8,7 +8,9 @@ public:
 	virtual ~CGameRule(void);
 protected:
 	CGameRule(void);
-	
+	static int GetSecByHMS(int h,int m,int s);
+	//获取今天凌晨零时整的时间戳
+	static time_t GetMorningTime(time_t t);	
 public:
 	//下期期号
 	virtual CString GetNextExpect(int nDelta=0) = 0;
@@ -22,11 +24,24 @@ public:
 	virtual bool IsCanCancel(CString qihao);
 	//获取每期时间间隔,像重庆时时彩，有时候5分钟，有时候10分钟。
 	virtual long GetQiSpan();
+
+	//下期期号
+	string GetNextExpect_TJ(int nDelta=0);
+	//下期开奖时间
+	time_t GetNextKjShj_TJ();
+	//获取期号
+	int GetQiShu_TJ(int sec);
+	//获取开奖时间
+	int GetKjShj_TJ(int qishu);
+
+	void SetTimeSpan(CTimeSpan timeSpan);
+protected:
 	CTimeSpan m_timeSpan;
-	void SetTimeSpan(CTimeSpan timeSpan)
-	{
-		m_timeSpan = timeSpan;
-	}
+	char m_para1[20];//TJ:"%s%03d"
+	int m_iKjShjFirst;//每天第一期开奖时间
+	int m_iKjShjLast;//每天最后一期开奖时间
+	int m_qishu;//每天开奖期数
+	int m_timespan;//开奖频率
 };
 
 class CChqSSCRule : public CGameRule
