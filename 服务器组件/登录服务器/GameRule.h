@@ -73,6 +73,11 @@ public:
 	virtual long GetQiSpan();
 	bool IsCanCancel(CString qihao);
 	virtual CString GetKjShjDiffDesc(int nSecond = 60);
+
+	//获取期号
+	int GetQiShu(int sec);
+	//获取开奖时间
+	int GetKjShj(int qishu);
 private:
 	//时间1 00:00-02:00
 	int m_t1_start;

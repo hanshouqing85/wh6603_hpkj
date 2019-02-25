@@ -290,165 +290,104 @@ CChqSSCRule::CChqSSCRule(void)
 
 CChqSSCRule::~CChqSSCRule(void)
 {
-
+	//fenDanDuration = 35;
 }
 
 //获取每期时间间隔,像重庆时时彩，有时候5分钟，有时候10分钟。
 long CChqSSCRule::GetQiSpan()
 {
-	CTime ct= CTime::GetCurrentTime();
-	ct+=m_timeSpan;
-	int hour = ct.GetHour();
-	if (hour >= m_t2_start && hour < m_t2_end)
-		return timespan_kj_shj;
-	else
-		return timespan_ye_kj_shj;
+	return 1200;
+}
+
+int CChqSSCRule::GetQiShu(int sec)
+{
+	int qishu = 0;
+	if (sec < 1800||sec>=85800) //001期没开奖
+	{				
+		qishu = 1;
+	}
+	else if (sec >= 1800 && sec<11400) //001期开奖——009期没开奖
+	{				
+		long total = sec - 1800;
+		qishu = (int)(total / 1200 + 2);
+	}
+	else if (sec >= 11400 && sec<27000) //010期没开奖
+	{				
+		qishu = 10;
+	}
+	else if (sec >= 27000 && sec < 85800) //010期开奖——059期没开奖
+	{
+		long total = sec - 27000;
+		qishu = (int)(total / 1200+11);
+	}
+	return qishu;
+}
+
+int CChqSSCRule::GetKjShj(int qishu)
+{
+	//前9期,等差数列求通项公式
+	if(qishu>=1 && qishu<=9)
+	{
+	   int iKjShj=1800+1200*(qishu-1);
+	   return iKjShj;
+	}
+	//后50期,等差数列求通项公式
+	else if(qishu>=10 && qishu<=59)
+	{
+	   int iKjShj=27000+1200*(qishu-10);
+	   return iKjShj;
+	}
+	return 1800;
 }
 
 //下期期号
 CString CChqSSCRule::GetNextExpect(int nDelta)
 {
-	CTime ct= CTime::GetCurrentTime();
-	ct+=m_timeSpan;
+	CTime t= CTime::GetCurrentTime();
+	t+=m_timeSpan;
+	time_t ct=t.GetTime();
 
-	int hour = ct.GetHour();
-	int qishu = 0;
-	if (hour < m_t1_end)
-	{
-		CTime t(ct.GetYear(), ct.GetMonth(), ct.GetDay(), m_t1_start, 0, 0);
-		CTimeSpan tSpan = ct - t;
-// 		if (tSpan.GetTotalSeconds() % timespan_ye_kj_shj >= 280)
-// 		{
-// 			qishu = (int)(tSpan.GetTotalSeconds() / timespan_ye_kj_shj) + 2;
-// 		}
-// 		else
-		{
-			qishu = (int)(tSpan.GetTotalSeconds() / timespan_ye_kj_shj) + 1;
-		}
-	}
-	else if (hour >= m_t2_start && hour < m_t2_end)
-	{
-		CTime t(ct.GetYear(), ct.GetMonth(), ct.GetDay(), m_t2_start, 0, 0);
-		CTimeSpan tSpan = ct - t;
-// 		if (tSpan.GetTotalSeconds() % timespan_kj_shj >= 580)
-// 		{
-// 			qishu = 24 + (int)(tSpan.GetTotalSeconds() / timespan_kj_shj) + 2;
-// 		}
-// 		else
-		{
-			qishu = 24 + (int)(tSpan.GetTotalSeconds() / timespan_kj_shj) + 1;
-		}
-	}
-	else if (hour >= m_t3_start)
-	{
-		CTime t(ct.GetYear(), ct.GetMonth(), ct.GetDay(), m_t3_start, 0, 0);
-		CTimeSpan tSpan = ct - t;
-// 		if (tSpan.GetTotalSeconds() % timespan_ye_kj_shj >= 280)
-// 		{
-// 			qishu = 96 + (int)(tSpan.GetTotalSeconds() / timespan_ye_kj_shj)+2;
-// 		}
-// 		else
-		{
-			qishu = 96 + (int)(tSpan.GetTotalSeconds() / timespan_ye_kj_shj) + 1;
-		}
-
-		if(qishu > 120)
-		{
-			ct+=CTimeSpan(0,0,0,20);
-
-			CTime t(ct.GetYear(), ct.GetMonth(), ct.GetDay(), m_t1_start, 0, 0);
-			CTimeSpan tSpan = ct - t;
-			if (tSpan.GetTotalSeconds() % timespan_ye_kj_shj >= 280)
-			{
-				qishu = (int)(tSpan.GetTotalSeconds() / timespan_ye_kj_shj) + 2;
-			}
-			else
-			{
-				qishu = (int)(tSpan.GetTotalSeconds() / timespan_ye_kj_shj) + 1;
-			}
-
-		}
-	}
-	else
-	{
-		qishu = 24;
-	}
+	struct tm *my_tm = localtime(&ct);
+    int sec=GetSecByHMS(my_tm->tm_hour,my_tm->tm_min,my_tm->tm_sec);
+	int qishu=GetQiShu(sec);
 	//做出调整
 	qishu += nDelta;
-	CString tmp = ct.Format(_T("%Y%m%d"));
-	CString rQh;
-	rQh.Format(_T("%s%03d"), tmp, qishu);
-	return rQh;
+ 
+	tm *tmLocal=my_tm;
+	if(sec>=85800)//期号算到第二天的第一期
+	{
+	    time_t ct1=GetMorningTime(ct+86400);
+	    tmLocal = localtime(&ct1);
+	}
+	char temp[64] = {0};
+	strftime(temp, sizeof(temp), "%Y%m%d",tmLocal);
+
+	char last[64] = {0};
+	sprintf(last, "%s%03d", temp, qishu);
+
+	string str=last;
+	CString ret=CA2T(str.c_str());
+	return ret;
 }
 
 //下期开奖时间
 CTime CChqSSCRule::GetNextKjShj()
 {
-	CTime ct= CTime::GetCurrentTime();
-	ct+=m_timeSpan;
+	CTime t= CTime::GetCurrentTime();
+	t+=m_timeSpan;
+	time_t ct=t.GetTime();
 
+	struct tm *my_tm = localtime(&ct);
 
-	int hour = ct.GetHour();
-	if (hour < m_t1_end)
-	{
-		CTime t(ct.GetYear(), ct.GetMonth(), ct.GetDay(), m_t1_start, 0, 0);
-		CTimeSpan tSpan = ct - t;
-		int qishu = 0;
-
-// 		if (tSpan.GetTotalSeconds() % timespan_ye_kj_shj >= 280)
-// 		{
-// 			qishu = (int)(tSpan.GetTotalSeconds() / timespan_ye_kj_shj)+2;
-// 		}
-// 		else
-		{
-			qishu = (int)(tSpan.GetTotalSeconds() / timespan_ye_kj_shj) + 1;
-		}
-
-		t += CTimeSpan(qishu * timespan_ye_kj_shj);
-		return t;
-	}
-	else if (hour >= m_t2_start && hour < m_t2_end)
-	{
-		CTime t(ct.GetYear(), ct.GetMonth(), ct.GetDay(), m_t2_start, 0, 0);
-		CTimeSpan tSpan = ct - t;
-		int qishu = 0;
-
-
-		//if (tSpan.GetTotalSeconds() % timespan_kj_shj >= 580)
-		//{
-		//	qishu = (int)(tSpan.GetTotalSeconds() / timespan_kj_shj)+2;
-		//}
-		//else
-		{
-			qishu = (int)(tSpan.GetTotalSeconds() / timespan_kj_shj) + 1;
-		}
-		t += CTimeSpan(qishu * timespan_kj_shj);
-		return t;
-	}
-	else if (hour >= m_t3_start)
-	{
-		CTime t(ct.GetYear(), ct.GetMonth(), ct.GetDay(), m_t3_start, 0, 0);
-		CTimeSpan tSpan = ct - t;
-		int qishu = 0;
-
-// 		if (tSpan.GetTotalSeconds() % timespan_ye_kj_shj >= 280)
-// 		{
-// 			qishu = (int)(tSpan.GetTotalSeconds() / timespan_ye_kj_shj)+2;
-// 		}
-// 		else
-		{
-			qishu = (int)(tSpan.GetTotalSeconds() / timespan_ye_kj_shj) + 1;
-		}
-		t += CTimeSpan(qishu * timespan_ye_kj_shj);
-		return t;
-	}
-	else
-	{
-		CTime t(ct.GetYear(), ct.GetMonth(), ct.GetDay(), m_t2_start-1, 50, 0);
-		t += CTimeSpan(timespan_kj_shj);
-		return t;
-	}
+    int sec=GetSecByHMS(my_tm->tm_hour,my_tm->tm_min,my_tm->tm_sec);
+	
+	int qishu=GetQiShu(sec);
+    int kjshj=GetKjShj(qishu);
+	time_t ct0=GetMorningTime(sec>=85800?ct+86400:ct);//凌晨零时整的时间戳
+	time_t t1 = ct0+kjshj;
+	return t1;
 }
+
 //离下次开奖时间还剩下的时间-字符串描述
 CString CChqSSCRule::GetKjShjDiffDesc(int nSecond)
 {
