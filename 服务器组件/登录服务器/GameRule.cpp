@@ -148,6 +148,12 @@ void CGameRule::SetTimeSpan(CTimeSpan timeSpan)
 	m_timeSpan = timeSpan;
 }
 
+void CGameRule::SetStartQihao(int nQihao,CTime tStartTime)
+{
+	m_nStartQihao = nQihao;
+	m_tStartTime = tStartTime;
+}
+
 //下期期号
 string CGameRule::GetNextExpect_TJ(int nDelta)
 {
@@ -216,6 +222,57 @@ int CGameRule::GetKjShj_TJ(int qishu)
 	   return iKjShj;
 	}
 	return m_iKjShjFirst;
+}
+
+//下期期号
+string CGameRule::GetNextExpect_PK10(int nDelta)
+{
+	//if(getIsStopSell()) return "0";
+	
+	CTime t= CTime::GetCurrentTime();
+	t+=m_timeSpan;
+	time_t ct_now=t.GetTime();
+	tm *tmLocal = localtime(&ct_now);
+    int sec=GetSecByHMS(tmLocal->tm_hour,tmLocal->tm_min,tmLocal->tm_sec);
+	int qishu=GetQiShu_PK10(sec);
+	int qishu0 = GetQiShu0_PK10();
+	int nQiHao = qishu0+qishu;
+	char sztmp[32];
+	sprintf(sztmp, "%ld", nQiHao);
+	return string(sztmp);
+}
+
+//下期开奖时间
+time_t CGameRule::GetNextKjShj_PK10()
+{
+	CTime t= CTime::GetCurrentTime();
+	t+=m_timeSpan;
+	time_t ct_now=t.GetTime();
+	tm *tmLocal = localtime(&ct_now);
+
+    int sec=GetSecByHMS(tmLocal->tm_hour,tmLocal->tm_min,tmLocal->tm_sec);
+	
+	int qishu=GetQiShu_PK10(sec);
+    int kjshj=GetKjShj_TJ(qishu+1);
+	time_t ct0=GetMorningTime(sec>=m_iKjShjLast?ct_now+86400:ct_now);//凌晨零时整的时间戳
+	time_t t1 = ct0+kjshj;
+	return t1;
+}
+
+int CGameRule::GetQiShu0_PK10()
+{
+	CTime t= CTime::GetCurrentTime();
+	t+=m_timeSpan;
+	time_t ct=t.GetTime();
+    time_t tStartTime=GetMorningTime(ct)+m_iKjShjFirst;//今天第一期的开奖时间
+	int qishu0 = m_nStartQihao + (tStartTime - m_tStartTime.GetTime() )/ 86400 * m_qishu;
+	return qishu0;
+}
+
+int CGameRule::GetQiShu_PK10(int sec)
+{
+	int qishu = GetQiShu_TJ(sec)-1;
+	return qishu;
 }
 
 CChqSSCRule::CChqSSCRule(void)
@@ -559,7 +616,7 @@ CJxSSCRule::CJxSSCRule(void)
 	m_qishu=42;
 	m_timespan=1200;
 	//fenDanDuration = 45; //封单时间
-	//m_gameKind=CZGD11Xuan5;
+	//m_gameKind=CZ_TianJinSSC;
 	strcpy(m_para1,"%s%03d");
 }
 
@@ -1996,7 +2053,15 @@ CBJPK10Rule::CBJPK10Rule(void)
 : timespan_kj_shj(300)
 , timespan_ye_kj_shj(300)
 {
-
+	m_iKjShjFirst=34200;
+	m_iKjShjLast=85800;
+	m_qishu=44;
+	m_timespan=1200;
+	//fenDanDuration = 30; //封单时间
+	//m_gameKind=CZ_PK10;
+	//strcpy(m_para1,"%s%02d");
+    m_tStartTime = 1550885400;
+	m_nStartQihao = 729920;
 }
 
 CBJPK10Rule::~CBJPK10Rule(void)
@@ -2026,100 +2091,21 @@ bool CBJPK10Rule::IsCanCancel(CString qihao)
 
 	return GetFdShjDiff() > 30; 
 }
-void CBJPK10Rule::SetStartQihao(int nQihao,CTime tStartTime)
-{
-	m_nStartQihao = nQihao;
-	m_tStartTime = tStartTime;
-}
 
 //下期期号
 CString CBJPK10Rule::GetNextExpect(int nDelta)
 {
-
-	CTime startTime = m_tStartTime;
-	int startqihao = m_nStartQihao;
-	int nQiHao =0;
-	CTime tm= CTime::GetCurrentTime();
-	tm+=m_timeSpan;
-
-	//一年中第几天
-	CString strDay = tm.Format(_T("%j"));
-	int nDay = _wtoi(strDay.GetBuffer(strDay.GetLength()));
-
-	int TodayQihao =1;
-	if ( (tm.GetHour()>9)&&(tm.GetHour()<23)  || (tm.GetHour()==23)&&(tm.GetMinute()<57)||(tm.GetHour()==9)&&(tm.GetMinute()>=7))
-	{
-		CTime daystart(tm.GetYear(),tm.GetMonth(),tm.GetDay(),9,7,30);
-		CTimeSpan tCha = tm - daystart;
-
-
-// 		if(tCha.GetTotalSeconds()%300 > 240)
-// 			TodayQihao = tCha.GetTotalMinutes()/5+2;
-// 		else
-			TodayQihao = tCha.GetTotalMinutes()/5+1;
-	}
-	else if((tm.GetHour()==23)&&(tm.GetMinute()>=57))
-	{
-		tm += CTimeSpan(1,0,0,0);
-	}
-	else
-	{
-		startqihao-=1;
-	}
-
-	CTimeSpan temp = tm-startTime;
-
-	nQiHao = startqihao + temp.GetDays()*179 +TodayQihao;
-
-
-
-	nQiHao+=nDelta;
-	CString strQiHao;
-	strQiHao.Format(L"%ld",  nQiHao);
-	return strQiHao;
-
+	string str=GetNextExpect_PK10(nDelta);
+	CString rQh=CA2T(str.c_str());
+	return rQh;
 }
 
 //下期开奖时间
 CTime CBJPK10Rule::GetNextKjShj()
 {
-	CTime tm= CTime::GetCurrentTime();
-	tm+=m_timeSpan;
-	CString rQh;
-
-	if ( (tm.GetHour()>9)&&(tm.GetHour()<23)  || (tm.GetHour()==23)&&(tm.GetMinute()<57)||(tm.GetHour()==9)&&(tm.GetMinute()>=7))
-	{
-		int TodayQihao =1;
-
-		CTime daystart(tm.GetYear(),tm.GetMonth(),tm.GetDay(),9,7,30);
-		CTimeSpan tCha = tm - daystart;
-
-
-// 		if(tCha.GetTotalSeconds()%300 > 240)
-// 			TodayQihao = tCha.GetTotalMinutes()/5+2;
-// 		else
-			TodayQihao = tCha.GetTotalMinutes()/5+1;
-
-		CTime NextKj = daystart;
-
-		NextKj += CTimeSpan(0,0,TodayQihao*5,0);
-		
-		return NextKj;
-	}
-	else if((tm.GetHour()<9)||(tm.GetHour() == 9 && tm.GetMinute()<7))
-	{
-		CTime daystart(tm.GetYear(),tm.GetMonth(),tm.GetDay(),9,6,30);
-		return daystart;
-	}	
-	else
-	{
-		CTime daystart(tm.GetYear(),tm.GetMonth(),tm.GetDay(),9,6,30);
-		daystart += CTimeSpan(1,0,0,0);
-		return daystart;
-	}
-
-	return tm;
-
+	time_t ct=GetNextKjShj_PK10();
+	CTime t=ct;
+	return t;
 }
 
 //离下次开奖时间还剩下的时间-字符串描述
@@ -2343,23 +2329,14 @@ CTime CQiXingCaiRule::GetNextFdShj()
 CKuaiLe8RUle::CKuaiLe8RUle(void)
 : timespan_kj_shj(300)
 {
-	startqihao = 774635;
-	startTime = CTime(2016,8,9,9,5,0);
+	m_nStartQihao = 774635;
+	m_tStartTime = CTime(2016,8,9,9,5,0);
 }
 
 CKuaiLe8RUle::~CKuaiLe8RUle(void)
 {
 
-
 }
-
-void CKuaiLe8RUle::SetStartQihao(int nQihao,CTime tStartTime)
-{
-	startqihao = nQihao;
-	startTime = tStartTime;
-}
-
-
 
 //下期期号
 CString CKuaiLe8RUle::GetNextExpect(int nDelta)
@@ -2390,10 +2367,10 @@ CString CKuaiLe8RUle::GetNextExpect(int nDelta)
 		TodayQihao = 0;
 	}
 
-	CTimeSpan temp = tm-startTime;
+	CTimeSpan temp = tm-m_tStartTime;
 
 	int nAllDay = temp.GetDays();
-	nQiHao = startqihao + nAllDay*179 +TodayQihao;
+	nQiHao = m_nStartQihao + nAllDay*179 +TodayQihao;
 	nQiHao+=nDelta;
 	CString strQiHao;
 	strQiHao.Format(L"%ld",  nQiHao);

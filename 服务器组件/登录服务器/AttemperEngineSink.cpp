@@ -2715,7 +2715,7 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 					}
 				}
  				CBJPK10Rule rule;
-				rule.SetStartQihao(nStartQihao,tTime);
+				//rule.SetStartQihao(nStartQihao,tTime);
 				rule.SetTimeSpan(m_timespan);
 				strNowQihao = rule.GetNextExpect();
 				bCheDan = (strNowQihao==sQihao);

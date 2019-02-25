@@ -25,6 +25,9 @@ public:
 	//获取每期时间间隔,像重庆时时彩，有时候5分钟，有时候10分钟。
 	virtual long GetQiSpan();
 
+	void SetTimeSpan(CTimeSpan timeSpan);
+	void SetStartQihao(int nQihao,CTime tStartTime);
+
 	//下期期号
 	string GetNextExpect_TJ(int nDelta=0);
 	//下期开奖时间
@@ -34,9 +37,19 @@ public:
 	//获取开奖时间
 	int GetKjShj_TJ(int qishu);
 
-	void SetTimeSpan(CTimeSpan timeSpan);
+	//下期期号
+	string GetNextExpect_PK10(int nDelta = 0);
+	//下期开奖时间
+	time_t GetNextKjShj_PK10();
+	//获取今天第一期的期号	
+	int GetQiShu0_PK10();
+	//今天到了多少期
+	int GetQiShu_PK10(int sec);
+
 protected:
 	CTimeSpan m_timeSpan;
+	int m_nStartQihao;
+	CTime m_tStartTime;
 	char m_para1[20];//TJ:"%s%03d"
 	int m_iKjShjFirst;//每天第一期开奖时间
 	int m_iKjShjLast;//每天最后一期开奖时间
@@ -523,10 +536,6 @@ public:
 	//离下次封单时间还剩下的时间
 	long GetFdShjDiff();
 	virtual CString GetKjShjDiffDesc(int nSecond=60);
-	void SetStartQihao(int nQihao,CTime tStartTime);
-	int m_nStartQihao;
-	CTime m_tStartTime;
-
 private:
 	//时间1 00:00-02:00
 	int m_t1_start;
@@ -623,14 +632,7 @@ public:
 	virtual CString GetNextExpect(int nDelta=0);
 	//下期开奖时间
 	virtual CTime GetNextKjShj();
-	void SetStartQihao(int nQihao,CTime tStartTime);
-
 
 private:
-
 	int timespan_kj_shj;
-
-	int startqihao;
-	CTime startTime;
-
 };
