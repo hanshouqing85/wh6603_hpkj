@@ -554,7 +554,13 @@ CJxSSCRule::CJxSSCRule(void)
 : timespan_fd_shj(60*9+15)
 , timespan_kj_shj(600)
 {
-
+	m_iKjShjFirst=33600;
+	m_iKjShjLast=82800;
+	m_qishu=42;
+	m_timespan=1200;
+	//fenDanDuration = 45; //封单时间
+	//m_gameKind=CZGD11Xuan5;
+	strcpy(m_para1,"%s%03d");
 }
 
 CJxSSCRule::~CJxSSCRule(void)
@@ -565,77 +571,17 @@ CJxSSCRule::~CJxSSCRule(void)
 //下期期号
 CString CJxSSCRule::GetNextExpect(int nDelta)
 {
-
-	CTime t= CTime::GetCurrentTime();
-	t+=m_timeSpan;
-	CString rQh;
-	if ((t.GetHour() >= 9 )	&& (t.GetHour() < 23 )	)
-	{
-		CTime ct(t.GetYear(), t.GetMonth(), t.GetDay(), 8, 59, 20);
-		CTimeSpan tSpan = t - ct;
-		int nQiHao = 0;
-
-		if (tSpan.GetTotalSeconds() % timespan_kj_shj >= 580)
-		{
-			nQiHao = (int)(tSpan.GetTotalSeconds() / timespan_kj_shj) + 2;
-		}
-		else
-		{
-			nQiHao = (int)(tSpan.GetTotalSeconds() / timespan_kj_shj) + 1;
-		}
-
-		CString tmp = t.Format(_T("%Y%m%d"));
-			nQiHao += nDelta;
-		rQh.Format(_T("%s%03d"), tmp, nQiHao);
-
-
-	}
-	else if (t.GetHour() >= 23) {
-		CTime mt = t + CTimeSpan(1, 0, 0, 0);
-		rQh.Format(_T("%d%02d%02d001"), mt.GetYear(), mt.GetMonth(), mt.GetDay());
-	}
-	else {
-//		t+=CTimeSpan(1L,0,0,0);
-		rQh.Format(_T("%d%02d%02d001"), t.GetYear(), t.GetMonth(), t.GetDay());
-	}
-
+	string str=GetNextExpect_TJ(nDelta);
+	CString rQh=CA2T(str.c_str());
 	return rQh;
 }
 
-CTime CJxSSCRule::GetNextFdShj()
+//下期开奖时间
+CTime CJxSSCRule::GetNextKjShj()
 {
-	CTime ct= CTime::GetCurrentTime();
-	ct+=m_timeSpan;
-	CString rQh;
-	if ((ct.GetHour() >= 9 )	&& (ct.GetHour() < 23 )	)
-	{
-		CTime t(ct.GetYear(), ct.GetMonth(), ct.GetDay(), 8, 59, 20);
-		CTimeSpan tSpan = ct - t;
-		int qishu = 0;
-
-		if (tSpan.GetTotalSeconds() % timespan_kj_shj >= 580)
-		{
-			qishu = (int)(tSpan.GetTotalSeconds() / timespan_kj_shj)+2;
-		}
-		else
-		{
-			qishu = (int)(tSpan.GetTotalSeconds() / timespan_kj_shj) + 1;
-		}
-		t += CTimeSpan(qishu * timespan_kj_shj);
-		return t;
-	}
-	else if (ct.GetHour() >= 23) {
-		CTime mt = ct + CTimeSpan(1, 0, 0, 0);
-		CTime ctm(mt.GetYear(), mt.GetMonth(), mt.GetDay(), 8, 59, 20);
-		//t += CTimeSpan(timespan_fd_shj);
-		return ctm;
-	}
-	else {
-//		t+=CTimeSpan(1L,0,0,0);
-		CTime ctm(ct.GetYear(), ct.GetMonth(), ct.GetDay(), 8, 59, 20);
-		//t += CTimeSpan(timespan_fd_shj);
-		return ctm;
-	}
+	time_t ct=GetNextKjShj_TJ();
+	CTime t=ct;
+	return t;
 }
 
 long CJxSSCRule::GetFdShjDiff()
@@ -643,7 +589,7 @@ long CJxSSCRule::GetFdShjDiff()
 	CTime t= CTime::GetCurrentTime();
 	t+=m_timeSpan;
 
-	CTimeSpan span = GetNextFdShj() - t;
+	CTimeSpan span = GetNextKjShj() - t;
 
 	return (long)span.GetTotalSeconds();
 }

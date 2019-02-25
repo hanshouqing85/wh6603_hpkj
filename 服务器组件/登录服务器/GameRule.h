@@ -75,7 +75,7 @@ private:
 	int timespan_ye_kj_shj;
 };
 
-//江西彩
+//天津彩
 class CJxSSCRule  : public CGameRule
 {
 public:
@@ -87,9 +87,7 @@ public:
 	//下期期号
 	virtual CString GetNextExpect(int nDelta=0);
 	//下期开奖时间
-	virtual CTime GetNextKjShj(){return GetNextFdShj();}
-	//下期封单时间
-	CTime GetNextFdShj();
+	virtual CTime GetNextKjShj();
 	//离下次封单时间还剩下的时间
 	long GetFdShjDiff();
 
