@@ -2329,8 +2329,16 @@ CTime CQiXingCaiRule::GetNextFdShj()
 CKuaiLe8RUle::CKuaiLe8RUle(void)
 : timespan_kj_shj(300)
 {
-	m_nStartQihao = 774635;
-	m_tStartTime = CTime(2016,8,9,9,5,0);
+	m_iKjShjFirst=32700;
+	m_iKjShjLast=86100;
+	m_qishu=179;
+	m_timespan=300;
+	//fenDanDuration = 60; //封单时间
+	//m_gameKind=CZ_PK10;
+	//strcpy(m_para1,"%s%02d");
+	//CTime _tStartTime = CTime(2019,2,23,9,5,0);
+    m_tStartTime = 1550883900;
+	m_nStartQihao = 937517;
 }
 
 CKuaiLe8RUle::~CKuaiLe8RUle(void)
@@ -2341,72 +2349,15 @@ CKuaiLe8RUle::~CKuaiLe8RUle(void)
 //下期期号
 CString CKuaiLe8RUle::GetNextExpect(int nDelta)
 {
-	int nQiHao =0;
-	CTime tm= CTime::GetCurrentTime();
-	tm+=m_timeSpan;
-
-	//一年中第几天
-	CString strDay = tm.Format(_T("%j"));
-	int nDay = _wtoi(strDay.GetBuffer(strDay.GetLength()));
-
-	int TodayQihao =1;
-	if ( (tm.GetHour()>=9)&&(tm.GetHour()<23)  || (tm.GetHour()==23)&&(tm.GetMinute()<55))
-	{
-		CTime ctm(tm.GetYear(), tm.GetMonth(), tm.GetDay(), 9, 5, 0);
-
-		CTimeSpan tCha = tm-ctm;
-
-		TodayQihao = tCha.GetTotalMinutes()/5+1;
-	}
-	else //if((tm.GetHour()==23)&&(tm.GetMinute()>55))
-	{
-		if((tm.GetHour()==23)&&(tm.GetMinute()>55))
-			tm += CTimeSpan(1,0,0,0);
-		CTime t(tm.GetYear(),tm.GetMonth(),tm.GetDay(),9,5,0);
-		tm = t;
-		TodayQihao = 0;
-	}
-
-	CTimeSpan temp = tm-m_tStartTime;
-
-	int nAllDay = temp.GetDays();
-	nQiHao = m_nStartQihao + nAllDay*179 +TodayQihao;
-	nQiHao+=nDelta;
-	CString strQiHao;
-	strQiHao.Format(L"%ld",  nQiHao);
-	return strQiHao;
+	string str=GetNextExpect_PK10(nDelta);
+	CString rQh=CA2T(str.c_str());
+	return rQh;
 }
-
-
 
 //下期开奖时间
 CTime CKuaiLe8RUle::GetNextKjShj()
 {
-	CTime t= CTime::GetCurrentTime();
-	t+=m_timeSpan;
-	CString rQh;
-	if ((t.GetHour() >= 9  && t.GetHour()<=23 )  ||  (t.GetHour() == 23 && t.GetMinute()<55))
-	{
-		CTime ctm(t.GetYear(), t.GetMonth(), t.GetDay(), 9, 0, 0);
-
-		CTimeSpan tCha = t-ctm;
-		int TodayQihao=1;
-		if(tCha.GetTotalSeconds()%300 > 240)
-			TodayQihao = tCha.GetTotalMinutes()/5+2;
-		else
-			TodayQihao = tCha.GetTotalMinutes()/5+1;
-
- 		CTime NextKj = ctm;
- 
-		NextKj += CTimeSpan(0,0,TodayQihao*5,0);
-
-		return NextKj;
-	}
-	else 
-	{
-		if(t.GetHour() == 23 && t.GetMinute()>=55)
-			t+=CTimeSpan(1L,0,0,0);
-		CTime ctm(t.GetYear(), t.GetMonth(), t.GetDay(), 9, 5, 0);
-		return ctm;
-	}
+	time_t ct=GetNextKjShj_PK10();
+	CTime t=ct;
+	return t;
 }
