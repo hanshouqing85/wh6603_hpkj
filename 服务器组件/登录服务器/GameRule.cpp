@@ -712,7 +712,18 @@ CXJSSCRule::CXJSSCRule(void)
 	m_iKjShjLast=93600;//第二天的凌晨2时整
 	m_qishu=48;
 	m_timespan=1200;
-	//fenDanDuration = 60;//封单时间
+	m_fenDanDuration = 60;//封单时间
+	strcpy(m_para1,"%s%02d");
+}
+
+CXJSSCRule::CXJSSCRule(const char *para1,int iKjShjFirst,int iKjShjLast,int qishu,int timespan,int fdtimespan)
+{
+	m_iKjShjFirst=iKjShjFirst;
+	m_iKjShjLast=iKjShjLast;
+	m_qishu=qishu;
+	m_timespan=timespan;
+	m_fenDanDuration = fdtimespan;
+	strcpy(m_para1,para1);
 }
 
 CXJSSCRule::~CXJSSCRule(void)
@@ -771,7 +782,7 @@ CString CXJSSCRule::GetNextExpect(int nDelta)
 	strftime(temp, sizeof(temp), "%Y%m%d",tmLocal);
 
 	char last[64] = {0};
-	sprintf(last, "%s%02d", temp, qishu);
+	sprintf(last, m_para1, temp, qishu);
 
 	string str=last;
 	CString ret=CA2T(str.c_str());
@@ -833,7 +844,7 @@ bool CXJSSCRule::IsCanCancel(CString qihao)
 		return false;
 	}
 
-	return GetFdShjDiff() > 60; 
+	return GetFdShjDiff() > m_fenDanDuration; 
 }
 
 ////////////////////////////////////////////

@@ -55,6 +55,7 @@ protected:
 	int m_iKjShjLast;//每天最后一期开奖时间
 	int m_qishu;//每天开奖期数
 	int m_timespan;//开奖频率
+	int m_fenDanDuration;//封单时间
 };
 
 class CChqSSCRule : public CGameRule
@@ -128,6 +129,7 @@ class CXJSSCRule  : public CGameRule
 {
 public:
 	CXJSSCRule(void);
+	CXJSSCRule(const char *para1,int iKjShjFirst,int iKjShjLast,int qishu,int timespan,int fdtimespan);
 	virtual ~CXJSSCRule(void);
 
 public:

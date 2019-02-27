@@ -33,6 +33,7 @@ typedef enum {
 	CZ_CaiZhangdie,			//猜涨跌
 	CZ_TXfenfencai,			//腾讯分分彩
 	CZ_QQfenfencai,			//QQ分分彩
+	CZ_XYFT=33,				//幸运飞艇		33
 	CZCount
 
 }CaiZhong;
@@ -2327,6 +2328,19 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 					bCheDan = false;
 				}
 			}
+			else if(nGameKind == CZ_XYFT)
+			{
+				CXJSSCRule rule("%s%03d",47340,101040,180,300,50);
+				rule.SetTimeSpan(m_timespan);
+				strNowQihao = rule.GetNextExpect();
+				bCheDan = (strNowQihao==sQihao);
+				long secDiff = rule.GetKjShjDiff(); 
+
+				if (secDiff < 30 )
+				{
+					bCheDan = false;
+				}
+			}
 
 			if (!bCheDan)
 			{
@@ -2716,6 +2730,28 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 				}
  				CBJPK10Rule rule;
 				//rule.SetStartQihao(nStartQihao,tTime);
+				rule.SetTimeSpan(m_timespan);
+				strNowQihao = rule.GetNextExpect();
+				bCheDan = (strNowQihao==sQihao);
+				long secDiff = rule.GetKjShjDiff(); 
+				//	if(!bCheDan)
+				{
+					CString strLog;
+					strLog.Format(L"WRONGQIHAO now:%s,client:%s,secDiff:%d",strNowQihao,sQihao,secDiff);
+					OutputDebugString(strLog);
+				}
+
+				if (secDiff < 30 )
+				{
+					CString strLog;
+					strLog.Format(L"WRONGQIHAO secDiff:%d",secDiff);
+					OutputDebugString(strLog);
+					bCheDan = false;
+				}
+ 			}
+ 			else if(nGameKind == CZ_XYFT)
+ 			{
+				CXJSSCRule rule("%s%03d",47340,101040,180,300,50);
 				rule.SetTimeSpan(m_timespan);
 				strNowQihao = rule.GetNextExpect();
 				bCheDan = (strNowQihao==sQihao);
@@ -4126,6 +4162,25 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 					}
 				}
 				CBJPK10Rule rule;
+				rule.SetStartQihao(nStartQihao,tTime);
+				rule.SetTimeSpan(m_timespan);
+				bCheDan = rule.IsCanCancel(sQihao);
+			}
+			else if(nGameKind == CZ_XYFT)
+			{
+				int nStartQihao = 0;
+				CTime tTime;
+				for (map<int ,tagMapLottery*>::iterator pos = mapLotteryStatus.begin();pos!=mapLotteryStatus.end();++pos)
+				{
+					if(pos->second->MapLottery.n_t_kindid == nGameKind)
+					{
+						nStartQihao = _ttoi(pos->second->MapLottery.s_t_expect);
+
+						CTime ctm(pos->second->MapLottery.n_t_shijian);
+						tTime = ctm;
+					}
+				}
+				CXJSSCRule rule("%s%03d",47340,101040,180,300,50);
 				rule.SetStartQihao(nStartQihao,tTime);
 				rule.SetTimeSpan(m_timespan);
 				bCheDan = rule.IsCanCancel(sQihao);

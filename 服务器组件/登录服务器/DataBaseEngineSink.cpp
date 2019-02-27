@@ -39,6 +39,7 @@ typedef enum {
 	CZ_CaiZhangdie,			//猜涨跌
 	CZ_TXfenfencai,			//腾讯分分彩
 	CZ_QQfenfencai,			//QQ分分彩
+	CZ_XYFT=33,			//幸运飞艇		33
 	CZCount
 	
 }CaiZhong;
@@ -7379,7 +7380,7 @@ bool CDataBaseEngineSink::OnTouzhuCQSSC(DWORD dwContextID, VOID * pData, WORD wD
 		CString strLog;
 		strLog.Format(L"TOUZHU [%d] TypeID:%d,KindID:%d,haoma:[%s],zhushu:%d,checkzhushu:%d",pTouzhuCQSSC->dwUserID,pTouzhuCQSSC->nGameType,pTouzhuCQSSC->nGameKind,strAllHaoma,nZhushu,nCheckZongzhu);
 		CTraceService::TraceString(strLog,TraceLevel_Normal);
-		if ((pTouzhuCQSSC->nGameType == CZ_PK10&&pTouzhuCQSSC->nGameKind == WF_GYHZH )||((pTouzhuCQSSC->nGameType == CZ3D||pTouzhuCQSSC->nGameType == CZPaiLie3)&&pTouzhuCQSSC->nGameKind == enWF_ZhixuanHezhi))
+		if (((pTouzhuCQSSC->nGameType == CZ_PK10||pTouzhuCQSSC->nGameType == CZ_XYFT) &&pTouzhuCQSSC->nGameKind == WF_GYHZH )||((pTouzhuCQSSC->nGameType == CZ3D||pTouzhuCQSSC->nGameType == CZPaiLie3)&&pTouzhuCQSSC->nGameKind == enWF_ZhixuanHezhi))
 		{
 			nCheckZongzhu = nZhushu;
 		}
@@ -7523,6 +7524,7 @@ int CDataBaseEngineSink::GetTouZhuZongShu(int nTypeID,int nKindID,CString strHao
 
 		}
 	case CZ_PK10:
+	case CZ_XYFT:
 		{
 			nZongZhu = GetPK10Zhushu(nTypeID,nKindID,strHaoma);
 			CString strLog;
@@ -9697,7 +9699,7 @@ bool CDataBaseEngineSink::OnTouzhuCQSSCZhuihao(DWORD dwContextID, VOID * pData, 
 			strLog.Format(L"TOUZHU [%d] TypeID:%d,KindID:%d,haoma:[%s],zhushu:%d,checkzhushu:%d",pTouzhuCQSSC->dwUserID,pTouzhuCQSSC->nGameType,pTouzhuCQSSC->nGameKind,strAllHaoma,nZhushu,nCheckZongzhu);
 			CTraceService::TraceString(strLog,TraceLevel_Normal);
 
-			if ((pTouzhuCQSSC->nGameType == CZ_PK10&&pTouzhuCQSSC->nGameKind == WF_GYHZH )||((pTouzhuCQSSC->nGameType == CZ3D||pTouzhuCQSSC->nGameType == CZPaiLie3)&&pTouzhuCQSSC->nGameKind == enWF_ZhixuanHezhi))
+			if (((pTouzhuCQSSC->nGameType == CZ_PK10||pTouzhuCQSSC->nGameType == CZ_XYFT) && pTouzhuCQSSC->nGameKind == WF_GYHZH )||((pTouzhuCQSSC->nGameType == CZ3D||pTouzhuCQSSC->nGameType == CZPaiLie3)&&pTouzhuCQSSC->nGameKind == enWF_ZhixuanHezhi))
 			{
 				nCheckZongzhu = nZhushu;
 			}
@@ -9888,7 +9890,7 @@ bool CDataBaseEngineSink::OnMBTouzhuCQSSCZhuihao(DWORD dwContextID, VOID * pData
 		CString strLog;
 		strLog.Format(L"TOUZHU [%d] TypeID:%d,KindID:%d,haoma:[%s],zhushu:%d,checkzhushu:%d",pTouzhuCQSSC->dwUserID,pTouzhuCQSSC->nGameType,pTouzhuCQSSC->nGameKind,strAllHaoma,nZhushu,nCheckZongzhu);
 		CTraceService::TraceString(strLog,TraceLevel_Normal);
-		if ((pTouzhuCQSSC->nGameType == CZ_PK10&&pTouzhuCQSSC->nGameKind == WF_GYHZH )||((pTouzhuCQSSC->nGameType == CZ3D||pTouzhuCQSSC->nGameType == CZPaiLie3)&&pTouzhuCQSSC->nGameKind == enWF_ZhixuanHezhi))
+		if (((pTouzhuCQSSC->nGameType == CZ_PK10||pTouzhuCQSSC->nGameType == CZ_XYFT)&&pTouzhuCQSSC->nGameKind == WF_GYHZH )||((pTouzhuCQSSC->nGameType == CZ3D||pTouzhuCQSSC->nGameType == CZPaiLie3)&&pTouzhuCQSSC->nGameKind == enWF_ZhixuanHezhi))
 		{
 			nCheckZongzhu = nZhushu;
 		}
@@ -10140,7 +10142,7 @@ bool CDataBaseEngineSink::OnTouzhuCQSSCDan(DWORD dwContextID, VOID * pData, WORD
  			int nCheckZongzhu = GetTouZhuZongShu(pTouzhuCQSSC->nGameType,pTouzhuCQSSC->nGameKind,strAllHaoma);
 			strLog.Format(L"TOUZHU [%d] Qihao:%s,TypeID:%d,KindID:%d,zhushu:%d,checkzhushu:%d,haoma:[%s]",pTouzhuCQSSC->dwUserID,ChangeStringToT(pTouzhuCQSSC->strQishu),pTouzhuCQSSC->nGameType,pTouzhuCQSSC->nGameKind,nZhushu,nCheckZongzhu,strAllHaoma);
 			CTraceService::TraceString(strLog,TraceLevel_Normal);
-			if ((pTouzhuCQSSC->nGameType == CZ_PK10&&pTouzhuCQSSC->nGameKind == WF_GYHZH )||((pTouzhuCQSSC->nGameType == CZ3D||pTouzhuCQSSC->nGameType == CZPaiLie3)&&pTouzhuCQSSC->nGameKind == enWF_ZhixuanHezhi))
+			if (((pTouzhuCQSSC->nGameType == CZ_PK10||pTouzhuCQSSC->nGameType == CZ_XYFT)&&pTouzhuCQSSC->nGameKind == WF_GYHZH )||((pTouzhuCQSSC->nGameType == CZ3D||pTouzhuCQSSC->nGameType == CZPaiLie3)&&pTouzhuCQSSC->nGameKind == enWF_ZhixuanHezhi))
 			{
 				nCheckZongzhu = nZhushu;
 			}
