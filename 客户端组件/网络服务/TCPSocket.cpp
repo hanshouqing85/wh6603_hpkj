@@ -241,9 +241,7 @@ WORD CTCPSocket::SendData(WORD wMainCmdID, WORD wSubCmdID)
 	pHead->CommandInfo.wSubCmdID=wSubCmdID;
 
 	//加密数据
-	//WORD wSendSize=EncryptBuffer(cbDataBuffer,sizeof(TCP_Head),sizeof(cbDataBuffer));
-	WORD wSendSize = sizeof(TCP_Head);
-	bool bRet = Common_MappedBuffer(cbDataBuffer, wSendSize);
+	WORD wSendSize=EncryptBuffer(cbDataBuffer,sizeof(TCP_Head),sizeof(cbDataBuffer));
 
 	//发送数据
 	return SendDataBuffer(cbDataBuffer,wSendSize);
@@ -272,9 +270,7 @@ WORD CTCPSocket::SendData(WORD wMainCmdID, WORD wSubCmdID, VOID * pData, WORD wD
 	}
 
 	//加密数据
-	//WORD wSendSize=EncryptBuffer(cbDataBuffer,sizeof(TCP_Head)+wDataSize,sizeof(cbDataBuffer));
-	WORD wSendSize = sizeof(TCP_Head)+wDataSize;
-	bool bRet = Common_MappedBuffer(cbDataBuffer, wSendSize);
+	WORD wSendSize=EncryptBuffer(cbDataBuffer,sizeof(TCP_Head)+wDataSize,sizeof(cbDataBuffer));
 
 	//发送数据
 	return SendDataBuffer(cbDataBuffer,wSendSize);
@@ -457,7 +453,7 @@ WORD CTCPSocket::EncryptBuffer(BYTE pcbDataBuffer[], WORD wDataSize, WORD wBuffe
 	TCP_Head * pHead=(TCP_Head *)pcbDataBuffer;
 	pHead->TCPInfo.cbCheckCode=~cbCheckCode+1;
 	pHead->TCPInfo.wPacketSize=wDataSize;
-	pHead->TCPInfo.cbDataKind=DK_MAPPED/*SOCKET_TCP_VER*/;
+	pHead->TCPInfo.cbDataKind=SOCKET_TCP_VER;
 
 	//创建密钥
 	DWORD dwXorKey=m_dwSendXorKey;
@@ -556,73 +552,6 @@ WORD CTCPSocket::CrevasseBuffer(BYTE pcbDataBuffer[], WORD wDataSize)
 	return wDataSize;
 }
 
-//加密数据
-bool CTCPSocket::Common_MappedBuffer(void* data, int nDataSize)
-{
-	//变量定义
-	BYTE *buffer = (BYTE*)data;
-	//效验码与字节映射
-	BYTE cbCheckCode = 0;
-
-	for (WORD i = sizeof(TCP_Info); i < nDataSize; i++)
-	{
-		cbCheckCode += buffer[i];
-
-		buffer[i] = g_SendByteMap[buffer[i]];
-	}
-
-	//设置数据
-	TCP_Info *pInfo = (TCP_Info*)data;
-	pInfo->cbDataKind = DK_MAPPED;
-	pInfo->wPacketSize = nDataSize;
-	pInfo->cbCheckCode = ~cbCheckCode + 1;
-
-	return true;
-}
-
-//解密数据
-bool CTCPSocket::Common_unMappedBuffer(void* data, int nDataSize)
-{
-	//变量定义
-	BYTE* buffer = (BYTE*)data;
-	TCP_Info* pInfo = (TCP_Info*)data;
-
-	//映射
-	if ((pInfo->cbDataKind & DK_MAPPED) != 0)
-	{
-		BYTE cbCheckCode = pInfo->cbCheckCode;
-
-		for (WORD i = sizeof(TCP_Info); i<nDataSize; i++)
-		{
-			cbCheckCode += g_RecvByteMap[buffer[i]];
-			buffer[i] = g_RecvByteMap[buffer[i]];
-		}
-		//效验
-		if (cbCheckCode != 0)
-			return false;
-	}
-	return true;
-}
-
-void CTCPSocket::sendValidate()
-{	
-	//网络验证
-	struct TCP_Validate
-	{
-		TCHAR szValidateKey[64];//验证字符
-	};
-
-	// important
-    //char szCompilatio[] = "345E2FFA-891E-4021-A57E-80ECF3466896";
-	TCHAR szCompilatio[] = _T("345E2FFA-891E-4021-A57E-80ECF3466896");
-
-	BYTE cbBuffer[sizeof(TCP_Validate)];
-	memset(cbBuffer, 0 , sizeof(TCP_Validate));
-	TCP_Validate *validate = (TCP_Validate *)cbBuffer;
-	memcpy(validate->szValidateKey, szCompilatio, sizeof(szCompilatio));
-	SendData(MDM_KN_COMMAND,2/*SUB_KN_VALIDATE_SOCKET*/, (void*)validate, sizeof(TCP_Validate));
-}
-
 //网络连接
 LRESULT CTCPSocket::OnSocketNotifyConnect(WPARAM wParam, LPARAM lParam)
 {
@@ -634,7 +563,6 @@ LRESULT CTCPSocket::OnSocketNotifyConnect(WPARAM wParam, LPARAM lParam)
 	//发送通知
 	//TCHAR szErrorDesc[128]=TEXT("");
 	//GetConnectError(iErrorCode,szErrorDesc,sizeof(szErrorDesc));
-    sendValidate();
 	m_pITCPSocketSink->OnEventTCPSocketLink(m_wSocketID,iErrorCode);
 
 	return 1;
@@ -661,9 +589,9 @@ LRESULT CTCPSocket::OnSocketNotifyRead(WPARAM wParam, LPARAM lParam)
 		{
 			//效验参数
 			wPacketSize=pHead->TCPInfo.wPacketSize;
-			//ASSERT(pHead->TCPInfo.cbDataKind==DK_MAPPED/*SOCKET_TCP_VER*/);
+			ASSERT(pHead->TCPInfo.cbDataKind==SOCKET_TCP_VER);
 			ASSERT(wPacketSize<=(SOCKET_TCP_PACKET+sizeof(TCP_Head)));
-			//if (pHead->TCPInfo.cbDataKind!=DK_MAPPED/*SOCKET_TCP_VER*/) throw TEXT("数据包版本错误");
+			if (pHead->TCPInfo.cbDataKind!=SOCKET_TCP_VER) throw TEXT("数据包版本错误");
 			if (wPacketSize>(SOCKET_TCP_PACKET+sizeof(TCP_Head))) throw TEXT("数据包太大");
 			if (m_wRecvSize<wPacketSize) return 1;
 
@@ -674,9 +602,7 @@ LRESULT CTCPSocket::OnSocketNotifyRead(WPARAM wParam, LPARAM lParam)
 			MoveMemory(m_cbRecvBuf,m_cbRecvBuf+wPacketSize,m_wRecvSize);
 
 			//解密数据
-			//WORD wRealySize=CrevasseBuffer(cbDataBuffer,wPacketSize);
-			WORD wRealySize = wPacketSize;
-			bool bRet = Common_unMappedBuffer(cbDataBuffer, wPacketSize);
+			WORD wRealySize=CrevasseBuffer(cbDataBuffer,wPacketSize);
 			ASSERT(wRealySize>=sizeof(TCP_Head));
 
 			//解释数据
