@@ -6584,6 +6584,10 @@ bool CDataBaseEngineSink::OnQuitGame(DWORD dwContextID, VOID * pData, WORD wData
  		
  		LogRet.nResult = lResultCode;
 		LogRet.nUserID = pLogCount->dwUserID;
+
+		CString strLog;
+		strLog.Format(L"%s 第%d行,[dwContextID=%d,uid=%d,lResultCode=%d]退出登陆",LPCTSTR(CA2T(__FUNCTION__)),__LINE__,dwContextID,pLogCount->dwUserID,lResultCode);
+		CTraceService::TraceString(strLog,TraceLevel_Normal);
  		//发送结果
  		return m_pIDataBaseEngineEvent->OnEventDataBaseResult(DBO_GP_QUIT_GAME_RET,dwContextID,&LogRet,sizeof(LogRet));
 

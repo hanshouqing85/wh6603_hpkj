@@ -41,6 +41,40 @@ typedef void * POINTER_64 PVOID64;
 //////////////////////////////////////////////////////////////////////////////////
 //Á´½Ó´úÂë
 
+#if _MSC_VER == 1400
+
+#ifndef _DEBUG
+#ifndef _UNICODE
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/WHImage.lib")
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/DownLoad.lib")
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/ServiceCore.lib")
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/SkinControl.lib")
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/PlatformData.lib")
+#else
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/WHImage.lib")
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/DownLoad.lib")
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/ServiceCore.lib")
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/SkinControl.lib")
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/PlatformData.lib")
+#endif
+#else
+#ifndef _UNICODE
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/WHImageD.lib")
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/DownLoadD.lib")
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/ServiceCoreD.lib")
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/SkinControlD.lib")
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/PlatformDataD.lib")
+#else
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/WHImageD.lib")
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/DownLoadD.lib")
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/ServiceCoreD.lib")
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/SkinControlD.lib")
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/PlatformDataD.lib")
+#endif
+#endif
+
+#else
+
 #ifndef _DEBUG
 #ifndef _UNICODE
 	#pragma comment (lib,"../../Á´½Ó¿â/Ansi/WHImage.lib")
@@ -69,6 +103,8 @@ typedef void * POINTER_64 PVOID64;
 	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/SkinControlD.lib")
 	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/PlatformDataD.lib")
 #endif
+#endif
+
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////

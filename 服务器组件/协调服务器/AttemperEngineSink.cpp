@@ -254,7 +254,8 @@ bool CAttemperEngineSink::OnTCPNetworkMainRegister(WORD wSubCmdID, VOID * pData,
 				{
 					DWORD dwAllSocket = it->second;
 					CString strLog;
-					strLog.Format(L"socket:%d,userid:%d",dwAllSocket,pCheckUserOnline->dwUserID);
+					//strLog.Format(L"socket:%d,userid:%d",dwAllSocket,pCheckUserOnline->dwUserID);
+					strLog.Format(_T("%s 第%d行,dwSocketID=%d,socket=%d,userid=%d,key=%d"),LPCTSTR(CA2T(__FUNCTION__)),__LINE__,dwSocketID,dwAllSocket,pCheckUserOnline->dwUserID,it->first);
 					CTraceService::TraceString(strLog,TraceLevel_Exception);
 					m_pITCPNetworkEngine->SendData(dwAllSocket,MDM_CS_REGISTER,SUB_CS_C_CHECK_USER_ONLINE_RET,&CheckUserOnlineRet,sizeof(CheckUserOnlineRet));
 				}
@@ -295,6 +296,13 @@ bool CAttemperEngineSink::OnTCPNetworkMainRegister(WORD wSubCmdID, VOID * pData,
 			int nSize = m_UserSocketID.size();
 
 			m_UserSocketID[nSize] = dwSocketID;
+
+#if 1//def USE_CS_PRINT
+			CString strLog;
+			strLog.Format(_T("%s 第%d行,dwSocketID=%d,key=%d"),LPCTSTR(CA2T(__FUNCTION__)),__LINE__,dwSocketID,nSize);
+			CTraceService::TraceString(strLog,TraceLevel_Exception);
+#endif
+
 
 			//设置绑定
 			WORD wBindIndex=LOWORD(dwSocketID);

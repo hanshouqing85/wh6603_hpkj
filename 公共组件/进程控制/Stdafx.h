@@ -7,7 +7,7 @@
 #endif
 
 #ifndef WINVER
-#define WINVER 0x0500
+#define WINVER 0x0501
 #endif
 /*
 #ifndef _WIN32_WINNT
@@ -49,6 +49,24 @@
 //////////////////////////////////////////////////////////////////////////////////
 //Á´½Ó´úÂë
 
+#if _MSC_VER == 1400
+
+#ifndef _DEBUG
+#ifndef _UNICODE
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/ServiceCore.lib")
+#else
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/ServiceCore.lib")
+#endif
+#else
+#ifndef _UNICODE
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/ServiceCoreD.lib")
+#else
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/ServiceCoreD.lib")
+#endif
+#endif
+
+#else
+
 #ifndef _DEBUG
 #ifndef _UNICODE
 	#pragma comment (lib,"../../Á´½Ó¿â/Ansi/ServiceCore.lib")
@@ -61,6 +79,8 @@
 #else
 	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/ServiceCoreD.lib")
 #endif
+#endif
+
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////

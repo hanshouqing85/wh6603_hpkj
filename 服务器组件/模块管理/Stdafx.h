@@ -43,6 +43,28 @@ typedef void * POINTER_64 PVOID64;
 //////////////////////////////////////////////////////////////////////////////////
 //Á´½Ó´úÂë
 
+#if _MSC_VER == 1400
+
+#ifndef _DEBUG
+#ifndef _UNICODE
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/ServiceCore.lib")
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/KernelEngine.lib")
+#else
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/ServiceCore.lib")
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/KernelEngine.lib")
+#endif
+#else
+#ifndef _UNICODE
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/ServiceCoreD.lib")
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/KernelEngineD.lib")
+#else
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/ServiceCoreD.lib")
+	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/KernelEngineD.lib")
+#endif
+#endif
+
+#else
+
 #ifndef _DEBUG
 #ifndef _UNICODE
 	#pragma comment (lib,"../../Á´½Ó¿â/Ansi/ServiceCore.lib")
@@ -59,6 +81,8 @@ typedef void * POINTER_64 PVOID64;
 	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/ServiceCoreD.lib")
 	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/KernelEngineD.lib")
 #endif
+#endif
+
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////

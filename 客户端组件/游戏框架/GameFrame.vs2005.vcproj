@@ -303,7 +303,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\游戏组件\开发库\DX9SDK\Include"
+				AdditionalIncludeDirectories="..\..\DX9SDK\Include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_AFXEXT;GAME_FRAME_DLL;PLAYCHATSHORTSOUND;_UNICODE"
 				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="true"

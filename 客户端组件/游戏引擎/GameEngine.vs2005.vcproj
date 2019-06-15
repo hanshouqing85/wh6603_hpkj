@@ -301,6 +301,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="E:\wh6603_hpkj\DX9SDK\Include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_AFXEXT;GAME_ENGINE_DLL"
 				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="true"
@@ -325,6 +326,7 @@
 				Name="VCLinkerTool"
 				OutputFile="../../VC8ÔËÐÐ/ClientReleaseUnicode/GameEngine.dll"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="E:\wh6603_hpkj\DX9SDK\Lib"
 				ModuleDefinitionFile=".\GameEngine.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"

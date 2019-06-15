@@ -386,7 +386,15 @@ bool CAttemperEngineSink::OnEventTCPNetworkShut(DWORD dwClientAddr, DWORD dwActi
 	WORD wBindIndex=LOWORD(dwSocketID);
 	ZeroMemory((m_pBindParameter+wBindIndex),sizeof(tagBindParameter));
 
-
+#if 1
+	CString str;
+	str.Format(_T("%s 第%d行,dwSocketID=%d"),  \
+		LPCTSTR(CA2T(__FUNCTION__)), \
+		__LINE__, \
+		dwSocketID \
+		);
+	CTraceService::TraceString(str, TraceLevel_Debug);
+#endif
 	for (map<int,DWORD>::iterator it=m_UserSocketID.begin();it!=m_UserSocketID.end();++it)
 	{
 		if(it->second == dwSocketID)
@@ -400,7 +408,7 @@ bool CAttemperEngineSink::OnEventTCPNetworkShut(DWORD dwClientAddr, DWORD dwActi
 
 			m_UserSocketID[nUserID]=0;
 			m_UserSocketIDhc[nUserID]=0;
-			 m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_QUIT_GAME,0,&LogCount,sizeof(LogCount));
+			m_pIDataBaseEngine->PostDataBaseRequest(DBR_GP_QUIT_GAME,0,&LogCount,sizeof(LogCount));
 
 			return true;
 
@@ -5952,7 +5960,7 @@ bool CAttemperEngineSink::OnDBQuitGameResult(DWORD dwContextID, VOID * pData, WO
 
 
 	CString strLog;
-	strLog.Format(L"[%d]退出登陆",pLogRet->nUserID);
+	strLog.Format(L"%s 第%d行,[dwContextID=%d,uid=%d]退出登陆",LPCTSTR(CA2T(__FUNCTION__)),__LINE__,dwContextID,pLogRet->nUserID);
 	CTraceService::TraceString(strLog,TraceLevel_Normal);
 	m_pITCPNetworkEngine->SendData(dwContextID,MDM_GP_USER_SERVICE,SUB_GP_QUIT_GAME_RET,&QuitGameRet,sizeof(QuitGameRet));
 	m_UserSocketID[pLogRet->nUserID]=0;
