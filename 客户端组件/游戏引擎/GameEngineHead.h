@@ -11,14 +11,25 @@
 #include <MMSystem.h>
 
 //D3D 文件
-#pragma warning(disable : 4819)
-#include "D3D9.h"
-#include "D3Dx9.h"
+#include <D3D9.h>
+#include <D3Dx9.h>
 #include <DSound.h>
 
+//OGL 文件
+#include <GL/GL.h>		
+#include <GL/GLU.h>
+#include <GL/GLAux.h>
 
-
+//平台文件
+#if 1
+#include "..\..\全局定义\Platform.h"
+#include "..\..\客户端组件\界面控件\SkinControlHead.h"
+#else
+#include "..\..\..\系统模块-EWIN升级版\全局定义\Platform.h"
+#include "..\..\..\系统模块-EWIN升级版\客户端组件\界面控件\SkinControlHead.h"
+#endif
 //////////////////////////////////////////////////////////////////////////////////
+
 //公共定义
 
 //导出定义
@@ -31,38 +42,14 @@
 #endif
 
 //模块定义
-#ifdef _DEBUG
-	#ifdef _UNICODE
-		#define GAME_ENGINE_DLL_NAME		TEXT("GameEngineD.dll")			//组件名字
-	#else
-		#define GAME_ENGINE_DLL_NAME		TEXT("GameEngineD.dll")			//组件名字
-	#endif
+#ifndef _DEBUG
+	#define GAME_ENGINE_DLL_NAME		TEXT("GameEngine.dll")			//组件名字
 #else
-	#ifdef _UNICODE
-		#define GAME_ENGINE_DLL_NAME		TEXT("GameEngine.dll")			//组件名字
-	#else
-		#define GAME_ENGINE_DLL_NAME		TEXT("GameEngine.dll")				//组件名字
-	#endif
+	#define GAME_ENGINE_DLL_NAME		TEXT("GameEngineD.dll")			//组件名字
 #endif
 
-//////////////////////////////////////////////////////////////////////////
-//接口释放
-#define SafeRelease(pObject) { if (pObject!=NULL) { pObject->Release(); pObject=NULL; } }
-
-//删除指针
-#define SafeDelete(pData) { try { delete pData; } catch (...) { ASSERT(FALSE); } pData=NULL; } 
-
-//关闭句柄
-#define SafeCloseHandle(hHandle) { if (hHandle!=NULL) { CloseHandle(hHandle); hHandle=NULL; } }
-
-//删除数组
-#define SafeDeleteArray(pData) { try { delete [] pData; } catch (...) { ASSERT(FALSE); } pData=NULL; } 
-
-//数组维数
-#define CountArray(Array) (sizeof(Array)/sizeof(Array[0]))
-
-#define Check_Image(pData)		( (pData != NULL) && (!pData->IsNull()) )
-//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+//结构定义
 
 //资源信息
 struct tagResourceInfo
@@ -70,14 +57,6 @@ struct tagResourceInfo
 	DWORD							dwSize;								//资源大小
 	LPVOID							pcbBuffer;							//资源内存
 };
-
-#ifndef M_PI
-	#define M_PI	3.14159265358979323846f
-	#define M_PI_2	1.57079632679489661923f
-	#define M_PI_4	0.785398163397448309616f
-	#define M_1_PI	0.318309886183790671538f
-	#define M_2_PI	0.636619772367581343076f
-#endif
 
 //////////////////////////////////////////////////////////////////////////////////
 //导出文件
@@ -89,26 +68,39 @@ struct tagResourceInfo
 	#include "D3DDirect.h"
 	#include "D3DDevice.h"
 	#include "D3DSprite.h"
+	#include "D3DSurface.h"
 	#include "D3DTexture.h"
-	//#include "GameFrameView.h"
 
-	//声音引擎
+	//OGL 引擎
+	//#include "OGLFont.h"
+	//#include "OGLDevice.h"
+	//#include "OGLTexture.h"
+
+	//声音文件
 	#include "D3DSound.h"
+	#include "D3DMusic.h"
+	#include "D3DSoundBuffer.h"
+	#include "D3DSoundThread.h"
 
 	//游戏引擎
 	#include "LapseCount.h"
 	#include "VirtualEngine.h"
 	#include "VirtualWindow.h"
 	#include "VirtualButton.h"
-	//#include "VirtualSlider.h"
-	//#include "VirtualListBox.h"
 
-	//事件驱动
-	//#include "MsgEvent.h"
+	//D3D模型
+	#include "D3DStaticModel.h"
+	#include "D3DDynamicModel.h"
 
-	//管理引擎
-	//#include "TextureManager.h"
+	//D3D字体
+	#include "D3DFontEx.h"
+	#include "D3DParticles.h"
 
+	//效果文件
+	#include "D3DEffectPool.h"
+
+	//辅助文件
+	#include "D3DGlobalUnit.h"
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////

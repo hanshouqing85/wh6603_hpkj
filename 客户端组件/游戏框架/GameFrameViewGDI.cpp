@@ -138,10 +138,10 @@ VOID CGameFrameViewGDI::DrawUserClock(CDC * pDC, INT nXPos, INT nYPos, WORD wUse
 			SizeClockBack.SetSize(m_ImageClockBackEx.GetWidth(),m_ImageClockBackEx.GetHeight());
 			SizeClockItem.SetSize(m_ImageClockItemEx.GetWidth()/10,m_ImageClockItemEx.GetHeight());
 
-			//»æ»­±³¾°
+			//////»æ»­±³¾°
 			INT nXDrawPos=nXPos-SizeClockBack.cx/2;
 			INT nYDrawPos=nYPos-SizeClockBack.cy/2;
-			m_ImageClockBackEx.DrawImage(pDC,nXDrawPos,nYDrawPos);
+			//m_ImageClockBackEx.DrawImage(pDC,nXDrawPos,nYDrawPos);
 
 			//»æ»­Ê±¼ä
 			WORD nClockItem1=wUserClock/10;

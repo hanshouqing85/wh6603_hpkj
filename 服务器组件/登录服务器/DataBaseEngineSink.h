@@ -6,14 +6,8 @@
 #include "Stdafx.h"
 #include "InitParameter.h"
 #include "DataBasePacket.h"
-#include <map>
 #include <string>
 using		namespace		std;
-struct tagHaoma
-{
-	//char szHaoma[512000];
-	char szHaoma[15360];
-};
 
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -53,8 +47,6 @@ public:
 	CDataBaseEngineSink();
 	//析构函数
 	virtual ~CDataBaseEngineSink();
-	map<int,string> mapTempHaoma;
-	map<int,string> mapHaoma;
 
 	//基础接口
 public:
@@ -115,8 +107,6 @@ public:
 protected:
 	//帐号注册
 	bool OnRequestRegisterAccounts(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	int factorial(int number);
-	int combo(int base, int up);
 
 	//获取彩票用户信息
 	bool OnGetCPUserInfo(DWORD dwContextID, VOID * pData, WORD wDataSize);
@@ -128,14 +118,8 @@ protected:
 	bool OnMobileRegisterAccounts(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//游戏开奖查询
 	bool OnQueryGameResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//游戏开奖查询
-	bool OnQueryMobileGameResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//获取系统时间
 	bool OnQuerySystemTime(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//获取加拿大期号
-	bool OnQueryCanandaQihao(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//查询彩种状态
-	bool OnQueryStatusLottery(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//获取中奖用户
 	bool OnQueryWinUserID(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//获取MAPBONUS
@@ -186,26 +170,12 @@ protected:
 	bool OnGetYueInfo(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//查询更多开奖记录
 	bool OnGetMoreRecord(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//查询期号差
-	bool OnGetQihaocha(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//查询代理回馈
 	bool OnGetDailiHuikui(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//查询代理回馈
 	bool OnDailiLingjiang(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//退出游戏
 	bool OnQuitGame(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//获取平台公告
-	bool OnGetNotic(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//获取站内信数量
-	bool OnGetZnxCount(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//删除信息
-	bool OnDelMessage(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//获取上下级信息
-	bool OnGetAllUserInfo(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//发送信息
-	bool OnSendMessage(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//获取所有人站内信数量
-	bool OnGetZnxAllCount(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//签到
 	bool OnUserQiandao(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//欢乐送
@@ -214,14 +184,8 @@ protected:
 	bool OnGetUserLingJiang(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//取款
 	bool OnDoQukuan(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//取款限制
-	bool OnGetQukuanLimit(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//投注记录查询
 	bool OnGetTouzhuLog(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//站内信查询
-	bool OnGetZnxInboxLog(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//站内信查看
-	bool OnChkZnxInboxLog(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//下级充值日志查询
 	bool OnGetXJCHZHLog(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//下级提现日志查询
@@ -248,16 +212,42 @@ protected:
 	bool OnGetXJTZHLog(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//下级投注记录查询
 	bool OnCHKXJTZHLog(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//获取棋牌列表
-	bool OnGetQipaiKind(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//下级投注记录通过账户查询
+	bool OnGetXJTZHLogByAct(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//下级提现通过账户查询
+	bool OnGetXJTxLogByAct(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//下级投注记录通过ID查询
+	bool OnGetXJTZHLogByID(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//下级提现记录通过ID查询
+	bool OnGetXJTXLogByID(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//下级投注记录通过账户查询
+	bool OnCHKXJTZHLogByAct(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//下级盈亏记录通过ID查询
+	bool OnGetXJYKLogByID(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//下级盈亏记录通过账户查询
+	bool OnGetXJYKLogByAct(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//通过ID查询下级充值日志
+	bool OnGetXJCHZHLogByID(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//通过账户查询下级充值日志
+	bool OnGetXJCHZHLogByAct(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//下级盈亏统计通过ID查询
+	bool OnGetXJYKTjByID(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//下级盈亏统计通过账户查询
+	bool OnGetXJYKTjByAct(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//下级投注记录通过ID查询
+	bool OnCHKXJTZHLogByID(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//获取会员数据
 	bool OnGetHyShj(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//获取会员数据
-	bool CheckDate(TCHAR szTime[30]);
 	//提现记录查询
 	bool OnGetTixianLog(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//会员信息记录查询
 	bool OnGetHYXXLog(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//会员信息记录查询
+	bool OnGetHYXXList(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//会员信息记录查询
+	bool OnGetHYXXLogByID(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//会员信息记录查询
+	bool OnGetHYXXLogByAct(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//修改会员返点
 	bool OnXGHYFandian(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//设置为代理
@@ -268,10 +258,6 @@ protected:
 	bool OnHYXXXiaJiPeie(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//设置下级配额
 	bool OnHYXXSetXiaJiPeie(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//获取上级
-	bool OnHYXXGetParent(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//获取转账短信验证
-	bool OnGetTansferVerify(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//充值记录查询
 	bool OnGetChongzhiLog(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//盈亏记录查询
@@ -313,20 +299,6 @@ protected:
 	bool OnXGQukuanPass(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//锁定机器
 	bool OnLockMachine(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//绑定手机号
-	bool OnBindPhoneNum(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//设置验证
-	bool OnSetPhoneVerify(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//解除绑定
-	bool OnUnBindPhone(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//发送验证码
-	bool OnSendYzm(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//发送验证码
-	bool OnSendYzmTrans(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//发送对比验证码
-	bool OnSendCheckYzm(DWORD dwContextID, VOID * pData, WORD wDataSize);
-	//发送对比验证码
-	bool OnSendCheckYzmTrans(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//设置取款保护
 	bool OnSetQukuanProtectPass(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//设置取款账户

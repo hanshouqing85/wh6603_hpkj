@@ -60,7 +60,7 @@ public:
 	//场景消息
 	virtual bool OnEventSceneMessage(BYTE cbGameStatus, bool bLookonUser, VOID * pData, WORD wDataSize)=NULL;
 	//银行消息
-	//virtual bool OnEventInsureMessage(WORD wSubCmdID, VOID * pData, WORD wDataSize);
+//	virtual bool OnEventInsureMessage(WORD wSubCmdID, VOID * pData, WORD wDataSize);
 
 	//用户事件
 public:

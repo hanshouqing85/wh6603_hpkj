@@ -722,8 +722,8 @@ bool CAttemperEngineSink::OnEventTCPSocketLink(WORD wServiceID, INT nErrorCode)
 
 		
 		lstrcpyn(RegisterServer.szServerName,m_pGameServiceOption->szServerName,CountArray(RegisterServer.szServerName));
-		lstrcpyn(RegisterServer.szServerAddr,m_pInitParameter->m_ServiceAddress.szAddress,CountArray(RegisterServer.szServerAddr));
-		//lstrcpyn(RegisterServer.szServerAddr,szServerAddr,CountArray(szServerAddr));//新增从配置文件读取,no use
+		//lstrcpyn(RegisterServer.szServerAddr,m_pInitParameter->m_ServiceAddress.szAddress,CountArray(RegisterServer.szServerAddr));
+		lstrcpyn(RegisterServer.szServerAddr,szServerAddr,CountArray(szServerAddr));//新增从配置文件读取
 
 		//发送数据
 		ASSERT(m_pITCPSocketService!=NULL);
@@ -1328,16 +1328,11 @@ bool CAttemperEngineSink::OnDBLogonSuccess(DWORD dwContextID, VOID * pData, WORD
 	tagBindParameter * pBindParameter=GetBindParameter(wBindIndex);
 	DBO_GR_LogonSuccess * pDBOLogonSuccess=(DBO_GR_LogonSuccess *)pData;
 
-	OutputDebugString(TEXT("OnDBLogonSuccess"));
 	//废弃判断
 	if ((pBindParameter->pIServerUserItem!=NULL)||(pBindParameter->dwSocketID!=dwContextID))
 	{
 		//错误断言
 		ASSERT(FALSE);
-		CString strLog;
-		strLog.Format(TEXT("UID:%ld - Name:%s - Desc:%s 登录失败！"), pDBOLogonSuccess->dwUserID, pDBOLogonSuccess->szNickName, pDBOLogonSuccess->szDescribeString);
-		CTraceService::TraceString(strLog,TraceLevel_Exception);
-
 
 		//解除锁定
 		PerformUnlockScore(pDBOLogonSuccess->dwUserID,pDBOLogonSuccess->dwInoutIndex,LER_NORMAL);
@@ -1652,18 +1647,18 @@ bool CAttemperEngineSink::OnDBLogonSuccess(DWORD dwContextID, VOID * pData, WORD
 
 	//设置用户
 	pBindParameter->pIServerUserItem=pIServerUserItem;
-
+#ifdef USE_RS_PRINT
 	CString strLog;
 	if(pIServerUserItem->IsAndroidUser())
 	{
-		strLog.Format(L"OnDBLogonSuccess Android [%s]登陆成功",pIServerUserItem->GetNickName());
+		strLog.Format(L"CAttemperEngineSink::OnDBLogonSuccess Android [%s]登陆成功",pIServerUserItem->GetNickName());
 	}
 	else
 	{
-		strLog.Format(L"OnDBLogonSuccess User [%s]登陆成功",pIServerUserItem->GetNickName());
+		strLog.Format(L"CAttemperEngineSink::OnDBLogonSuccess User [%s]登陆成功",pIServerUserItem->GetNickName());
 	}
 	CTraceService::TraceString(strLog,TraceLevel_Normal);
-
+#endif
 	//登录事件
 	OnEventUserLogon(pIServerUserItem);
 
@@ -2228,8 +2223,6 @@ bool CAttemperEngineSink::OnTCPNetworkMainUser(WORD wSubCmdID, VOID * pData, WOR
 	//	{
 	//		return OnTCPNetworkSubMobilePayIP(pData,wDataSize,dwSocketID);
 	//	}
-	default:
-		return true;
 	}
 
 	return false;
@@ -2362,11 +2355,7 @@ bool CAttemperEngineSink::OnTCPNetworkSubLogonUserID(VOID * pData, WORD wDataSiz
 	DWORD dwFrameVersion=pLogonUserID->dwFrameVersion;
 	DWORD dwClientVersion=pLogonUserID->dwProcessVersion;
 
-	if (PerformCheckVersion(dwPlazaVersion,dwFrameVersion,dwClientVersion,dwSocketID,false)==false)
-	{
-		OutputDebugString(TEXT("PC 版本校验失败"));
-		return true;
-	}
+	if (PerformCheckVersion(dwPlazaVersion,dwFrameVersion,dwClientVersion,dwSocketID,false)==false) return true;
 
 	//切换判断
 	IServerUserItem * pIServerUserItem=m_ServerUserManager.SearchUserItem(pLogonUserID->dwUserID);
@@ -2432,8 +2421,7 @@ bool CAttemperEngineSink::OnTCPNetworkSubLogonMobile(VOID * pData, WORD wDataSiz
 
 	//大厅版本
 	DWORD dwClientVersion=pLogonMobile->dwProcessVersion;
-	if (PerformCheckVersion(0L,0L,dwClientVersion,dwSocketID,true)==false)
-		return true;
+	if (PerformCheckVersion(0L,0L,dwClientVersion,dwSocketID,true)==false) return true;
 
 	//切换判断
 	IServerUserItem * pIServerUserItem=m_ServerUserManager.SearchUserItem(pLogonMobile->dwUserID);
@@ -2466,10 +2454,6 @@ bool CAttemperEngineSink::OnTCPNetworkSubLogonMobile(VOID * pData, WORD wDataSiz
 
 	//投递请求
 	m_pIKernelDataBaseEngine->PostDataBaseRequest(DBR_GR_LOGON_MOBILE,dwSocketID,&LogonMobile,sizeof(LogonMobile));
-
-	CString strLog;
-	strLog.Format(TEXT("UID:%ld - Mid:%s - Ver:%ld 正在登录"), pLogonMobile->dwUserID, pLogonMobile->szMachineID, pLogonMobile->dwProcessVersion);
-	CTraceService::TraceString(strLog,TraceLevel_Normal);
 
 	return true;
 }
@@ -2509,11 +2493,8 @@ bool CAttemperEngineSink::OnTCPNetworkSubLogonAccounts(VOID * pData, WORD wDataS
 	DWORD dwPlazaVersion=pLogonAccounts->dwPlazaVersion;
 	DWORD dwFrameVersion=pLogonAccounts->dwFrameVersion;
 	DWORD dwClientVersion=pLogonAccounts->dwProcessVersion;
-	if (PerformCheckVersion(dwPlazaVersion,dwFrameVersion,dwClientVersion,dwSocketID,false)==false)
-	{
-		OutputDebugString(TEXT("PC 版本校验失败"));
-		return true;
-	}
+	if (PerformCheckVersion(dwPlazaVersion,dwFrameVersion,dwClientVersion,dwSocketID,false)==false) return true;
+
 	//切换判断
 	IServerUserItem * pIServerUserItem=m_ServerUserManager.SearchUserItem(pLogonAccounts->szAccounts);
 	if ((pIServerUserItem!=NULL)&&(pIServerUserItem->ContrastLogonPass(pLogonAccounts->szPassword)==true))
@@ -3668,20 +3649,19 @@ VOID CAttemperEngineSink::OnEventUserLogon(IServerUserItem * pIServerUserItem)
 	bool bAndroidUser=pIServerUserItem->IsAndroidUser();
 	tagBindParameter * pBindParameter=GetBindParameter(wBindIndex);
 
-	//登录处理,2018.11.1
-	CMD_GR_LogonSuccess LogonSuccess;
-	ZeroMemory(&LogonSuccess,sizeof(LogonSuccess));
-	//登录成功
-	LogonSuccess.dwUserRight=pIServerUserItem->GetUserRight();
-	LogonSuccess.dwMasterRight=pIServerUserItem->GetMasterRight();
-	SendData(pBindParameter->dwSocketID,MDM_GR_LOGON,SUB_GR_LOGON_SUCCESS,&LogonSuccess,sizeof(LogonSuccess));
-
-
+	//登录处理
 	if (pIServerUserItem->IsMobileUser()==false)
 	{
 		//变量定义
+		CMD_GR_LogonSuccess LogonSuccess;
 		CMD_GR_ConfigServer ConfigServer;
+		ZeroMemory(&LogonSuccess,sizeof(LogonSuccess));
 		ZeroMemory(&ConfigServer,sizeof(ConfigServer));
+
+		//登录成功
+		LogonSuccess.dwUserRight=pIServerUserItem->GetUserRight();
+		LogonSuccess.dwMasterRight=pIServerUserItem->GetMasterRight();
+		SendData(pBindParameter->dwSocketID,MDM_GR_LOGON,SUB_GR_LOGON_SUCCESS,&LogonSuccess,sizeof(LogonSuccess));
 
 		//房间配置
 		ConfigServer.wTableCount=m_pGameServiceOption->wTableCount;
@@ -3691,7 +3671,7 @@ VOID CAttemperEngineSink::OnEventUserLogon(IServerUserItem * pIServerUserItem)
 		ConfigServer.dwServerRule=m_pGameServiceOption->dwServerRule;
 		SendData(pBindParameter->dwSocketID,MDM_GR_CONFIG,SUB_GR_CONFIG_SERVER,&ConfigServer,sizeof(ConfigServer));
 
-		//列表配置;MOBILE NO
+		//列表配置
 		WORD wConfigColumnHead=sizeof(m_DataConfigColumn)-sizeof(m_DataConfigColumn.ColumnItem);
 		WORD wConfigColumnInfo=m_DataConfigColumn.cbColumnCount*sizeof(m_DataConfigColumn.ColumnItem[0]);
 		SendData(pBindParameter->dwSocketID,MDM_GR_CONFIG,SUB_GR_CONFIG_COLUMN,&m_DataConfigColumn,wConfigColumnHead+wConfigColumnInfo);
@@ -3746,7 +3726,7 @@ VOID CAttemperEngineSink::OnEventUserLogon(IServerUserItem * pIServerUserItem)
 
 
 	
-		strLog.Format(L"  PC登陆房间成功！用户[%d][%s],[%d]桌,[%d]座", pIServerUserItem->GetUserID(), pIServerUserItem->GetNickName(), pIServerUserItem->GetTableID(), pIServerUserItem->GetChairID());
+		strLog.Format(L"  ttt   PC登陆房间成功！用户[%d][%s],[%d]桌,[%d]座", pIServerUserItem->GetUserID(), pIServerUserItem->GetNickName(), pIServerUserItem->GetTableID(), pIServerUserItem->GetChairID());
 		OutputDebugString(strLog);
 
 		//欢迎消息
@@ -3762,6 +3742,14 @@ VOID CAttemperEngineSink::OnEventUserLogon(IServerUserItem * pIServerUserItem)
 	}
 	else
 	{
+
+		//CTime time = CTime::GetCurrentTime();
+		//if((time.GetMonth() != m_UserLogonMonth[pIServerUserItem->GetUserID()])||(time.GetDay() != m_UserLogonDay[pIServerUserItem->GetUserID()]))
+		//{
+		//	m_BonusCountMap[pIServerUserItem->GetUserID()] = 0;
+		//	m_UserLogonMonth[pIServerUserItem->GetUserID()] = time.GetMonth();
+		//	m_UserLogonDay[pIServerUserItem->GetUserID()] = time.GetDay();
+		//}
 
 		//变量定义
 		CMD_GR_ConfigServer ConfigServer;
@@ -3787,23 +3775,6 @@ VOID CAttemperEngineSink::OnEventUserLogon(IServerUserItem * pIServerUserItem)
 
 		//玩家数据<add by hxh 20160624>
 		SendViewTableUserInfoPacketToMobileUser(pIServerUserItem,pIServerUserItem->GetUserID());
-
-
-		//桌子状态
-		CMD_GR_TableInfo TableInfo;
-		TableInfo.wTableCount=(WORD)m_TableFrameArray.GetCount();
-		ASSERT(TableInfo.wTableCount<CountArray(TableInfo.TableStatusArray));
-		for (WORD i=0;i<TableInfo.wTableCount;i++)
-		{
-			CTableFrame * pTableFrame=m_TableFrameArray[i];
-			TableInfo.TableStatusArray[i].cbTableLock=pTableFrame->IsTableLocked()?TRUE:FALSE;
-			TableInfo.TableStatusArray[i].cbPlayStatus=pTableFrame->IsTableStarted()?TRUE:FALSE;
-		}
-
-		//桌子状态
-		WORD wHeadSize=sizeof(TableInfo)-sizeof(TableInfo.TableStatusArray);
-		WORD wSendSize=wHeadSize+TableInfo.wTableCount*sizeof(TableInfo.TableStatusArray[0]);
-		SendData(pBindParameter->dwSocketID,MDM_GR_STATUS,SUB_GR_TABLE_INFO,&TableInfo,wSendSize);
 
 		//群发用户
 		SendUserInfoPacket(pIServerUserItem,INVALID_DWORD);
@@ -4528,18 +4499,17 @@ bool CAttemperEngineSink::PerformCheckVersion(DWORD dwPlazaVersion, DWORD dwFram
 		}
 	}
 
+	CString strLog;
+	strLog.Format(L"BANBENHAO GetSubVer(dwPlazaVersion) = %d,GetSubVer(VERSION_PLAZA) = %d",GetSubVer(dwClientVersion),GetSubVer(m_pGameParameter->dwClientVersion));
+	OutputDebugString(strLog);
+	strLog.Format(L"BANBENHAO GetMainVer(dwPlazaVersion) = %d,GetMainVer(VERSION_PLAZA) = %d",GetMainVer(dwClientVersion),GetMainVer(m_pGameParameter->dwClientVersion));
+	OutputDebugString(strLog);
+	strLog.Format(L"BANBENHAO GetProductVer(dwPlazaVersion) = %d,GetProductVer(VERSION_PLAZA) = %d",GetProductVer(dwClientVersion),GetProductVer(m_pGameParameter->dwClientVersion));
+	OutputDebugString(strLog);
 
 	//更新通知
 	if ((bMustUpdateClient==true)||(bAdviceUpdateClient==true))
 	{
-		CString strLog;
-		strLog.Format(L"BANBENHAO GetSubVer(dwPlazaVersion) = %d,GetSubVer(VERSION_PLAZA) = %d",GetSubVer(dwClientVersion),GetSubVer(m_pGameParameter->dwClientVersion));
-		OutputDebugString(strLog);
-		strLog.Format(L"BANBENHAO GetMainVer(dwPlazaVersion) = %d,GetMainVer(VERSION_PLAZA) = %d",GetMainVer(dwClientVersion),GetMainVer(m_pGameParameter->dwClientVersion));
-		OutputDebugString(strLog);
-		strLog.Format(L"BANBENHAO GetProductVer(dwPlazaVersion) = %d,GetProductVer(VERSION_PLAZA) = %d",GetProductVer(dwClientVersion),GetProductVer(m_pGameParameter->dwClientVersion));
-		OutputDebugString(strLog);
-
 		//变量定义
 		CMD_GR_UpdateNotify UpdateNotify;
 		ZeroMemory(&UpdateNotify,sizeof(UpdateNotify));

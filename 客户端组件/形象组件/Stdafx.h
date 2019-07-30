@@ -7,19 +7,19 @@
 #endif
 
 #ifndef WINVER
-#define WINVER 0x0501
+#define WINVER 0x0500
 #endif
 
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0501
+#define _WIN32_WINNT 0x0400
 #endif
 
 #ifndef _WIN32_WINDOWS
-#define _WIN32_WINDOWS 0x0501
+#define _WIN32_WINDOWS 0x0410
 #endif
 
 #ifndef _WIN32_IE
-#define _WIN32_IE 0x0501
+#define _WIN32_IE 0x0400
 #endif
 
 #define _ATL_ATTRIBUTES
@@ -43,40 +43,6 @@ typedef void * POINTER_64 PVOID64;
 
 //ÏµÍ³Á´½Ó
 #pragma comment(lib,"VFW32.lib")
-
-#if _MSC_VER == 1400
-
-#ifndef _DEBUG
-#ifndef _UNICODE
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/WHImage.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/DownLoad.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/ServiceCore.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/SkinControl.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/ShareControl.lib")
-#else
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/WHImage.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/DownLoad.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/ServiceCore.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/SkinControl.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/ShareControl.lib")
-#endif
-#else
-#ifndef _UNICODE
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/WHImageD.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/DownLoadD.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/ServiceCoreD.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/SkinControlD.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/ShareControlD.lib")
-#else
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/WHImageD.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/DownLoadD.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/ServiceCoreD.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/SkinControlD.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/ShareControlD.lib")
-#endif
-#endif
-
-#else
 
 #ifndef _DEBUG
 #ifndef _UNICODE
@@ -102,12 +68,10 @@ typedef void * POINTER_64 PVOID64;
 #else
 	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/WHImageD.lib")
 	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/DownLoadD.lib")
-	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/ServiceCoreD.lib")
+	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/ServiceCore.lib")
 	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/SkinControlD.lib")
 	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/ShareControlD.lib")
 #endif
-#endif
-
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////

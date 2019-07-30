@@ -467,7 +467,6 @@ bool CServiceUnits::SendControlPacket(WORD wControlID, VOID * pData, WORD wDataS
 	return true;
 }
 
-
 //连接信息
 bool CServiceUnits::LoadDataBaseParameter(LPCTSTR pszDataBaseAddr, LPCTSTR pszDataBaseName, tagDataBaseParameter & DataBaseParameter)
 {

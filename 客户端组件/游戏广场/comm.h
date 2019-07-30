@@ -55,7 +55,6 @@ typedef enum {
 	CZXingYun28,
 	CZ_HGYDWFC=20,
 	CZ_TianJinSSC = 23,	//天津时时彩
-	CZ_XYFT=33,			//幸运飞艇		33
 	CZCount
 }CaiZhong;
 

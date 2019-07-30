@@ -7,19 +7,19 @@
 #endif
 
 #ifndef WINVER
-#define WINVER 0x0501
+#define WINVER 0x0400
 #endif
 
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT WINVER
+#define _WIN32_WINNT 0x0400
 #endif						
 
 #ifndef _WIN32_WINDOWS
-#define _WIN32_WINDOWS WINVER
+#define _WIN32_WINDOWS 0x0410
 #endif
 
 #ifndef _WIN32_IE
-#define _WIN32_IE WINVER
+#define _WIN32_IE 0x0400
 #endif
 
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS
@@ -40,3 +40,16 @@
 
 //////////////////////////////////////////////////////////////////////////////////
 
+#ifndef _DEBUG
+#ifndef _UNICODE
+	#pragma comment (lib,"../../Á´½Ó¿â/Ansi/ServiceCore.lib")
+#else
+	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/ServiceCore.lib")
+#endif
+#else
+#ifndef _UNICODE
+	#pragma comment (lib,"../../Á´½Ó¿â/Ansi/ServiceCoreD.lib")
+#else
+	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/ServiceCoreD.lib")
+#endif
+#endif

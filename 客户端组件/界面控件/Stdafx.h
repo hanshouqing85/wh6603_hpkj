@@ -7,19 +7,19 @@
 #endif
 
 #ifndef WINVER
-#define WINVER 0x0501
+#define WINVER 0x0500
 #endif
 
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0501
+#define _WIN32_WINNT 0x0500
 #endif
 
 #ifndef _WIN32_WINDOWS
-#define _WIN32_WINDOWS 0x0501
+#define _WIN32_WINDOWS 0x0510
 #endif
 
 #ifndef _WIN32_IE
-#define _WIN32_IE 0x0501
+#define _WIN32_IE 0x0500
 #endif
 
 #define _ATL_ATTRIBUTES
@@ -51,28 +51,6 @@ typedef void * POINTER_64 PVOID64;
 #pragma comment (lib,"Other/SkinSB.lib")
 #pragma comment (lib,"Other/Detours.lib")
 
-#if _MSC_VER == 1400
-
-#ifndef _DEBUG
-#ifndef _UNICODE
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/WHImage.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/ServiceCore.lib")
-#else
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/WHImage.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/ServiceCore.lib")
-#endif
-#else
-#ifndef _UNICODE
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/WHImageD.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/ServiceCoreD.lib")
-#else
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/WHImageD.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/ServiceCoreD.lib")
-#endif
-#endif
-
-#else
-
 #ifndef _DEBUG
 #ifndef _UNICODE
 	#pragma comment (lib,"../../Á´½Ó¿â/Ansi/WHImage.lib")
@@ -87,11 +65,8 @@ typedef void * POINTER_64 PVOID64;
 	#pragma comment (lib,"../../Á´½Ó¿â/Ansi/ServiceCoreD.lib")
 #else
 	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/WHImageD.lib")
-	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/ServiceCoreD.lib")
+	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/ServiceCore.lib")
 #endif
-#endif
-
-
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////

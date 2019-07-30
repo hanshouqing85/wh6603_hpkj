@@ -1,15 +1,27 @@
 #ifndef D3D_FOUNT_HEAD_FILE
 #define D3D_FOUNT_HEAD_FILE
 
-#include "D3DDevice.h"
 #include "D3DSprite.h"
 #include "GameEngineHead.h"
 
 //////////////////////////////////////////////////////////////////////////////////
-class CD3DFont;
+
+//字体子项
+struct tagD3DFontItem
+{
+	//字符信息
+	UINT							uChar;								//字体编码
+	CD3DSprite						D3DSprite;							//字体精灵
+
+	//输出位置
+	CSize							SizeCell;							//单元大小
+	CSize							SizeFont;							//字体大小
+	CPoint							PointOrigin;						//原点位置
+};
 
 //类型定义
-typedef CArray<CD3DFont *,CD3DFont *> CD3DFontItemPtrArray;
+typedef CWHArray<tagD3DFontItem *> CD3DFontItemPtrArray;
+typedef CMap<UINT,UINT,tagD3DFontItem *,tagD3DFontItem *> CD3DFontItemPtrMap;
 
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -23,12 +35,13 @@ protected:
 
 	//字体对象
 protected:
-	ID3DXFont						*m_pD3DXFont;
 	CFont							m_Font;								//字体对象
-	
+	TEXTMETRIC						m_TextMetric;						//字体属性
+
 	//内核对象
 protected:
-	static CD3DFontItemPtrArray		m_FontItemPtrActive;				//字体数组
+	CD3DFontItemPtrMap				m_FontItemPtrMap;					//字体索引
+	CD3DFontItemPtrArray			m_FontItemPtrActive;				//字体数组
 
 	//函数定义
 public:
@@ -60,12 +73,12 @@ public:
 	//输出字体
 	bool DrawText(CD3DDevice * pD3DDevice, LPCTSTR pszString, INT nXPos, INT nYPos, UINT uFormat, D3DCOLOR D3DColor);
 
-	//静态函数
-public:
-	//释放资源
-	static VOID OnDeviceLost(CD3DDevice * pD3DDevice);
-	//重置资源
-	static VOID OnDeviceReset(CD3DDevice * pD3DDevice);
+	//字体管理
+private:
+	//创建字体
+	tagD3DFontItem * ActiveFontItem(CD3DDevice * pD3DDevice, UINT uChar);
+	//计算位置
+	CSize CalePostion(CD3DDevice * pD3DDevice, LPCTSTR pszString, UINT uFormat, INT nAreaWidth);
 };
 
 //////////////////////////////////////////////////////////////////////////////////

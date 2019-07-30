@@ -16,7 +16,14 @@
 //像素结构
 struct tagD3DXCOLORVertex
 {
-	FLOAT							x,y,z,h;								//坐标
+	FLOAT							x, y, z;							//坐标
+	DWORD							color;								//颜色
+};
+
+//图形结构
+struct tagD3DXCOLORRHWVertex
+{
+	FLOAT							x, y, z, rhw;						//坐标
 	DWORD							color;								//颜色
 };
 
@@ -29,7 +36,8 @@ struct tagD3DTextureVertex
 
 //顶点格式
 #define D3DFVF_TEXTURE				(D3DFVF_XYZ|D3DFVF_TEX1)			//顶点格式
-#define D3DFVF_COLOR				(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1)			//顶点格式
+#define D3DFVF_COLOR				(D3DFVF_XYZ|D3DFVF_DIFFUSE)			//顶点格式
+#define D3DFVF_COLORRHW				(D3DFVF_XYZRHW|D3DFVF_DIFFUSE)		//顶点格式
 
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -79,9 +87,11 @@ public:
 	//功能函数
 public:
 	//加载纹理
-	bool LoadImage(CD3DDevice * pD3DDevice, HINSTANCE hInstance, LPCTSTR pszResource, LPCTSTR pszTypeName,DWORD dwColorKey=0);
+	bool LoadImage(CD3DDevice * pD3DDevice, HINSTANCE hInstance, LPCTSTR pszResource, DWORD dwColorKey);
 	//加载纹理
-	bool LoadImage(CD3DDevice * pD3DDevice, LPCTSTR pszFileName,DWORD dwColorKey=0);
+	bool LoadImage(CD3DDevice * pD3DDevice, HINSTANCE hInstance, LPCTSTR pszResource, LPCTSTR pszTypeName);
+	//加载纹理
+	bool LoadImage(CD3DDevice * pD3DDevice, LPCTSTR pszTextureName,BOOL bCreateCache);
 
 	//绘画函数
 public:
@@ -121,6 +131,43 @@ public:
 	bool DrawImage(CD3DDevice * pD3DDevice, CPoint ptRotationOffset, FLOAT fRadian, CHAR chDirection, INT nXDest, INT nYDest, INT nDestWidth, INT nDestHeight, INT nXSource, INT nYSource, INT nSourceWidth, INT nSourceHeight, BYTE cbAlpha);
 
 
+	//-------------------------------------------------------------------------------------
+	//滤色函数
+public:
+	//绘画滤色图片
+	bool DrawColourFilterImage(CD3DDevice * pD3DDevice, INT nXDest, INT nYDest);
+	//绘画滤色图片
+	bool DrawColourFilterImage(CD3DDevice * pD3DDevice, INT nXDest, INT nYDest, INT nDestWidth, INT nDestHeight, INT nXSource, INT nYSource);
+	//绘画滤色图片
+	bool DrawColourFilterImage(CD3DDevice * pD3DDevice, INT nXDest, INT nYDest, INT nDestWidth, INT nDestHeight, INT nXSource, INT nYSource, INT nSourceWidth, INT nSourceHeight);
+
+	//绘画函数
+public:
+	//绘画滤色图片
+	bool DrawColourFilterImage(CD3DDevice * pD3DDevice, INT nXDest, INT nYDest, BYTE cbAlpha);
+	//绘画滤色图片
+	bool DrawColourFilterImage(CD3DDevice * pD3DDevice, INT nXDest, INT nYDest, INT nDestWidth, INT nDestHeight, INT nXSource, INT nYSource, BYTE cbAlpha);
+	//绘画滤色图片
+	bool DrawColourFilterImage(CD3DDevice * pD3DDevice, INT nXDest, INT nYDest, INT nDestWidth, INT nDestHeight, INT nXSource, INT nYSource, INT nSourceWidth, INT nSourceHeight, BYTE cbAlpha);
+
+	//绘画函数
+public:
+	//绘画滤色图片
+	bool DrawColourFilterImage(CD3DDevice * pD3DDevice, CPoint ptRotationOffset, FLOAT fRadian, CHAR chDirection, INT nXDest, INT nYDest);
+	//绘画滤色图片
+	bool DrawColourFilterImage(CD3DDevice * pD3DDevice, CPoint ptRotationOffset, FLOAT fRadian, CHAR chDirection, INT nXDest, INT nYDest, INT nDestWidth, INT nDestHeight, INT nXSource, INT nYSource);
+	//绘画滤色图片
+	bool DrawColourFilterImage(CD3DDevice * pD3DDevice, CPoint ptRotationOffset, FLOAT fRadian, CHAR chDirection, INT nXDest, INT nYDest, INT nDestWidth, INT nDestHeight, INT nXSource, INT nYSource, INT nSourceWidth, INT nSourceHeight);
+
+	//绘画函数
+public:
+	//绘画滤色图片
+	bool DrawColourFilterImage(CD3DDevice * pD3DDevice, CPoint ptRotationOffset, FLOAT fRadian, CHAR chDirection, INT nXDest, INT nYDest, BYTE cbAlpha);
+	//绘画滤色图片
+	bool DrawColourFilterImage(CD3DDevice * pD3DDevice, CPoint ptRotationOffset, FLOAT fRadian, CHAR chDirection, INT nXDest, INT nYDest, INT nDestWidth, INT nDestHeight, INT nXSource, INT nYSource, BYTE cbAlpha);
+	//绘画滤色图片
+	bool DrawColourFilterImage(CD3DDevice * pD3DDevice, CPoint ptRotationOffset, FLOAT fRadian, CHAR chDirection, INT nXDest, INT nYDest, INT nDestWidth, INT nDestHeight, INT nXSource, INT nYSource, INT nSourceWidth, INT nSourceHeight, BYTE cbAlpha);
+
 	//绘画函数
 public:
 	//绘画图片
@@ -132,15 +179,16 @@ protected:
 	bool GetResourceInfo(HINSTANCE hInstance, LPCTSTR pszResource, LPCTSTR pszTypeName, tagResourceInfo & ResourceInfo);
 
 	//辅助函数
-protected:
-	//设置矩阵
-	void SetProjectionMatrix( CD3DDevice * pD3DDevice );
-	//设置矩阵
-	VOID SetMatrix(CD3DDevice * pD3DDevice, INT nXDest, INT nYDest, INT nDestWidth, INT nDestHeight);
+public:
 	//输出位置
 	VOID SetWindowPos(tagD3DTextureVertex * pTextureVertex, INT nXDest, INT nYDest, INT nDestWidth, INT nDestHeight);
 	//设置贴图
 	VOID SetTexturePos(CD3DDevice * pD3DDevice, tagD3DTextureVertex * pTextureVertex, INT nXSource, INT nYSource, INT nSourceWidth, INT nSourceHeight);
+
+	//内部函数
+public:
+	//绘画函数
+	void DrawImage( CD3DDevice * pD3DDevice, D3DXMATRIX* MatrixWorld );
 };
 
 //////////////////////////////////////////////////////////////////////////////////

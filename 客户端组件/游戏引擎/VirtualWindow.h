@@ -5,12 +5,11 @@
 
 #include "GameEngineHead.h"
 #include "VirtualEngine.h"
-#include "MsgEvent.h"
 
-//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
 
 //虚拟窗口
-class GAME_ENGINE_CLASS CVirtualWindow : public CMsgEvent
+class GAME_ENGINE_CLASS CVirtualWindow
 {
 	//友元定义
 	friend class CVirtualEngine;
@@ -25,8 +24,7 @@ protected:
 	//属性变量
 protected:
 	UINT							m_uWindowID;						//窗口标识
-	BOOL							m_bCaption;							//窗口拖动
-	BOOL							m_bDrag;							//窗口拖动
+	UINT							m_uLayerIndex;						//窗口等级
 
 	//位置变量
 protected:
@@ -35,7 +33,6 @@ protected:
 
 	//内核变量
 protected:
-	CD3DFont *						m_pDefaultFont;
 	CVirtualWindow *				m_pParentWindow;					//上层窗口
 	CVirtualEngine *				m_pVirtualEngine;					//虚拟框架
 	CVirtualWindowPtrArray			m_VirtualWindowPtrArray;			//窗口数组
@@ -54,14 +51,19 @@ public:
 	//设置标识
 	VOID SetWindowID(UINT uWindowID) { m_uWindowID=uWindowID; }
 
+	//窗口等级
+public:
+	//设置等级
+	VOID SetLayerIndex(UINT uLayerIndex);
+	//获取等级
+	UINT GetLayerIndex() { return m_uLayerIndex; }
+
 	//属性对象
 public:
 	//上层窗口
 	CVirtualWindow * GetParentWindow() { return m_pParentWindow; }
 	//虚拟框架
 	CVirtualEngine * GetVirtualEngine() { return m_pVirtualEngine; }
-	//
-	HWND GetSafeHwnd();
 
 	//管理函数
 public:
@@ -85,16 +87,8 @@ public:
 	VOID ShowWindow(bool bVisible);
 	//禁止窗口
 	VOID EnableWindow(bool bEnable);
-	//激活窗口
-	VOID ActiveWindow(bool bActive);
 	//更新窗口
 	VOID InvalidWindow(bool bCoerce);
-	//设置焦点
-	VOID SetFocus();
-	//销毁焦点
-	VOID KillFocus();
-	//禁止窗口
-	VOID SetCaption(bool bCaption=true){ m_bCaption = bCaption;}
 
 	//窗口位置
 public:
@@ -104,15 +98,11 @@ public:
 	VOID GetWindowRect(CRect & rcWindow);
 	//设置位置
 	VOID SetWindowPos(INT nXPos, INT nYPos, INT nWidth, INT nHeight, UINT uFlags);
-	//拖动窗口
-	BOOL DragWindows( UINT uMessage, INT nXMousePos, INT nYMousePos, UINT nFlags );
 
 	//功能函数
 public:
 	//下属窗口
 	bool IsChildWindow(CVirtualWindow * pVirtualWindow);
-	BOOL ContainsPoint( POINT pt );
-	void SetFont(CD3DFont*pFont);
 
 	//系统事件
 protected:
@@ -123,16 +113,14 @@ protected:
 	//销毁消息
 	virtual VOID OnWindowDestory(CD3DDevice * pD3DDevice) { return; }
 	//位置消息
-	virtual VOID OnWindowPosition(CD3DDevice * pD3DDevice){ return; }
-	//鼠标事件
-	virtual BOOL OnWindowMouse(UINT uMessage, UINT nFlags, INT nXMousePos, INT nYMousePos);
+	virtual VOID OnWindowPosition(CD3DDevice * pD3DDevice) { return; }
 
 	//重载函数
 protected:
 	//鼠标事件
-	virtual BOOL OnEventMouse(UINT uMessage, UINT nFlags, INT nXMousePos, INT nYMousePos)=NULL;
-	//键盘事件
-	virtual BOOL OnEventKeyboard(UINT uMessage, WPARAM wParam, LPARAM lParam)=NULL;
+	virtual VOID OnEventMouse(UINT uMessage, UINT nFlags, INT nXMousePos, INT nYMousePos)=NULL;
+	//按钮事件
+	virtual VOID OnEventButton(UINT uButtonID, UINT uMessage, INT nXMousePos, INT nYMousePos)=NULL;
 	//绘画窗口
 	virtual VOID OnEventDrawWindow(CD3DDevice * pD3DDevice, INT nXOriginPos, INT nYOriginPos)=NULL;
 

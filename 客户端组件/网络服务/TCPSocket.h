@@ -4,7 +4,7 @@
 #pragma once
 
 
-#define				SOCKET_TCP_VER		0x01
+#define				SOCKET_TCP_VER		5
 #include "WinSock2.h"
 #include "WHSocketHead.h"
 
@@ -137,12 +137,6 @@ protected:
 	WORD CrevasseBuffer(BYTE cbDataBuffer[], WORD wDataSize);
 	//加密数据
 	WORD EncryptBuffer(BYTE cbDataBuffer[], WORD wDataSize, WORD wBufferSize);
-	//解密数据
-	bool Common_unMappedBuffer(void* data, int nDataSize);
-	//加密数据
-	bool Common_MappedBuffer(void* data, int nDataSize);
-	//网络验证
-    void sendValidate();
 
 	//内联函数
 private:

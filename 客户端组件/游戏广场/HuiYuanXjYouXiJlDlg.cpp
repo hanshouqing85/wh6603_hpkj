@@ -549,7 +549,7 @@ VOID CHuiYuanXjYouXiJlDlg::SendToServer(int nSendType)
 			CMD_GP_GetQiPaiYingkuiCount GetQiPaiYingkuiCount;
 			ZeroMemory(&GetQiPaiYingkuiCount,sizeof(GetQiPaiYingkuiCount));
 
-			//GetQiPaiYingkuiCount.dwUserID = m_user_id;
+			GetQiPaiYingkuiCount.dwUserID = m_user_id;
 			GetQiPaiYingkuiCount.nTypeID = (m_byTime)?2:1;
 			GetQiPaiYingkuiCount.nByTime = (m_byTime)?1:0;
 
@@ -574,7 +574,7 @@ VOID CHuiYuanXjYouXiJlDlg::SendToServer(int nSendType)
 			CMD_GP_GetQiPaiYingkui QiPaiYingkui;
 			ZeroMemory(&QiPaiYingkui,sizeof(QiPaiYingkui));
 
-			//QiPaiYingkui.dwUserID = m_user_id;
+			QiPaiYingkui.dwUserID = m_user_id;
 			QiPaiYingkui.bByTime = m_byTime?1:0;
 			QiPaiYingkui.nPage = m_page;
 			QiPaiYingkui.nSize = page_size;
@@ -598,17 +598,17 @@ VOID CHuiYuanXjYouXiJlDlg::SendToServer(int nSendType)
 		if(m_bGetXjYkLogByID)
 		{
 			m_bGetXjYkLogByID = false;
-			//CMD_GP_GetXJYKLogByID GetXJYKLog;
-			//ZeroMemory(&GetXJYKLog,sizeof(GetXJYKLog));
+			CMD_GP_GetXJYKLogByID GetXJYKLog;
+			ZeroMemory(&GetXJYKLog,sizeof(GetXJYKLog));
 
-			//GetXJYKLog.dwUserID = theAccount.user_id;
-			//int xj_id = _ttoi(m_strID);
-			//GetXJYKLog.nXiaJiID = xj_id;
-			//GetXJYKLog.nPage = m_page;
-			//GetXJYKLog.nSize = page_size;
+			GetXJYKLog.dwUserID = theAccount.user_id;
+			int xj_id = _ttoi(m_strID);
+			GetXJYKLog.nXiaJiID = xj_id;
+			GetXJYKLog.nPage = m_page;
+			GetXJYKLog.nSize = page_size;
 
-			//CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-			//pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_XJYK_LOG_BY_ID,&GetXJYKLog,sizeof(GetXJYKLog));
+			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
+			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_XJYK_LOG_BY_ID,&GetXJYKLog,sizeof(GetXJYKLog));
 			return;
 
 		}
@@ -621,13 +621,13 @@ VOID CHuiYuanXjYouXiJlDlg::SendToServer(int nSendType)
 		if(m_bGetXjYkLogByAct)
 		{
 			m_bGetXjYkLogByAct=false;
-			//CMD_GP_GetXJYKLogByAct Log;
-			//ZeroMemory(&Log,sizeof(Log));
+			CMD_GP_GetXJYKLogByAct Log;
+			ZeroMemory(&Log,sizeof(Log));
 
-			//Log.dwUserID = theAccount.user_id;
-			//lstrcpyn(Log.szAccount,m_strAct.GetBuffer(),sizeof(Log.szAccount));
-			//CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-			//pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_XJYK_LOG_BY_ACT,&Log,sizeof(Log));
+			Log.dwUserID = theAccount.user_id;
+			lstrcpyn(Log.szAccount,m_strAct.GetBuffer(),sizeof(Log.szAccount));
+			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
+			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_XJYK_LOG_BY_ACT,&Log,sizeof(Log));
 			return;
 
 		}

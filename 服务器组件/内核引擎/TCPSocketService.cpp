@@ -492,20 +492,20 @@ WORD CTCPSocketServiceThread::CrevasseBuffer(BYTE cbDataBuffer[], WORD wDataSize
 	//字节映射
 	TCP_Head * pHead=(TCP_Head *)cbDataBuffer;
 	BYTE cbCheckCode=pHead->TCPInfo.cbCheckCode;
-//	OutputDebugString(strLog);
+	CString strLog;
+	strLog.Format(L"CHECKCODE1 cbCheckCode:%d",cbCheckCode);
+	OutputDebugString(strLog);
 	for (INT i=sizeof(TCP_Info);i<wDataSize;i++)
 	{
 		cbDataBuffer[i]=MapRecvByte(cbDataBuffer[i]);
 		cbCheckCode+=cbDataBuffer[i];
+		strLog.Format(L"CHECKCODE2 cbCheckCode:%d",cbCheckCode);
+		OutputDebugString(strLog);
 	}
-	if (cbCheckCode!=0) 
-	{
-		CString strLog;
-		strLog.Format(TEXT("数据包效验码错误tcpsocketsvc:%ld, %ld, size=%ld, kind=%ld, ckeckcode=%ld"), 
-			pHead->CommandInfo.wMainCmdID, pHead->CommandInfo.wSubCmdID, pHead->TCPInfo.wPacketSize, pHead->TCPInfo.cbDataKind, pHead->TCPInfo.cbCheckCode);
+	strLog.Format(L"CHECKCODE3 cbCheckCode:%d",cbCheckCode);
+	OutputDebugString(strLog);
+	if (cbCheckCode!=0) throw TEXT("数据包效验码错误");
 
-		throw (strLog);
-	}
 	return wDataSize;
 }
 
@@ -535,7 +535,9 @@ WORD CTCPSocketServiceThread::EncryptBuffer(BYTE cbDataBuffer[], WORD wDataSize,
 
 	//填写信息头
 	TCP_Head * pHead=(TCP_Head *)cbDataBuffer;
+#ifdef USE_DK_MAPPED
 	pHead->TCPInfo.cbDataKind=DK_MAPPED;
+#endif
 	pHead->TCPInfo.wPacketSize=wDataSize;
 	pHead->TCPInfo.cbCheckCode=~cbCheckCode+1;
 
@@ -700,9 +702,13 @@ LRESULT CTCPSocketServiceThread::OnSocketNotifyRead(WPARAM wParam, LPARAM lParam
 		{
 			//效验参数
 			wPacketSize=pHead->TCPInfo.wPacketSize;
+#ifdef USE_DK_MAPPED
 			ASSERT(pHead->TCPInfo.cbDataKind==DK_MAPPED);
+#endif
 			ASSERT(wPacketSize<=(SOCKET_TCP_PACKET+sizeof(TCP_Head)));
+#ifdef USE_DK_MAPPED
 			if (pHead->TCPInfo.cbDataKind!=DK_MAPPED) throw TEXT("数据包版本错误");
+#endif
 			if (wPacketSize>(SOCKET_TCP_PACKET+sizeof(TCP_Head))) throw TEXT("数据包太大");
 			if (m_wRecvSize<wPacketSize) return 1;
 

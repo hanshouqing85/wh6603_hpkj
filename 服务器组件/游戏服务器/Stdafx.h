@@ -12,19 +12,19 @@ typedef void * POINTER_64 PVOID64;
 #endif
 
 #ifndef WINVER
-#define WINVER 0x0501
+#define WINVER 0x0400
 #endif
 
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0501
+#define _WIN32_WINNT 0x0400
 #endif						
 
 #ifndef _WIN32_WINDOWS
-#define _WIN32_WINDOWS 0x0501
+#define _WIN32_WINDOWS 0x0410
 #endif
 
 #ifndef _WIN32_IE
-#define _WIN32_IE 0x0501
+#define _WIN32_IE 0x0400
 #endif
 
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS
@@ -58,36 +58,6 @@ typedef void * POINTER_64 PVOID64;
 //////////////////////////////////////////////////////////////////////////////////
 //Á´½Ó´úÂë
 
-#if _MSC_VER == 1400
-
-#ifndef _DEBUG
-#ifndef _UNICODE
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/ServiceCore.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/GameService.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/KernelEngine.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/ModuleManager.lib")
-#else
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/ServiceCore.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/GameService.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/KernelEngine.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/ModuleManager.lib")
-#endif
-#else
-#ifndef _UNICODE
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/ServiceCoreD.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/GameServiceD.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/KernelEngineD.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Ansi/ModuleManagerD.lib")
-#else
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/ServiceCoreD.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/GameServiceD.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/KernelEngineD.lib")
-	#pragma comment (lib,"../../VC8Á´½Ó¿â/Unicode/ModuleManagerD.lib")
-#endif
-#endif
-
-#else
-
 #ifndef _DEBUG
 #ifndef _UNICODE
 	#pragma comment (lib,"../../Á´½Ó¿â/Ansi/ServiceCore.lib")
@@ -107,13 +77,11 @@ typedef void * POINTER_64 PVOID64;
 	#pragma comment (lib,"../../Á´½Ó¿â/Ansi/KernelEngineD.lib")
 	#pragma comment (lib,"../../Á´½Ó¿â/Ansi/ModuleManagerD.lib")
 #else
-	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/ServiceCoreD.lib")
+	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/ServiceCore.lib")
 	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/GameServiceD.lib")
-	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/KernelEngineD.lib")
+	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/KernelEngine.lib")
 	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/ModuleManagerD.lib")
 #endif
-#endif
-
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////

@@ -585,7 +585,7 @@ bool CMissionLogon::OnSocketSubLogonSuccess(VOID * pData, WORD wDataSize)
 
 	//帐号信息
 	lstrcpyn(pGlobalUserData->szAccounts,pLogonSuccess->szAccounts,CountArray(pGlobalUserData->szAccounts));
-	//lstrcpyn(pGlobalUserData->szNickName,pLogonSuccess->szNickName,CountArray(pGlobalUserData->szNickName));
+	lstrcpyn(pGlobalUserData->szNickName,pLogonSuccess->szNickName,CountArray(pGlobalUserData->szNickName));
 
 	//扩展信息
 	lstrcpyn(pGlobalUserData->szAddrDescribe,pLogonSuccess->szAddrDescribe,CountArray(pGlobalUserData->szAddrDescribe));

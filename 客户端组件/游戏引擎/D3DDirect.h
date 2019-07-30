@@ -2,13 +2,13 @@
 #define D3D_DIRECT_HEAD_FILE
 
 #include "GameEngineHead.h"
-#include "TraceDebug.h"
+
 //////////////////////////////////////////////////////////////////////////////////
 
 //类说明
 class CD3DDirect;
 class CD3DDevice;
-// class CD3DTexture;
+class CD3DTexture;
 
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -18,11 +18,11 @@ class GAME_ENGINE_CLASS CD3DDirect
 	//接口变量
 public:
 	IDirect3D9 *					m_pIDirect3D;						//环境对象
-	
+
 	//静态变量
 public:
 	static CD3DDirect *				m_pD3DDirect;						//对象指针
-	
+
 	//函数定义
 public:
 	//构造函数

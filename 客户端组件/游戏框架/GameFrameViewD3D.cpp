@@ -264,7 +264,7 @@ VOID CGameFrameViewD3D::DrawUserClock(CD3DDevice * pD3DDevice, INT nXPos, INT nY
 		INT nXDrawPos=nXPos-SizeClockBack.cx/2;
 		INT nYDrawPos=nYPos-SizeClockBack.cy/2;
 		m_D3DTextureClockBack.DrawImage(pD3DDevice,nXDrawPos,nYDrawPos);
-
+	
 		//»æ»­Ê±¼ä
 		WORD nClockItem1=wUserClock/10;
 		WORD nClockItem2=wUserClock%10;

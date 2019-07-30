@@ -10,13 +10,12 @@
 
 //а╢╫снд╪Ч
 #ifndef _DEBUG
-#pragma comment(lib,"Version")
-#pragma comment(lib,"Compress\\ZLib.lib")
-#pragma comment(lib,"Compress\\Plataform.lib")
+	#pragma comment(lib,"Version")
+	#pragma comment(lib,"Compress\\ZLib.lib")
+	#pragma comment(lib,"Compress\\Plataform.lib")
 #else
-#pragma comment(lib,"Version")
-#pragma comment(lib,"Compress\\ZLibD.lib")
-#pragma comment(lib,"Compress\\PlataformD.lib")
+	#pragma comment(lib,"Version")
+	#pragma comment(lib,"Compress\\ZLibD.lib")
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////

@@ -59,12 +59,19 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// PNG
+//
+
+BT_NAVIGATION_1         PNG                     "res\\FRAME_TL.png"
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Version
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,0
- PRODUCTVERSION 1,0,0,0
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -79,15 +86,15 @@ BEGIN
     BEGIN
         BLOCK "080403a8"
         BEGIN
-            VALUE "Comments", "雅安大成科技有限公司"
-            VALUE "CompanyName", "雅安大成科技有限公司"
-            VALUE "FileDescription", "内核引擎"
-            VALUE "FileVersion", "1, 0, 0, 0"
+            VALUE "Comments", "亿网棋牌科技有限公司"
+            VALUE "CompanyName", "亿网棋牌科技有限公司"
+            VALUE "FileDescription", "服务器内核引擎"
+            VALUE "FileVersion", "1, 0, 0, 1"
             VALUE "InternalName", "KernelEngine.dll"
-            VALUE "LegalCopyright", "雅安大成科技有限公司保留所有权利。"
+            VALUE "LegalCopyright", "亿网棋牌科技有限公司保留所有权利。"
             VALUE "OriginalFilename", "KernelEngine.dll"
-            VALUE "ProductName", "内核引擎"
-            VALUE "ProductVersion", "1, 0, 0, 0"
+            VALUE "ProductName", "服务器内核引擎"
+            VALUE "ProductVersion", "1, 0, 0, 1"
         END
     END
     BLOCK "VarFileInfo"

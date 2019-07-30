@@ -5,7 +5,7 @@
 
 #include "D3DDevice.h"
 #include "GameEngineHead.h"
-#include "D3DFont.h"
+
 //////////////////////////////////////////////////////////////////////////////////
 
 //类说明
@@ -13,7 +13,7 @@ class CVirtualEngine;
 class CVirtualWindow;
 
 //窗口数组
-typedef CArray<CVirtualWindow *,CVirtualWindow *> CVirtualWindowPtrArray;				//窗口数组
+typedef CWHArray<CVirtualWindow *> CVirtualWindowPtrArray;				//窗口数组
 
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -26,19 +26,14 @@ class GAME_ENGINE_CLASS CVirtualEngine
 	//配置变量
 protected:
 	CD3DDevice *					m_pD3DDevice;						//设备对象
-	
-public:
-	CD3DFont						m_D3DDefaultFont;					//默认字体
 
 	//状态变量
 protected:
 	CVirtualWindow *				m_pWindowLeave;						//离开窗口
-	CVirtualWindow *				m_pWindowCapture;					//捕获窗口
 
 	//内核变量
 protected:
-	CVirtualWindowPtrArray			m_VirtualWindowPtrArray;			//窗口数组---管理视图中所有控件窗口
-	CVirtualWindowPtrArray			m_CaptureWindowPtrArray;			//窗口数组
+	CVirtualWindowPtrArray			m_VirtualWindowPtrArray;			//窗口数组
 
 	//函数定义
 public:
@@ -52,7 +47,7 @@ public:
 	//获取设备
 	CD3DDevice * GetD3DDevice() { return m_pD3DDevice; }
 	//设置设备
-	VOID SetD3DDevice(CD3DDevice * pD3DDevice);
+	VOID SetD3DDevice(CD3DDevice * pD3DDevice) { m_pD3DDevice=pD3DDevice; }
 
 	//驱动函数
 public:
@@ -62,15 +57,6 @@ public:
 	bool DefWindowProc(UINT uMessage, WPARAM wParam, LPARAM lParam);
 	//消息解释
 	bool PreTranslateMessage(UINT uMessage, WPARAM wParam, LPARAM lParam);
-	//请求焦点
-	VOID RequestFocus( CVirtualWindow * pVirtualWindow );
-
-	//捕获函数
-public:
-	//离开注册
-	bool RegisterLeave(CVirtualWindow * pVirtualWindow, bool bRegister);
-	//扑获注册
-	bool RegisterCapture(CVirtualWindow * pVirtualWindow, bool bRegister);
 
 	//更新函数
 private:

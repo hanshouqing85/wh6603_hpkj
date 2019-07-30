@@ -56,7 +56,7 @@ protected:
 	CUserListControl				m_UserListControl;					//用户列表
 //	CGamePropertyCtrl				m_GamePropertyCtrl;					//游戏道具
 	CGameFrameUserView				m_GameFrameUserView;				//用户信息
-	CGameFrameMedalView				m_GameFrameMedalView;				//奖牌信息
+//	CGameFrameMedalView				m_GameFrameMedalView;				//奖牌信息
 //	CDlgTrumpetItem *               m_pTrumpetItem;                     //喇叭窗口 
 
 	//控件变量

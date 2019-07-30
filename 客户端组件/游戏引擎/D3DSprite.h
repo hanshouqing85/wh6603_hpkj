@@ -12,7 +12,7 @@
 class CD3DSprite;
 
 //数组说明
-typedef CArray<CD3DSprite *,CD3DSprite *>		CD3DSpritePtrArray;					//精灵数组
+typedef CWHArray<CD3DSprite *>		CD3DSpritePtrArray;					//精灵数组
 
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -24,13 +24,6 @@ protected:
 	FLOAT							m_fAngle;							//旋转变量
 	FLOAT							m_fRotationX;						//旋转变量
 	FLOAT							m_fRotationY;						//旋转变量
-
-	//缩放信息
-protected:
-	FLOAT							m_fScalingCenterX;					//缩放变量
-	FLOAT							m_fScalingCenterY;					//缩放变量
-	FLOAT							m_fScalingX;						//缩放变量
-	FLOAT							m_fScalingY;						//缩放变量
 
 	//图片信息
 public:
@@ -44,7 +37,7 @@ protected:
 
 	//静态变量
 protected:
- 	static CD3DSpritePtrArray		m_D3DSpritePtrArray;				//精灵数组
+	static CD3DSpritePtrArray		m_D3DSpritePtrArray;				//精灵数组
 
 	//函数定义
 public:
@@ -73,8 +66,6 @@ public:
 public:
 	//设置旋转
 	VOID SetRotation(FLOAT fRotationX, FLOAT fRotationY, FLOAT fAngle);
-	//设置缩放
-	VOID SetScaling(FLOAT fScalingCenterX,FLOAT fScalingCenterY,FLOAT fScalingX, FLOAT fScalingY);
 
 	//精灵管理
 public:

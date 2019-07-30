@@ -1,0 +1,340 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// 中文(中华人民共和国) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+#ifdef _WIN32
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(936)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)\r\n"
+    "LANGUAGE 4, 2\r\n"
+    "#pragma code_page(936)\r\n"
+    "#include ""res\\GameClient.rc2""  // 非 Microsoft Visual C++ 编辑过的资源\r\n"
+    "#include ""afxres.rc""         // 标准组件\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\GameClient.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 6,6,0,3
+ PRODUCTVERSION 6,6,0,3
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "080403a8"
+        BEGIN
+            VALUE "Comments", "深圳市哈皮科技有限公司"
+            VALUE "CompanyName", "深圳市哈皮科技有限公司"
+            VALUE "FileDescription", "水果乐园游戏客户端"
+            VALUE "FileVersion", "6, 6, 0, 3"
+            VALUE "InternalName", "SGDZ_Client.exe"
+            VALUE "LegalCopyright", "深圳市哈皮科技有限公司保留所有权利。"
+            VALUE "OriginalFilename", "SGDZ_Client.exe"
+            VALUE "ProductName", "水果乐园游戏客户端"
+            VALUE "ProductVersion", "6, 6, 0, 3"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x804, 936
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+GAME_LOGO               BITMAP                  "res\\GAME_LOGO.bmp"
+IDB_VIEW_BACK           BITMAP                  "res\\VIEW_BACK.bmp"
+IDB_VIEW_FILL           BITMAP                  "res\\VIEW_FILL.bmp"
+IDB_SCORE_NUMBER        BITMAP                  "res\\SCORE_NUMBER.bmp"
+IDB_BT_APPLY_BANKER     BITMAP                  "res\\BT_APPLY_BANKER.bmp"
+IDB_BT_CANCEL_BANKER    BITMAP                  "res\\BT_CANCEL_BANKER.bmp"
+IDB_BT_SCORE_MOVE_L     BITMAP                  "res\\BT_SCORE_MOVE_L.bmp"
+IDB_BT_SCORE_MOVE_R     BITMAP                  "res\\BT_SCORE_MOVE_R.bmp"
+IDB_BT_CANCEL_APPLY     BITMAP                  "res\\BT_CANCEL_APPLY.BMP"
+IDB_BT_BANKER_UP        BITMAP                  "Res\\BANKER_UP.bmp"
+IDB_BT_BANKER_DOWN      BITMAP                  "Res\\BANKER_DOWN.bmp"
+IDB_HISTORY_RECORD      BITMAP                  "Res\\HISTORY_RECORD.bmp"
+IDB_BANK                BITMAP                  "Res\\BANK.bmp"
+IDB_BT_ADDSTEP1         BITMAP                  "res\\ADDSTEP1.bmp"
+IDB_BT_ADDSTEP10        BITMAP                  "res\\ADDSTEP10.bmp"
+IDB_BT_ADDSTEP100       BITMAP                  "res\\ADDSTEP100.bmp"
+IDB_BT_ADDSTEP1_H       BITMAP                  "res\\ADDSTEP1_H.bmp"
+IDB_BT_ADDSTEP10_H      BITMAP                  "res\\ADDSTEP10_H.bmp"
+IDB_BT_ADDSTEP100_H     BITMAP                  "res\\ADDSTEP100_H.bmp"
+IDB_BT_BET_LAST         BITMAP                  "res\\BET_LAST.bmp"
+IDB_BT_BET_SMALL        BITMAP                  "res\\BET_SMALL.bmp"
+IDB_BT_BET_BIG          BITMAP                  "res\\BET_BIG.bmp"
+IDB_BT_CHIP_CLOSE_X     BITMAP                  "res\\BT_CHIP_CLOSE_X.bmp"
+IDB_BT_CHIP_EX100       BITMAP                  "res\\BT_CHIP_100.bmp"
+IDB_BT_CHIP_EX1000      BITMAP                  "res\\BT_CHIP_1000.bmp"
+IDB_BT_CHIP_EX10000     BITMAP                  "res\\BT_CHIP_10000.bmp"
+IDB_BT_CHIP_EXMAX       BITMAP                  "res\\BT_CHIP_MAX.bmp"
+IDB_BT_CHIP_EXCLEAR     BITMAP                  "res\\BT_CHIP_EMPTY.bmp"
+IDB_BT_CHIP_EXOK        BITMAP                  "res\\BT_CHIP_OK.bmp"
+IDB_BT_CHIP_EXCANCEL    BITMAP                  "res\\BT_CHIP_CLOSE.bmp"
+IDB_BT_PLAYER_LIST      BITMAP                  "res\\pngPlayerList.bmp"
+IDB_BT_APPLY_LIST       BITMAP                  "res\\pngApplyList.bmp"
+IDB_BT_PLAYER_LIST_H    BITMAP                  "res\\pngPlayerList_H.bmp"
+IDB_BT_APPLY_LIST_H     BITMAP                  "res\\pngApplyList_H.bmp"
+IDB_SCROLL_BAR          BITMAP                  "res\\scrollbar.bmp"
+IDB_GOOD_LUCK_FLASH1    BITMAP                  "res\\GoodLuck_Flash1.bmp"
+IDB_GOOD_LUCK_FLASH2    BITMAP                  "res\\GoodLuck_Flash2.bmp"
+IDB_EXCHANGE_BACK       BITMAP                  "res\\CHIP_BACK.bmp"
+IDB_BIG_SMALL_NUMBER    BITMAP                  "res\\BIG_SMALL_NUMBER.bmp"
+IDB_BT_BET_LAST2        BITMAP                  "res\\BET_LAST2.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// WAVE
+//
+
+TIME_WARIMG             WAVE                    "res\\sound\\TIME_WARIMG.wav"
+DISPATCH_CARD           WAVE                    "res\\sound\\DISPATCH_CARD.wav"
+GAME_START              WAVE                    "res\\sound\\GAME_START.wav"
+TURN_START              WAVE                    "Res\\Sound\\TURN_START.wav"
+STOP_JETTON             WAVE                    "Res\\Sound\\STOP_JETTON.wav"
+KEY_SOUND1              WAVE                    "res\\Sound\\KEY_SOUND_1.wav"
+KEY_SOUND2              WAVE                    "res\\Sound\\KEY_SOUND_2.wav"
+KEY_SOUND3              WAVE                    "res\\Sound\\KEY_SOUND_3.wav"
+KEY_SOUND4              WAVE                    "res\\Sound\\KEY_SOUND_4.wav"
+KEY_SOUND5              WAVE                    "res\\Sound\\KEY_SOUND_5.wav"
+KEY_SOUND6              WAVE                    "res\\Sound\\KEY_SOUND_6.wav"
+KEY_SOUND7              WAVE                    "res\\Sound\\KEY_SOUND_7.wav"
+KEY_SOUND8              WAVE                    "res\\Sound\\KEY_SOUND_8.wav"
+SND_AREA0               WAVE                    "res\\Sound\\areaBAR.wav"
+SND_AREA1               WAVE                    "res\\Sound\\areaD_SEVEN.wav"
+SND_AREA2               WAVE                    "res\\Sound\\areaD_STAR.wav"
+SND_AREA3               WAVE                    "res\\Sound\\areaWATERMELON.wav"
+SND_AREA4               WAVE                    "res\\Sound\\areaBELL.wav"
+SND_AREA5               WAVE                    "res\\Sound\\areaPAWPAW.wav"
+SND_AREA6               WAVE                    "res\\Sound\\areaORANGE.wav"
+SND_AREA7               WAVE                    "res\\Sound\\areaAPPLE.wav"
+SND_DU_LOSE             WAVE                    "res\\Sound\\DU_LOSE.wav"
+SND_DU_WIN              WAVE                    "res\\Sound\\DU_WIN.wav"
+LUCKY_FLASH             WAVE                    "res\\Sound\\LUCKY_FLASH.wav"
+LUCKY_HIT               WAVE                    "res\\Sound\\LUCKY_HIT.wav"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// PNG
+//
+
+CARD_CARTOON            PNG                     "Res\\CARDS_CARTOON.png"
+APPLE                   PNG                     "res\\APPLE.png"
+APPLE2                  PNG                     "res\\APPLE2.png"
+BAR                     PNG                     "res\\BAR.png"
+BAR2                    PNG                     "res\\BAR2.png"
+BELL                    PNG                     "res\\BELL.png"
+BELL2                   PNG                     "res\\BELL2.png"
+D_SEVEN                 PNG                     "res\\D_SEVEN.png"
+D_SEVEN2                PNG                     "res\\D_SEVEN2.png"
+D_STAR                  PNG                     "res\\D_STAR.png"
+D_STAR2                 PNG                     "res\\D_STAR2.png"
+ORANGE                  PNG                     "res\\ORANGE.png"
+ORANGE2                 PNG                     "res\\ORANGE2.png"
+PAWPAW                  PNG                     "res\\PAWPAW.png"
+PAWPAW2                 PNG                     "res\\PAWPAW2.png"
+WATERMELON              PNG                     "res\\WATERMELON.png"
+WATERMELON2             PNG                     "res\\WATERMELON2.png"
+BET_NUMBER              PNG                     "res\\BET_JETTON_NUMBER.png"
+BET_BIG_NUMBER          PNG                     "res\\BET_BIG_SMALL_NUMBER.png"
+FREETIME                PNG                     "res\\FREETIME.png"
+BITSMALLTIME            PNG                     "res\\BITSMALLTIME.png"
+JETTONTIME              PNG                     "res\\JETTONTIME.png"
+PNG_JETTON_BACK         PNG                     "res\\png_jettonback.png"
+PNG_JETTON_BUTTON       PNG                     "res\\png_jettonbutton.png"
+PNG_MOVE                PNG                     "res\\png_move.png"
+CARD_CARTOON2           PNG                     "res\\CARDS_CARTOON2.png"
+GOODLUCK_0              PNG                     "res\\LUCKY_LOST.png"
+GOODLUCK_1              PNG                     "res\\BIG_THREE.png"
+GOODLUCK_2              PNG                     "res\\APPLE_FOUR.png"
+GOODLUCK_3              PNG                     "res\\SMALL_THREE.png"
+GOODLUCK_4              PNG                     "res\\RUN_TRAIN.png"
+PNG_LINE                PNG                     "res\\png_line.png"
+BIGSMALL_LOSE           PNG                     "res\\BIGSMALL_LOSE.png"
+BIGSMALL_WIN            PNG                     "res\\BIGSMALL_WIN.png"
+SGZZ_LOGO               PNG                     "res\\LOGO.png"
+RECORD_TIP              PNG                     "res\\pngRecordTip.png"
+ACTIVE_BORDER1          PNG                     "res\\ADDSTEP1.png"
+ACTIVE_BORDER10         PNG                     "res\\ADDSTEP10.png"
+ACTIVE_BORDER100        PNG                     "res\\ADDSTEP100.png"
+RUNTIME                 PNG                     "res\\RUNTIME.png"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_EXCHANGEDLG DIALOGEX 0, 0, 224, 190
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+END
+
+IDD_DIALOG_SYSTEM DIALOGEX 0, 0, 439, 303
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "：：：：：",IDC_STATIC_TIMES,15,152,48,10
+    LTEXT           "：：：：：",IDC_STATIC_AREA,15,77,48,10
+    COMBOBOX        IDC_COMBO_TIMES,67,150,48,90,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "：：：",IDC_BUTTON_RESET,22,266,37,14
+    PUSHBUTTON      "：：：",IDC_BUTTON_SYN,70,266,37,14
+    PUSHBUTTON      "：：：",IDC_BUTTON_OK,118,266,37,14
+    PUSHBUTTON      "：：：",IDC_BUTTON_CANCEL,166,266,37,14
+    CONTROL         "：：：：",IDC_RADIO_0,"Button",BS_AUTORADIOBUTTON,14,98,48,10
+    CONTROL         "：：：：",IDC_RADIO_1,"Button",BS_AUTORADIOBUTTON,66,98,48,10
+    CONTROL         "：：：：",IDC_RADIO_2,"Button",BS_AUTORADIOBUTTON,118,98,48,10
+    CONTROL         "：：：：",IDC_RADIO_3,"Button",BS_AUTORADIOBUTTON,170,98,48,10
+    CONTROL         "：：：：",IDC_RADIO_4,"Button",BS_AUTORADIOBUTTON,222,98,48,10
+    CONTROL         "：：：：",IDC_RADIO_5,"Button",BS_AUTORADIOBUTTON,274,98,48,10
+    CONTROL         "：：：：",IDC_RADIO_6,"Button",BS_AUTORADIOBUTTON,326,98,48,10
+    CONTROL         "：：：：",IDC_RADIO_7,"Button",BS_AUTORADIOBUTTON,378,98,48,10
+    CONTROL         "：：：：",IDC_RADIO_10,"Button",BS_AUTORADIOBUTTON,14,123,48,10
+    CONTROL         "：：：：",IDC_RADIO_11,"Button",BS_AUTORADIOBUTTON,66,123,48,10
+    CONTROL         "：：：：",IDC_RADIO_12,"Button",BS_AUTORADIOBUTTON,118,123,48,10
+    CONTROL         "：：：：",IDC_RADIO_13,"Button",BS_AUTORADIOBUTTON,170,123,48,10
+    CONTROL         "：：：：",IDC_RADIO_14,"Button",BS_AUTORADIOBUTTON,222,123,48,10
+    CONTROL         "：：：：",IDC_RADIO_15,"Button",BS_AUTORADIOBUTTON,274,123,48,10
+    CONTROL         "：：：：",IDC_RADIO_16,"Button",BS_AUTORADIOBUTTON,326,123,48,10
+    CONTROL         "：：：：",IDC_RADIO_17,"Button",BS_AUTORADIOBUTTON,378,123,48,10
+    LTEXT           "：：：：：",IDC_STATIC_NOTIC,15,190,48,10
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDFRAME,0,20,439,1
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDFRAME,0,90,439,1
+    CTEXT           "：：：：",IDC_STATIC_TEXT,32,209,218,8
+    CTEXT           "：：：：",IDC_STATIC_INFO,32,227,218,28
+    LTEXT           "：：：：：",IDC_STATIC_NOTIC2,15,7,48,10
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDFRAME,0,203,439,1
+    LTEXT           "：：：：：",IDC_STATIC_0,15,29,97,10
+    LTEXT           "：：：：：",IDC_STATIC_1,122,29,97,10
+    LTEXT           "：：：：：",IDC_STATIC_2,229,29,97,10
+    LTEXT           "：：：：：",IDC_STATIC_3,336,29,97,10
+    LTEXT           "：：：：：",IDC_STATIC_4,15,54,97,10
+    LTEXT           "：：：：：",IDC_STATIC_5,122,54,97,10
+    LTEXT           "：：：：：",IDC_STATIC_6,229,54,97,10
+    LTEXT           "：：：：：",IDC_STATIC_7,336,54,97,10
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_EXCHANGEDLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 315
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 183
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_CURSOR1             CURSOR                  "res\\Cursor_1.cur"
+IDC_CURSOR2             CURSOR                  "res\\Cursor_2.cur"
+IDC_CURSOR3             CURSOR                  "res\\Cursor_3.cur"
+#endif    // 中文(中华人民共和国) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+LANGUAGE 4, 2
+#pragma code_page(936)
+#include "res\GameClient.rc2"  // 非 Microsoft Visual C++ 编辑过的资源
+#include "afxres.rc"         // 标准组件
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

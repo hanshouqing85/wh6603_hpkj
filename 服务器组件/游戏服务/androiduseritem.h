@@ -98,7 +98,7 @@ public:
 	//获取自己
 	virtual IServerUserItem * GetMeUserItem();
 	//游戏用户
-	virtual IServerUserItem * GetTableUserItem(WORD wChairID);
+	virtual IServerUserItem * GetTableUserItem(WORD wChariID);
 
 	//银行接口
 public:

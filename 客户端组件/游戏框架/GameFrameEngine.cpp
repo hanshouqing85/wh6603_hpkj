@@ -165,12 +165,12 @@ bool CGameFrameEngine::PerformSaveScore(SCORE lScore)
 	if (m_pIClientKernel==NULL) return false;
 
 	////构造数据
-	CMD_GR_C_SaveScoreRequest SaveScoreRequest;
-	SaveScoreRequest.cbActivityGame=TRUE;
-	SaveScoreRequest.lSaveScore=lScore;
+	//CMD_GR_C_SaveScoreRequest SaveScoreRequest;
+	//SaveScoreRequest.cbActivityGame=TRUE;
+	//SaveScoreRequest.lSaveScore=lScore;
 
 	//发送数据
-	return m_pIClientKernel->SendSocketData(MDM_GR_INSURE,SUB_GR_SAVE_SCORE_REQUEST,&SaveScoreRequest,sizeof(SaveScoreRequest));
+//	return m_pIClientKernel->SendSocketData(MDM_GR_INSURE,SUB_GR_SAVE_SCORE_REQUEST,&SaveScoreRequest,sizeof(SaveScoreRequest));
 }
 
 //提取游戏币

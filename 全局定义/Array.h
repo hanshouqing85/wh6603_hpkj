@@ -89,11 +89,7 @@ public:
 template<class TYPE, class ARG_TYPE> 
 AFX_INLINE bool CWHArray<TYPE, ARG_TYPE>::IsEmpty() const
 {
-	if (m_nElementCount==0)
-		return true;
-	if(m_pData==NULL)
-		return true;
-	return false;
+	return (m_nElementCount==0);
 }
 
 //获取数目

@@ -8,9 +8,7 @@ public:
 	virtual ~CGameRule(void);
 protected:
 	CGameRule(void);
-	static int GetSecByHMS(int h,int m,int s);
-	//获取今天凌晨零时整的时间戳
-	static time_t GetMorningTime(time_t t);	
+	
 public:
 	//下期期号
 	virtual CString GetNextExpect(int nDelta=0) = 0;
@@ -24,38 +22,11 @@ public:
 	virtual bool IsCanCancel(CString qihao);
 	//获取每期时间间隔,像重庆时时彩，有时候5分钟，有时候10分钟。
 	virtual long GetQiSpan();
-
-	void SetTimeSpan(CTimeSpan timeSpan);
-	void SetStartQihao(int nQihao,CTime tStartTime);
-
-	//下期期号
-	string GetNextExpect_TJ(int nDelta=0);
-	//下期开奖时间
-	time_t GetNextKjShj_TJ();
-	//获取期号
-	int GetQiShu_TJ(int sec);
-	//获取开奖时间
-	int GetKjShj_TJ(int qishu);
-
-	//下期期号
-	string GetNextExpect_PK10(int nDelta = 0);
-	//下期开奖时间
-	time_t GetNextKjShj_PK10();
-	//获取今天第一期的期号	
-	int GetQiShu0_PK10();
-	//今天到了多少期
-	int GetQiShu_PK10(int sec);
-
-protected:
 	CTimeSpan m_timeSpan;
-	int m_nStartQihao;
-	CTime m_tStartTime;
-	char m_para1[20];//TJ:"%s%03d"
-	int m_iKjShjFirst;//每天第一期开奖时间
-	int m_iKjShjLast;//每天最后一期开奖时间
-	int m_qishu;//每天开奖期数
-	int m_timespan;//开奖频率
-	int m_fenDanDuration;//封单时间
+	void SetTimeSpan(CTimeSpan timeSpan)
+	{
+		m_timeSpan = timeSpan;
+	}
 };
 
 class CChqSSCRule : public CGameRule
@@ -74,11 +45,6 @@ public:
 	virtual long GetQiSpan();
 	bool IsCanCancel(CString qihao);
 	virtual CString GetKjShjDiffDesc(int nSecond = 60);
-
-	//获取期号
-	int GetQiShu(int sec);
-	//获取开奖时间
-	int GetKjShj(int qishu);
 private:
 	//时间1 00:00-02:00
 	int m_t1_start;
@@ -94,7 +60,7 @@ private:
 	int timespan_ye_kj_shj;
 };
 
-//天津彩
+//江西彩
 class CJxSSCRule  : public CGameRule
 {
 public:
@@ -106,7 +72,9 @@ public:
 	//下期期号
 	virtual CString GetNextExpect(int nDelta=0);
 	//下期开奖时间
-	virtual CTime GetNextKjShj();
+	virtual CTime GetNextKjShj(){return GetNextFdShj();}
+	//下期封单时间
+	CTime GetNextFdShj();
 	//离下次封单时间还剩下的时间
 	long GetFdShjDiff();
 
@@ -129,24 +97,20 @@ class CXJSSCRule  : public CGameRule
 {
 public:
 	CXJSSCRule(void);
-	CXJSSCRule(const char *para1,int iKjShjFirst,int iKjShjLast,int qishu,int timespan,int fdtimespan);
 	virtual ~CXJSSCRule(void);
 
 public:
 	//下期期号
 	CString GetNextExpect(int nDelta=0);
 	//下期开奖时间
-	virtual CTime GetNextKjShj();
+	virtual CTime GetNextKjShj(){return GetNextFdShj();}
+	//下期封单时间
+	CTime GetNextFdShj();
 	//离下次封单时间还剩下的时间
 	long GetFdShjDiff();
 	CString GetFdShjDiffDesc();
 
 	bool IsCanCancel(CString qihao);
-
-	//获取期号
-	int GetQiShu(int sec);
-	//获取开奖时间
-	int GetKjShj(int qishu);
 
 public:
 	static TCHAR m_lastExpect[KJ_QIHAO_LENGTH];
@@ -154,38 +118,6 @@ public:
 
 private:
 	int timespan_fd_shj;
-};
-class CErFenCaiRule : public CGameRule
-{
-public:
-	CErFenCaiRule(void);
-	virtual ~CErFenCaiRule(void);
-
-public:
-	//下期销售期号
-	virtual CString GetNextExpect(int nDelta=0);
-	//下期开奖时间
-	virtual CTime GetNextKjShj();
-	bool IsCanCancel(CString qihao);
-	//离下次封单时间还剩下的时间
-	long GetFdShjDiff();
-	virtual CString GetKjShjDiffDesc(int nSecond = 60);
-
-	//获取每期时间间隔,像重庆时时彩，有时候5分钟，有时候10分钟。
-	virtual long GetQiSpan();
-private:
-	//时间1 00:00-02:00
-	int m_t1_start;
-	int m_t1_end;
-	//时间2 10:00-22:00
-	int m_t2_start;
-	int m_t2_end;	
-	//时间3 22:00-24:00
-	int m_t3_start;
-	int m_t3_end;	
-
-	int timespan_kj_shj;
-	int timespan_ye_kj_shj;
 };
 
 class CFenFenCaiRule : public CGameRule
@@ -253,106 +185,6 @@ private:
 	int timespan_ye_kj_shj;
 };
 
-class CTXFenFenCaiRule : public CGameRule
-{
-public:
-	CTXFenFenCaiRule(void);
-	virtual ~CTXFenFenCaiRule(void);
-
-public:
-	//下期销售期号
-	virtual CString GetNextExpect(int nDelta=0);
-	//下期开奖时间
-	virtual CTime GetNextKjShj();
-	bool IsCanCancel(CString qihao);
-	//离下次封单时间还剩下的时间
-	long GetFdShjDiff();
-	virtual CString GetKjShjDiffDesc(int nSecond=60);
-
-	//获取每期时间间隔,像重庆时时彩，有时候5分钟，有时候10分钟。
-	virtual long GetQiSpan();
-private:
-	//时间1 00:00-02:00
-	int m_t1_start;
-	int m_t1_end;
-	//时间2 10:00-22:00
-	int m_t2_start;
-	int m_t2_end;	
-	//时间3 22:00-24:00
-	int m_t3_start;
-	int m_t3_end;	
-
-	int timespan_kj_shj;
-	int timespan_ye_kj_shj;
-};
-class CQQFenFenCaiRule : public CGameRule
-{
-public:
-	CQQFenFenCaiRule(void);
-	virtual ~CQQFenFenCaiRule(void);
-
-public:
-	//下期销售期号
-	virtual CString GetNextExpect(int nDelta=0);
-	//下期开奖时间
-	virtual CTime GetNextKjShj();
-	bool IsCanCancel(CString qihao);
-	//离下次封单时间还剩下的时间
-	long GetFdShjDiff();
-	virtual CString GetKjShjDiffDesc(int nSecond=60);
-
-	//获取每期时间间隔,像重庆时时彩，有时候5分钟，有时候10分钟。
-	virtual long GetQiSpan();
-private:
-	//时间1 00:00-02:00
-	int m_t1_start;
-	int m_t1_end;
-	//时间2 10:00-22:00
-	int m_t2_start;
-	int m_t2_end;	
-	//时间3 22:00-24:00
-	int m_t3_start;
-	int m_t3_end;	
-
-	int timespan_kj_shj;
-	int timespan_ye_kj_shj;
-};
-
-class CCanadaRule : public CGameRule
-{
-public:
-	CCanadaRule(void);
-	virtual ~CCanadaRule(void);
-
-public:
-	//下期销售期号
-	virtual CString GetNextExpect(int nDelta=0);
-	//下期开奖时间
-	virtual CTime GetNextKjShj();
-
-	//获取每期时间间隔,像重庆时时彩，有时候5分钟，有时候10分钟。
-	virtual long GetQiSpan();
-	bool IsCanCancel(CString qihao);
-	virtual CString GetKjShjDiffDesc(int nSecond = 60);
-	int nQihaocha;
-	void SetQihaoStart(int nQihao,CTime time);
-private:
-	//时间1 00:00-02:00
-	int m_t1_start;
-	int m_t1_end;
-	//时间2 10:00-22:00
-	int m_t2_start;
-	int m_t2_end;	
-	//时间3 22:00-24:00
-	int m_t3_start;
-	int m_t3_end;	
-	int  m_nStartQihao;
-
-	CTime	m_tStartTime;
-	int timespan_kj_shj;
-	int timespan_ye_kj_shj;
-};
-
 //广东11选5
 class CGD11X5Rule : public CGameRule
 {
@@ -402,16 +234,6 @@ public:
 	virtual long GetQiSpan();
 	bool IsCanCancel(CString qihao);
 	virtual CString GetKjShjDiffDesc(int nSecond = 60);
-	LONG nQihaocha;
-	void SetQihaocha(int nQihao)
-	{
-	//	if(nQihaocha == 0||nQihaocha!=nQihao)
-		{
-			nQihaocha = nQihao;
-			m_nStartQihao += nQihaocha;
-		}
-	}
-
 private:
 	//时间1 00:00-02:00
 	int m_t1_start;
@@ -546,6 +368,7 @@ public:
 	//离下次封单时间还剩下的时间
 	long GetFdShjDiff();
 	virtual CString GetKjShjDiffDesc(int nSecond=60);
+
 private:
 	//时间1 00:00-02:00
 	int m_t1_start;
@@ -643,6 +466,12 @@ public:
 	//下期开奖时间
 	virtual CTime GetNextKjShj();
 
+
 private:
+
 	int timespan_kj_shj;
+
+	int startqihao;
+	CTime startTime;
+
 };

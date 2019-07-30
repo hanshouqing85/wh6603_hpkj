@@ -1,0 +1,469 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>游戏客户端</ProjectName>
+    <ProjectGuid>{F2D70F30-23FC-4973-A798-AED329359B34}</ProjectGuid>
+    <Keyword>MFCProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>11.0.50727.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>../../../../运行/Debug/ansi/</OutDir>
+    <IntDir>Debug\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>SparrowHZ</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>../../../../运行/Release/ansi/</OutDir>
+    <IntDir>Release\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>SparrowHZ</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>../../../../运行/Debug/ansi/SparrowHZ.exe</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+    </Midl>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0804</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+      <OutputFile>../../../运行/Release/SparrowHZ.exe</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+    </Midl>
+    <PostBuildEvent>
+      <Command>mkdir ..\..\..\发布组件\客户端组件\Release
+copy /y ..\..\..\运行\Release\$(TargetFileName) ..\..\..\发布组件\客户端组件\Release\$(TargetFileName)
+</Command>
+    </PostBuildEvent>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0804</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="CardControl.cpp" />
+    <ClCompile Include="ControlWnd.cpp" />
+    <ClCompile Include="DirectSound.cpp" />
+    <ClCompile Include="DlgListen.cpp" />
+    <ClCompile Include="DrawSiceWnd.cpp" />
+    <ClCompile Include="GameClient.cpp" />
+    <ClCompile Include="GameClientDlg.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4244;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="GameClientView.cpp" />
+    <ClCompile Include="GameLogic.cpp" />
+    <ClCompile Include="GameOption.cpp" />
+    <ClCompile Include="GameScore.cpp" />
+    <ClCompile Include="MoveCardItem.cpp" />
+    <ClCompile Include="Stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CardControl.h" />
+    <ClInclude Include="..\消息定义\CMD_Sparrow.h" />
+    <ClInclude Include="ControlWnd.h" />
+    <ClInclude Include="DirectSound.h" />
+    <ClInclude Include="DlgListen.h" />
+    <ClInclude Include="DrawSiceWnd.h" />
+    <ClInclude Include="GameClient.h" />
+    <ClInclude Include="GameClientDlg.h" />
+    <ClInclude Include="GameClientView.h" />
+    <ClInclude Include="GameLogic.h" />
+    <ClInclude Include="GameOption.h" />
+    <ClInclude Include="GameScore.h" />
+    <ClInclude Include="MoveCardItem.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="Stdafx.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Res\ACTION_BACK.bmp" />
+    <Image Include="Res\ACTION_EXPLAIN.bmp" />
+    <Image Include="Res\BT_CHI.bmp" />
+    <Image Include="Res\BT_CHIHU.bmp" />
+    <Image Include="Res\BT_GANG.bmp" />
+    <Image Include="Res\BT_GIVEUP.bmp" />
+    <Image Include="Res\BT_LISTEN.bmp" />
+    <Image Include="Res\BT_PENG.bmp" />
+    <Image Include="Res\BT_SCORE_CLOSE.bmp" />
+    <Image Include="Res\BT_START.bmp" />
+    <Image Include="Res\BT_START_TRUSTEE.bmp" />
+    <Image Include="Res\BT_STOP_TRUSTEE.bmp" />
+    <Image Include="Res\CARD_BACK_H.bmp" />
+    <Image Include="Res\CARD_BACK_V.bmp" />
+    <Image Include="Res\CARD_HEAP_DOUBLE_H.bmp" />
+    <Image Include="Res\CARD_HEAP_DOUBLE_V.bmp" />
+    <Image Include="Res\CARD_HEAP_SINGLE_H.bmp" />
+    <Image Include="Res\CARD_HEAP_SINGLE_V.bmp" />
+    <Image Include="Res\CARD_TABLE_BOTTOM.bmp" />
+    <Image Include="Res\CARD_TABLE_LEFT.bmp" />
+    <Image Include="Res\CARD_TABLE_RIGHT.bmp" />
+    <Image Include="Res\CARD_TABLE_TOP.bmp" />
+    <Image Include="Res\CARD_USER_BOTTOM.bmp" />
+    <Image Include="Res\CARD_USER_LEFT.bmp" />
+    <Image Include="Res\CARD_USER_RIGHT.bmp" />
+    <Image Include="Res\CARD_USER_TOP.bmp" />
+    <Image Include="Res\CONTROL_BACK.bmp" />
+    <Image Include="Res\CONTROL_BACKss.bmp" />
+    <Image Include="Res\CONTROL_BACKsss.bmp" />
+    <Image Include="Res\CONTROL_BOTTOM.bmp" />
+    <Image Include="Res\CONTROL_MID.bmp" />
+    <Image Include="Res\CONTROL_TOP.bmp" />
+    <Image Include="Res\FAN_PAI.bmp" />
+    <Image Include="Res\GAME_LOGO.bmp" />
+    <Image Include="Res\GAME_SCORE.bmp" />
+    <Image Include="Res\GAME_SCORE_FLAG.bmp" />
+    <Image Include="Res\GameClient.ico" />
+    <Image Include="Res\HUANG_ZHUANG.bmp" />
+    <Image Include="Res\LISTEN_FLAG_H.bmp" />
+    <Image Include="Res\LISTEN_FLAG_V.bmp" />
+    <Image Include="Res\OUT_CARD_TIP.bmp" />
+    <Image Include="Res\SELECT.bmp" />
+    <Image Include="Res\SICE1.bmp" />
+    <Image Include="Res\SICE10.bmp" />
+    <Image Include="Res\SICE11.bmp" />
+    <Image Include="Res\SICE12.bmp" />
+    <Image Include="Res\SICE2.bmp" />
+    <Image Include="Res\SICE3.bmp" />
+    <Image Include="Res\SICE4.bmp" />
+    <Image Include="Res\SICE5.bmp" />
+    <Image Include="Res\SICE6.bmp" />
+    <Image Include="Res\SICE7.bmp" />
+    <Image Include="Res\SICE8.bmp" />
+    <Image Include="Res\SICE9.bmp" />
+    <Image Include="Res\SICE_BACK.bmp" />
+    <Image Include="Res\TRUSTEE.bmp" />
+    <Image Include="Res\USER_ACTION.bmp" />
+    <Image Include="Res\USER_FLAG.bmp" />
+    <Image Include="Res\VIEW_BACK.bmp" />
+    <Image Include="Res\View_center.bmp" />
+    <Image Include="Res\WAIT_TIP.bmp" />
+    <Image Include="Res\WIN_LOSE.bmp" />
+    <Image Include="Res\ZUAN_PAI.bmp" />
+    <Image Include="Res\ACTION_BACK.png" />
+    <Image Include="Res\ACTIONANI.png" />
+    <Image Include="Res\ARROW.png" />
+    <Image Include="Res\CARD_BACK_H.png" />
+    <Image Include="Res\CARD_BACK_V.png" />
+    <Image Include="Res\CARD_HEAP_DOUBLE_H.png" />
+    <Image Include="Res\CARD_HEAP_DOUBLE_V.png" />
+    <Image Include="Res\CARD_HEAP_SINGLE_H.png" />
+    <Image Include="Res\CARD_HEAP_SINGLE_V.png" />
+    <Image Include="Res\CARD_TABLE.PNG" />
+    <Image Include="Res\CARD_TABLE_BOTTOM.png" />
+    <Image Include="Res\CARD_TABLE_LEFT.png" />
+    <Image Include="Res\CARD_TABLE_RIGHT.png" />
+    <Image Include="Res\CARD_TABLE_TOP.png" />
+    <Image Include="Res\CARD_USER.PNG" />
+    <Image Include="Res\CARD_USER_BOTTOM.png" />
+    <Image Include="Res\CARD_USER_BOTTOM_GRAYED.PNG" />
+    <Image Include="Res\CARD_USER_LEFT.png" />
+    <Image Include="Res\CARD_USER_RIGHT.png" />
+    <Image Include="Res\CARD_USER_TOP.png" />
+    <Image Include="Res\DIRECTION_OPERATE.PNG" />
+    <Image Include="Res\DISC.png" />
+    <Image Include="Res\DRAW_WIND.png" />
+    <Image Include="Res\FANG_PAO.png" />
+    <Image Include="Res\GAME_SCORE.png" />
+    <Image Include="Res\HEAP_DOUBLE_H_SHADOW.PNG" />
+    <Image Include="Res\HEAP_DOUBLE_HSHADOW.PNG" />
+    <Image Include="Res\HEAP_DOUBLE_V_SHADOW.PNG" />
+    <Image Include="Res\HEAP_SINGLE_H_SHADOW.PNG" />
+    <Image Include="Res\HEAP_SINGLE_V_SHADOW.PNG" />
+    <Image Include="Res\LAO_ZHUANG.png" />
+    <Image Include="Res\LISTEN_FLAG.png" />
+    <Image Include="Res\OUT_CARD_TIP.png" />
+    <Image Include="Res\TABLE_BOTTOM_SHADOW.PNG" />
+    <Image Include="Res\TABLE_LEFT_SHADOW.PNG" />
+    <Image Include="Res\TABLE_RIGHT_SHADOW.PNG" />
+    <Image Include="Res\TABLE_TOP_SHADOW.PNG" />
+    <Image Include="Res\TIME_BACK.PNG" />
+    <Image Include="Res\TIME_NUMBER.PNG" />
+    <Image Include="Res\Trustee.png" />
+    <Image Include="Res\USER_BOTTOM_SHADOW.PNG" />
+    <Image Include="Res\USER_FLAG.png" />
+    <Image Include="Res\USER_LEFT_SHADOW.PNG" />
+    <Image Include="Res\USER_READY.PNG" />
+    <Image Include="Res\USER_RIGHT_SHADOW.PNG" />
+    <Image Include="Res\USER_TOP_SHADOW.PNG" />
+    <Image Include="Res\VIEW_CENTER.png" />
+    <Image Include="Res\WAIT_TIP.png" />
+    <Image Include="Res\ZI_MO.PNG" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Res\CARD_CUR.cur" />
+    <None Include="res\GameClient.rc2" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="Res\麻将声音\女\CHI_1.wav" />
+    <Media Include="Res\麻将声音\男\CHI_1.wav" />
+    <Media Include="Res\麻将声音\女\CHI_2.wav" />
+    <Media Include="Res\麻将声音\男\CHI_2.wav" />
+    <Media Include="Res\麻将声音\男\CHI_3.wav" />
+    <Media Include="Res\麻将声音\女\CHI_3.wav" />
+    <Media Include="Res\麻将声音\女\CHI_HU_1.wav" />
+    <Media Include="Res\麻将声音\男\CHI_HU_1.wav" />
+    <Media Include="Res\麻将声音\男\CHI_HU_2.wav" />
+    <Media Include="Res\麻将声音\女\CHI_HU_2.wav" />
+    <Media Include="Res\麻将声音\男\F_1_1.wav" />
+    <Media Include="Res\麻将声音\女\F_1_1.wav" />
+    <Media Include="Res\麻将声音\男\F_1_2.WAV" />
+    <Media Include="Res\麻将声音\女\F_1_2.wav" />
+    <Media Include="Res\麻将声音\女\F_2_1.wav" />
+    <Media Include="Res\麻将声音\男\F_2_1.wav" />
+    <Media Include="Res\麻将声音\男\F_2_2.wav" />
+    <Media Include="Res\麻将声音\女\F_2_2.wav" />
+    <Media Include="Res\麻将声音\男\F_3_1.wav" />
+    <Media Include="Res\麻将声音\女\F_3_1.wav" />
+    <Media Include="Res\麻将声音\男\F_3_2.wav" />
+    <Media Include="Res\麻将声音\女\F_3_2.wav" />
+    <Media Include="Res\麻将声音\女\F_4_1.wav" />
+    <Media Include="Res\麻将声音\男\F_4_1.wav" />
+    <Media Include="Res\麻将声音\男\F_4_2.wav" />
+    <Media Include="Res\麻将声音\女\F_4_2.wav" />
+    <Media Include="Res\麻将声音\女\F_4_3.wav" />
+    <Media Include="Res\麻将声音\男\F_5.WAV" />
+    <Media Include="Res\麻将声音\女\F_5.WAV" />
+    <Media Include="Res\麻将声音\女\F_6_1.wav" />
+    <Media Include="Res\麻将声音\男\F_6_1.wav" />
+    <Media Include="Res\麻将声音\男\F_6_2.wav" />
+    <Media Include="Res\麻将声音\女\F_6_2.wav" />
+    <Media Include="Res\麻将声音\男\F_6_3.wav" />
+    <Media Include="Res\麻将声音\女\F_6_3.wav" />
+    <Media Include="Res\麻将声音\男\F_7_1.wav" />
+    <Media Include="Res\麻将声音\女\F_7_1.wav" />
+    <Media Include="Res\麻将声音\男\F_7_2.wav" />
+    <Media Include="Res\麻将声音\女\F_7_2.wav" />
+    <Media Include="Res\麻将声音\女\F_7_3.wav" />
+    <Media Include="Res\麻将声音\男\F_7_3.wav" />
+    <Media Include="Res\麻将声音\男\F_7_4.wav" />
+    <Media Include="Res\麻将声音\Game_end.wav" />
+    <Media Include="Res\麻将声音\Game_lose.wav" />
+    <Media Include="Res\麻将声音\Game_lost.wav" />
+    <Media Include="Res\麻将声音\Game_start.wav" />
+    <Media Include="Res\麻将声音\Game_warn.wav" />
+    <Media Include="Res\麻将声音\Game_win.wav" />
+    <Media Include="Res\麻将声音\女\GANG_1.wav" />
+    <Media Include="Res\麻将声音\男\GANG_1.wav" />
+    <Media Include="Res\麻将声音\男\GANG_2.wav" />
+    <Media Include="Res\麻将声音\女\GANG_2.wav" />
+    <Media Include="Res\麻将声音\Out_card.wav" />
+    <Media Include="Res\麻将声音\女\PENG_1.wav" />
+    <Media Include="Res\麻将声音\男\PENG_1.wav" />
+    <Media Include="Res\麻将声音\男\PENG_2.wav" />
+    <Media Include="Res\麻将声音\女\PENG_2.wav" />
+    <Media Include="Res\麻将声音\女\PENG_3.wav" />
+    <Media Include="Res\麻将声音\男\PENG_3.wav" />
+    <Media Include="Res\麻将声音\男\S_1_1.wav" />
+    <Media Include="Res\麻将声音\女\S_1_1.wav" />
+    <Media Include="Res\麻将声音\女\S_1_2.wav" />
+    <Media Include="Res\麻将声音\男\S_1_2.wav" />
+    <Media Include="Res\麻将声音\男\S_1_3.wav" />
+    <Media Include="Res\麻将声音\女\S_1_3.wav" />
+    <Media Include="Res\麻将声音\男\S_2.WAV" />
+    <Media Include="Res\麻将声音\女\S_2.WAV" />
+    <Media Include="Res\麻将声音\男\S_3_1.wav" />
+    <Media Include="Res\麻将声音\女\S_3_1.wav" />
+    <Media Include="Res\麻将声音\女\S_3_2.wav" />
+    <Media Include="Res\麻将声音\男\S_3_2.wav" />
+    <Media Include="Res\麻将声音\男\S_4_1.wav" />
+    <Media Include="Res\麻将声音\女\S_4_1.wav" />
+    <Media Include="Res\麻将声音\女\S_4_2.wav" />
+    <Media Include="Res\麻将声音\男\S_4_2.wav" />
+    <Media Include="Res\麻将声音\男\S_5_1.wav" />
+    <Media Include="Res\麻将声音\女\S_5_1.WAV" />
+    <Media Include="Res\麻将声音\男\S_5_2.wav" />
+    <Media Include="Res\麻将声音\女\S_5_2.wav" />
+    <Media Include="Res\麻将声音\男\S_6.WAV" />
+    <Media Include="Res\麻将声音\女\S_6.WAV" />
+    <Media Include="Res\麻将声音\男\S_7_1.wav" />
+    <Media Include="Res\麻将声音\女\S_7_1.wav" />
+    <Media Include="Res\麻将声音\女\S_7_2.wav" />
+    <Media Include="Res\麻将声音\男\S_7_2.wav" />
+    <Media Include="Res\麻将声音\女\S_8_1.wav" />
+    <Media Include="Res\麻将声音\男\S_8_1.wav" />
+    <Media Include="Res\麻将声音\女\S_8_2.wav" />
+    <Media Include="Res\麻将声音\男\S_8_2.wav" />
+    <Media Include="Res\麻将声音\男\S_8_3.wav" />
+    <Media Include="Res\麻将声音\女\S_8_3.wav" />
+    <Media Include="Res\麻将声音\男\S_9.WAV" />
+    <Media Include="Res\麻将声音\女\S_9.WAV" />
+    <Media Include="Res\麻将声音\男\T_1.WAV" />
+    <Media Include="Res\麻将声音\女\T_1.WAV" />
+    <Media Include="Res\麻将声音\女\T_2.WAV" />
+    <Media Include="Res\麻将声音\男\T_2_1.wav" />
+    <Media Include="Res\麻将声音\女\T_2_1.wav" />
+    <Media Include="Res\麻将声音\女\T_2_2.wav" />
+    <Media Include="Res\麻将声音\男\T_2_2.wav" />
+    <Media Include="Res\麻将声音\女\T_3_1.wav" />
+    <Media Include="Res\麻将声音\男\T_3_1.wav" />
+    <Media Include="Res\麻将声音\男\T_3_2.wav" />
+    <Media Include="Res\麻将声音\女\T_3_2.wav" />
+    <Media Include="Res\麻将声音\男\T_4_1.wav" />
+    <Media Include="Res\麻将声音\女\T_4_1.wav" />
+    <Media Include="Res\麻将声音\男\T_4_2.wav" />
+    <Media Include="Res\麻将声音\女\T_4_2.wav" />
+    <Media Include="Res\麻将声音\男\T_5.wav" />
+    <Media Include="Res\麻将声音\女\T_5.WAV" />
+    <Media Include="Res\麻将声音\女\T_6.WAV" />
+    <Media Include="Res\麻将声音\男\T_6.WAV" />
+    <Media Include="Res\麻将声音\女\T_7_1.wav" />
+    <Media Include="Res\麻将声音\男\T_7_1.wav" />
+    <Media Include="Res\麻将声音\男\T_7_2.wav" />
+    <Media Include="Res\麻将声音\女\T_7_2.wav" />
+    <Media Include="Res\麻将声音\男\T_8.WAV" />
+    <Media Include="Res\麻将声音\女\T_8.WAV" />
+    <Media Include="Res\麻将声音\男\T_9_1.wav" />
+    <Media Include="Res\麻将声音\女\T_9_1.wav" />
+    <Media Include="Res\麻将声音\男\T_9_2.wav" />
+    <Media Include="Res\麻将声音\女\T_9_2.wav" />
+    <Media Include="Res\麻将声音\女\Ting.wav" />
+    <Media Include="Res\麻将声音\男\Ting.wav" />
+    <Media Include="Res\麻将声音\女\W_1_1.wav" />
+    <Media Include="Res\麻将声音\男\W_1_1.WAV" />
+    <Media Include="Res\麻将声音\男\W_1_2.wav" />
+    <Media Include="Res\麻将声音\女\W_1_2.wav" />
+    <Media Include="Res\麻将声音\女\W_1_3.wav" />
+    <Media Include="Res\麻将声音\男\W_1_3.wav" />
+    <Media Include="Res\麻将声音\男\W_2.WAV" />
+    <Media Include="Res\麻将声音\女\W_2.WAV" />
+    <Media Include="Res\麻将声音\女\W_3.WAV" />
+    <Media Include="Res\麻将声音\男\W_3.WAV" />
+    <Media Include="Res\麻将声音\男\W_4_1.wav" />
+    <Media Include="Res\麻将声音\女\W_4_1.wav" />
+    <Media Include="Res\麻将声音\女\W_4_2.wav" />
+    <Media Include="Res\麻将声音\男\W_4_2.wav" />
+    <Media Include="Res\麻将声音\男\W_5.WAV" />
+    <Media Include="Res\麻将声音\女\W_5.WAV" />
+    <Media Include="Res\麻将声音\男\W_6.WAV" />
+    <Media Include="Res\麻将声音\女\W_6.WAV" />
+    <Media Include="Res\麻将声音\男\W_7.wav" />
+    <Media Include="Res\麻将声音\女\W_7_1.wav" />
+    <Media Include="Res\麻将声音\女\W_7_2.wav" />
+    <Media Include="Res\麻将声音\男\W_8.WAV" />
+    <Media Include="Res\麻将声音\女\W_8.WAV" />
+    <Media Include="Res\麻将声音\女\W_9.WAV" />
+    <Media Include="Res\麻将声音\男\W_9.WAV" />
+    <Media Include="Res\麻将声音\女\CHR_CAI_SHEN_HUI.wav" />
+    <Media Include="Res\麻将声音\男\CHR_CAI_SHEN_HUI.wav" />
+    <Media Include="Res\麻将声音\男\CHR_DI_HU.wav" />
+    <Media Include="Res\麻将声音\女\CHR_DI_HU.wav" />
+    <Media Include="Res\麻将声音\男\CHR_GANG_KAI.wav" />
+    <Media Include="Res\麻将声音\女\CHR_GANG_KAI.wav" />
+    <Media Include="Res\麻将声音\男\CHR_HAI_DI.wav" />
+    <Media Include="Res\麻将声音\女\CHR_HAI_DI.wav" />
+    <Media Include="Res\麻将声音\男\CHR_PENG_PENG.wav" />
+    <Media Include="Res\麻将声音\女\CHR_PENG_PENG.wav" />
+    <Media Include="Res\麻将声音\男\CHR_QI_DUI.wav" />
+    <Media Include="Res\麻将声音\女\CHR_QI_DUI.wav" />
+    <Media Include="Res\麻将声音\男\CHR_QIANG_GANG.wav" />
+    <Media Include="Res\麻将声音\女\CHR_QIANG_GANG.wav" />
+    <Media Include="Res\麻将声音\男\CHR_QING_YI_SE.wav" />
+    <Media Include="Res\麻将声音\女\CHR_QING_YI_SE.wav" />
+    <Media Include="Res\麻将声音\男\CHR_QUAN_BU_KAO.wav" />
+    <Media Include="Res\麻将声音\女\CHR_QUAN_BU_KAO.wav" />
+    <Media Include="Res\麻将声音\女\CHR_TIAN_HU.wav" />
+    <Media Include="Res\麻将声音\男\CHR_TIAN_HU.wav" />
+    <Media Include="Res\麻将声音\男\CHR_ZI_MO.wav" />
+    <Media Include="Res\麻将声音\女\CHR_ZI_MO.wav" />
+    <Media Include="Res\麻将声音\女\CHR_ZI_YI_SE.wav" />
+    <Media Include="Res\麻将声音\男\CHR_ZI_YI_SE.wav" />
+    <Media Include="Res\麻将声音\DRAW_SICE.wav" />
+    <Media Include="Res\麻将声音\男\REPLACE.WAV" />
+    <Media Include="Res\麻将声音\女\REPLACE.WAV" />
+    <Media Include="Res\麻将声音\SEND_CARD.WAV" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="GameClient.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="GameClient.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

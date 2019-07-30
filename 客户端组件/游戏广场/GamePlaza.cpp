@@ -269,7 +269,7 @@ BOOL CGamePlazaApp::CheckVersionUpdate(CString& strUpdateURL)
 	{
 		CString strError;
 		strError.Format(_T("Error code:%d\nMessage:%s\nDescrption:%s"), (int)e.WCode(), e.ErrorMessage(), (TCHAR*)e.Description());
-		MessageBoxW(NULL,strError, _T("提示"), MB_OK|MB_ICONWARNING);
+		MessageBox(strError, _T("提示"), MB_OK|MB_ICONWARNING);
 		return FALSE;
 	}
 #endif

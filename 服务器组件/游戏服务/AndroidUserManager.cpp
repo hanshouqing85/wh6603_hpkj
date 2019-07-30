@@ -720,22 +720,4 @@ CAndroidUserItem * CAndroidUserManager::ActiveAndroidUserItem(tagAndroidParamete
 	return pAndroidUserItem;
 }
 
-//获取配置参数
-tagGameParameter *	CAndroidUserManager::GetGameParameter()
-{
-	return m_pGameParameter;
-}
-
-//获取服务属性
-tagGameServiceAttrib *	CAndroidUserManager::GetGameServiceAttrib()
-{
-	return m_pGameServiceAttrib;
-}
-	
-//获取服务配置
-tagGameServiceOption *	CAndroidUserManager::GetGameServiceOption()
-{
-	return m_pGameServiceOption;
-}
-
 //////////////////////////////////////////////////////////////////////////////////

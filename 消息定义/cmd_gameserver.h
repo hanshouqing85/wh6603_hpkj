@@ -73,8 +73,8 @@ struct CMD_GR_LogonAccounts
 	DWORD							dwProcessVersion;					//进程版本
 
 	//登录信息
-	TCHAR							szAccounts[LEN_ACCOUNTS];			//登录帐号
 	TCHAR							szPassword[LEN_MD5];				//登录密码
+	TCHAR							szAccounts[LEN_ACCOUNTS];			//登录帐号
 	TCHAR							szMachineID[LEN_MACHINE_ID];		//机器序列
 
 	//广场信息
@@ -512,7 +512,6 @@ struct CMD_GR_C_QueryInsureInfoRequest
 struct CMD_GR_C_SaveScoreRequest
 {
 	SCORE							lSaveScore;							//存款数目
-	BYTE							cbActivityGame;						//是否在游戏中
 };
 
 //取款请求
