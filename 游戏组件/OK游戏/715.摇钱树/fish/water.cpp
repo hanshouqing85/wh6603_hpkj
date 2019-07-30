@@ -34,7 +34,8 @@ bool Water::LoadGameResource() {
   char file_name[MAX_PATH] = { 0 };
 
   hgeResourceManager* resource_manager = GameManager::GetInstance().GetResourceManager();
-  for (int i = 0; i < kWaterFrames; ++i) {
+  for (int i = 0; i < kWaterFrames; ++i) 
+  {
     _snprintf(file_name, arraysize(file_name), "scene_water%d", i + 1);
     tex_water_[i] = resource_manager->GetTexture(file_name, 1);
   }

@@ -11,8 +11,6 @@ CVirtualWindow::CVirtualWindow()
 
 	//属性变量
 	m_uWindowID = 0;	
-	m_bCaption = FALSE;	
-	m_bDrag = FALSE;	
 
 	//位置变量
 	m_WindowSize.SetSize(0,0);						
@@ -21,7 +19,6 @@ CVirtualWindow::CVirtualWindow()
 	//内核变量
 	m_pParentWindow = NULL;					
 	m_pVirtualEngine=NULL;	
-	m_pDefaultFont = NULL;
 	m_VirtualWindowPtrArray.RemoveAll();	
 }
 
@@ -29,33 +26,34 @@ CVirtualWindow::~CVirtualWindow()
 {
 }
 
+//删除窗口
 VOID CVirtualWindow::DeleteWindow()
 {
 	if ( m_pVirtualEngine == NULL ) return;
-	
-	//销毁自己
-	KillFocus();
-	OnWindowDestory(m_pVirtualEngine->GetD3DDevice());
-	m_pVirtualEngine->RegisterLeave(this,true);
-	
 	//销毁所有子窗口
 	for (INT_PTR i=0;i<m_VirtualWindowPtrArray.GetCount();i++)
 	{
 		CVirtualWindow *pVirtualWindow = m_VirtualWindowPtrArray.GetAt(i);
-
-		pVirtualWindow->KillFocus();
 		pVirtualWindow->OnWindowDestory(m_pVirtualEngine->GetD3DDevice());
-		m_pVirtualEngine->RegisterLeave(pVirtualWindow,true);
-
-		TraceService->TraceString(TraceLevel_Game_Normal,TEXT("destory Window ID:[ %d ]"),pVirtualWindow->m_uWindowID);
 	}
-
-	TraceService->TraceString(TraceLevel_Game_Normal,TEXT("destory Window ID:[ %d ]"),m_uWindowID);
-
 	m_VirtualWindowPtrArray.RemoveAll();
+	//销毁自己
+	OnWindowDestory(m_pVirtualEngine->GetD3DDevice());
+
+	//主窗口移除自己
+	for (INT_PTR i=0;i<m_pVirtualEngine->m_VirtualWindowPtrArray.GetCount();i++)
+	{
+		CVirtualWindow *pVirtualWindow = m_pVirtualEngine->m_VirtualWindowPtrArray.GetAt(i);
+		if (pVirtualWindow == this)
+		{
+			m_pVirtualEngine->m_VirtualWindowPtrArray.RemoveAt(i);
+			break;
+		}
+	}
 }
 
-bool CVirtualWindow::ActiveWindow( CRect & rcWindow, DWORD dwStyle, UINT uWindowID, CVirtualEngine * pVirtualEngine, CVirtualWindow * pParentWindow )
+//激活窗口
+bool CVirtualWindow::ActiveWindow(CRect & rcWindow, DWORD dwStyle, UINT uWindowID, CVirtualEngine * pVirtualEngine, CVirtualWindow * pParentWindow)
 {
 	m_BenchmarkPos.SetPoint(rcWindow.left,rcWindow.top);
 	m_WindowSize.SetSize(rcWindow.Width(),rcWindow.Height());
@@ -76,19 +74,12 @@ bool CVirtualWindow::ActiveWindow( CRect & rcWindow, DWORD dwStyle, UINT uWindow
 	{
 		pParentWindow->m_VirtualWindowPtrArray.Add(this);
 	}
-
-	m_pVirtualEngine->RegisterCapture(this,true);
-
-	TraceService->TraceString(TraceLevel_Game_Normal,TEXT("Create Window ID:[ %d ]"),m_uWindowID);
-
+	else 
+		m_pVirtualEngine->m_VirtualWindowPtrArray.Add(this);
 	return true;
 }
 
-VOID CVirtualWindow::ActiveWindow( bool bActive )
-{
-	m_bActive = bActive;
-}
-
+//显示窗口
 VOID CVirtualWindow::ShowWindow( bool bVisible )
 {
 	m_bVisible = bVisible;
@@ -99,6 +90,7 @@ VOID CVirtualWindow::ShowWindow( bool bVisible )
 	}
 }
 
+//禁止窗口
 VOID CVirtualWindow::EnableWindow( bool bEnable )
 {
 	m_bEnable = bEnable;
@@ -109,6 +101,7 @@ VOID CVirtualWindow::EnableWindow( bool bEnable )
 	}
 }
 
+//更新窗口
 VOID CVirtualWindow::InvalidWindow( bool bCoerce )
 {
 	if ( !m_bVisible ) return;
@@ -123,16 +116,19 @@ VOID CVirtualWindow::InvalidWindow( bool bCoerce )
 	}
 }
 
+//窗口大小
 VOID CVirtualWindow::GetClientRect( CRect & rcClient )
 {
 	rcClient.SetRect(0,0,m_WindowSize.cx,m_WindowSize.cy);
 }
 
+//窗口大小
 VOID CVirtualWindow::GetWindowRect( CRect & rcWindow )
 {
 	rcWindow.SetRect(m_BenchmarkPos.x,m_BenchmarkPos.y,m_BenchmarkPos.x+m_WindowSize.cx,m_BenchmarkPos.y+m_WindowSize.cy);
 }
 
+//设置位置
 VOID CVirtualWindow::SetWindowPos( INT nXPos, INT nYPos, INT nWidth, INT nHeight, UINT uFlags )
 {
 	int xOld = m_BenchmarkPos.x;
@@ -176,10 +172,82 @@ VOID CVirtualWindow::SetWindowPos( INT nXPos, INT nYPos, INT nWidth, INT nHeight
 	}
 
 	OnWindowPosition(m_pVirtualEngine->GetD3DDevice());
+	if (uFlags == SWP_DRAWFRAME) return ;
+	//InvalidWindow(true);
+}
+//获取窗口
+CVirtualWindow * CVirtualWindow::SwitchToWindow(INT nXMousePos, INT nYMousePos)
+{
+	//定义变量
+	CPoint ptMouse(nXMousePos,nYMousePos);
+	CRect rcWindow(0,0,0,0);
 
-	InvalidWindow(true);
+	for(INT_PTR i=0;i<m_VirtualWindowPtrArray.GetCount(); i++)
+	{
+		CVirtualWindow *pVirtualWindow = m_VirtualWindowPtrArray.GetAt(i);
+		rcWindow.SetRect(0,0,0,0);
+
+		pVirtualWindow->GetWindowRect(rcWindow);
+
+		//规范化客户区
+		rcWindow.NormalizeRect();
+
+		if ( PtInRect(&rcWindow,ptMouse) && pVirtualWindow->IsWindowEnable() && pVirtualWindow->IsWindowVisible() )
+		{ 
+			return pVirtualWindow;
+		}
+	}
+
+	return NULL;
+};
+//下属窗口
+bool CVirtualWindow::IsChildWindow( CVirtualWindow * pVirtualWindow )
+{
+	for (INT_PTR i=0;i<m_VirtualWindowPtrArray.GetCount();i++)
+	{
+		if ( m_VirtualWindowPtrArray.GetAt(i)->GetParentWindow() == pVirtualWindow )
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
+//重置窗口
+VOID CVirtualWindow::ResetWindow()
+{
+	//窗口属性
+	m_bActive = false;							
+	m_bEnable = true;							
+	m_bVisible = false;							
+
+	//属性变量
+	m_uWindowID = 0;						
+
+	//位置变量
+	m_WindowSize.SetSize(0,0);						
+	m_BenchmarkPos.SetPoint(0,0);						
+
+	//内核变量
+	m_pParentWindow = NULL;					
+	m_pVirtualEngine=NULL;					
+	m_VirtualWindowPtrArray.RemoveAll();	
+}
+
+//绘画窗口
+VOID CVirtualWindow::OnEventDrawChildWindow( CD3DDevice * pD3DDevice, INT nXOriginPos, INT nYOriginPos)
+{
+	CVirtualWindow *pVirtualWindow = NULL;
+
+	for (INT_PTR i=0;i<m_VirtualWindowPtrArray.GetCount();i++)
+	{
+		pVirtualWindow = m_VirtualWindowPtrArray.GetAt(i);
+		pVirtualWindow->OnEventDrawWindow(pD3DDevice,pVirtualWindow->m_BenchmarkPos.x,pVirtualWindow->m_BenchmarkPos.y);
+		pVirtualWindow->OnWindowMovie();
+	}
+}
+
+/*
 //拖动窗口
 BOOL CVirtualWindow::DragWindows( UINT uMessage, INT nXMousePos, INT nYMousePos, UINT nFlags )
 {
@@ -209,71 +277,6 @@ BOOL CVirtualWindow::DragWindows( UINT uMessage, INT nXMousePos, INT nYMousePos,
 	}
 
 	return FALSE;
-}
-
-bool CVirtualWindow::IsChildWindow( CVirtualWindow * pVirtualWindow )
-{
-	for (INT_PTR i=0;i<m_VirtualWindowPtrArray.GetCount();i++)
-	{
-		if ( m_VirtualWindowPtrArray.GetAt(i)->GetParentWindow() == pVirtualWindow )
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
-
-VOID CVirtualWindow::ResetWindow()
-{
-	//窗口属性
-	m_bActive = false;							
-	m_bEnable = true;							
-	m_bVisible = false;							
-
-	//属性变量
-	m_uWindowID = 0;						
-
-	//位置变量
-	m_WindowSize.SetSize(0,0);						
-	m_BenchmarkPos.SetPoint(0,0);						
-
-	//内核变量
-	m_pParentWindow = NULL;					
-	m_pVirtualEngine=NULL;					
-	m_VirtualWindowPtrArray.RemoveAll();	
-}
-
-VOID CVirtualWindow::OnEventDrawChildWindow( CD3DDevice * pD3DDevice, INT nXOriginPos, INT nYOriginPos )
-{
-	CVirtualWindow *pVirtualWindow = NULL;
-
-	for (INT_PTR i=0;i<m_VirtualWindowPtrArray.GetCount();i++)
-	{
-		pVirtualWindow = m_VirtualWindowPtrArray.GetAt(i);
-
-		//CPoint pt(pVirtualWindow->m_BenchmarkPos.x+nXOriginPos,pVirtualWindow->m_BenchmarkPos.y+nYOriginPos);
-		pVirtualWindow->OnEventDrawWindow(pD3DDevice,pVirtualWindow->m_BenchmarkPos.x,pVirtualWindow->m_BenchmarkPos.y);
-		pVirtualWindow->OnWindowMovie();
-	}
-}
-
-HWND CVirtualWindow::GetSafeHwnd()
-{
-	ASSERT(m_pVirtualEngine != NULL);
-	if( m_pVirtualEngine == NULL ) return NULL;
-
-	return m_pVirtualEngine->GetD3DDevice()->GetWndDevice();
-}
-
-VOID CVirtualWindow::SetFocus()
-{
-	m_pVirtualEngine->RequestFocus(this);
-}
-
-VOID CVirtualWindow::KillFocus()
-{
-	m_pVirtualEngine->RequestFocus(NULL);
 }
 
 BOOL CVirtualWindow::OnWindowMouse( UINT uMessage, UINT nFlags, INT nXMousePos, INT nYMousePos )
@@ -309,8 +312,4 @@ BOOL CVirtualWindow::ContainsPoint( POINT pt )
 
 	return PtInRect( &rcControl, pt );
 }
-
-void CVirtualWindow::SetFont( CD3DFont*pFont )
-{
-	m_pDefaultFont = pFont;
-}
+*/

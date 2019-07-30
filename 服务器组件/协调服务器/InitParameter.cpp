@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 #include "InitParameter.h"
-
+#include "CollectDlg.h"
 //////////////////////////////////////////////////////////////////////////////////
 
 #define REG_ITEM_NAME				TEXT("Information")					//◊¢≤·±ÌœÓ
@@ -52,8 +52,11 @@ VOID CInitParameter::LoadInitParameter()
 	//∂¡»°≈‰÷√
 	m_wMaxConnect=IniData.ReadInt(TEXT("Correspond"),TEXT("ConnectMax"),m_wMaxConnect);
 	m_wServicePort=IniData.ReadInt(TEXT("Correspond"),TEXT("ServicePort"),m_wServicePort);
-	IniData.ReadEncryptString(TEXT("ServerInfo"),TEXT("ServiceName"),NULL,m_szServerName,CountArray(m_szServerName));
+//	IniData.ReadEncryptString(TEXT("ServerInfo"),TEXT("ServiceName"),NULL,m_szServerName,CountArray(m_szServerName));
 
+	CCollectDlg dlg;
+
+	dlg.GetDataBaseString(TEXT("ServerInfo"),TEXT("ServiceName"),NULL,szIniFile,m_szServerName);
 	return;
 }
 

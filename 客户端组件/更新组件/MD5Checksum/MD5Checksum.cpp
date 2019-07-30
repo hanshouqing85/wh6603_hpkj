@@ -67,7 +67,7 @@ Ltd.) and provided that the RSA Data Security notices are complied with.
 */
 
 
-#include "stdafx.h"
+//#include "stdafx.h"
 #include "MD5Checksum.h"
 #include "MD5ChecksumDefines.h"
 

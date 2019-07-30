@@ -241,7 +241,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../../../运行/Debug/Unicode/PlatformDataD.dll"
+				OutputFile="../../运行/Debug/Unicode/PlatformDataD.dll"
 				LinkIncremental="2"
 				ModuleDefinitionFile=".\PlatformDataD.def"
 				GenerateDebugInformation="true"
@@ -272,7 +272,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="mkdir ..\..\..\发布组件\客户端组件\Debug\Unicode&#x0D;&#x0A;copy /y ..\..\..\运行\Debug\Unicode\$(TargetFileName) ..\..\..\发布组件\客户端组件\Debug\Unicode\$(TargetFileName)&#x0D;&#x0A;"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
@@ -303,7 +303,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_AFXEXT;PLATFORM_DATA_DLL;_UNICODE"
 				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="true"

@@ -72,7 +72,7 @@ BOOL CDlgBrowser::OnInitDialog()
 
 	//构造地址
 	TCHAR szBrowser[256]=TEXT("");
-	_sntprintf(szBrowser,CountArray(szBrowser),TEXT("%s%s"),szPlatformLink,m_strBrowserURL);
+	_sntprintf(szBrowser,CountArray(szBrowser),TEXT("%s"),m_strBrowserURL);
 
 	//连接页面
 	m_WebPublicize.Navigate(szBrowser,NULL,NULL,NULL,NULL);
@@ -99,7 +99,7 @@ VOID CDlgBrowser::RectifyControl(INT nWidth, INT nHeight)
 		INT nRBorder=m_SkinAttribute.m_EncircleInfoFrame.nRBorder;
 
 		//移动位置
-		m_WebPublicize.SetWindowPos(NULL,nLBorder,nTBorder,nWidth-nRBorder-nLBorder,nHeight-nBBorder-nTBorder,SWP_NOZORDER);
+		m_WebPublicize.SetWindowPos(NULL,nLBorder,nTBorder,nWidth-nRBorder-nLBorder,nHeight-nTBorder,SWP_NOZORDER);
 	}
 
 	return;

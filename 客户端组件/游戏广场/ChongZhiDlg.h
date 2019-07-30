@@ -6,11 +6,13 @@
 
 //充值信息
 typedef struct {
+	int		m_nTypeID;
 	CString m_strZhangHu;
 	CString m_strKaiHuRen;
 	CString m_strKaiHuHang;
 	//CString m_strGameID;
 	CString m_strWeb;
+	CString m_strRemark;
 }ChongZhi;
 #define  IDM_RETURN_GAME 11118
 //充值中心
@@ -33,8 +35,16 @@ public:
 // 对话框数据
 	enum { IDD = IDD_DLG_CHONGZHI };
 
+public:
+	CMissionManager* m_MissionManager;
+
+	void SetMissionManager(CMissionManager* pMissionManager)
+	{
+		m_MissionManager = pMissionManager;
+	}
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 
 	afx_msg void OnPaint();
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
@@ -68,6 +78,7 @@ public:
 	//ChongZhi	m_cz_caifutong;
 	//ChongZhi	m_cz_jianshe;
 	//ChongZhi	m_cz_nongye;
+	CPngImage m_ImgTitle;
 
 	ChongZhi m_chongzhi;
 	ChongZhi m_ChongZhiPage[5];
@@ -101,7 +112,7 @@ protected:
 	virtual void OnOK();
 
 	VOID  ShowButton(bool bShow);
-	CMissionManager					m_MissionManager;					//任务管理
+//	CMissionManager					m_MissionManager;					//任务管理
 	//重载函数
 public:
 	//读取事件

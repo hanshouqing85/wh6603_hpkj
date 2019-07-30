@@ -69,19 +69,19 @@
 //系统环境
 
 //平台环境
-#include "..\..\..\..\..\ewin\服务器组件\游戏服务\GameServiceHead.h"
+#include "..\..\..\..\..\系统模块-ewin升级版\服务器组件\游戏服务\GameServiceHead.h"
 
 #ifndef _DEBUG
 #ifndef _UNICODE
 	#pragma comment (lib,"../../../../系统模块/链接库/Ansi/KernelEngine.lib")
 #else
-	#pragma comment (lib,"../../../../../ewin/链接库/Unicode/KernelEngine.lib")
+	#pragma comment (lib,"../../../../../系统模块-ewin升级版/链接库/Unicode/KernelEngine.lib")
 #endif
 #else
 #ifndef _UNICODE
-	#pragma comment (lib,"../../../../系统模块/链接库/Ansi/KernelEngineD.lib")
+	#pragma comment (lib,"../../../../系统模块-ewin升级版/链接库/Ansi/KernelEngineD.lib")
 #else
-	#pragma comment (lib,"../../../../系统模块/链接库/Unicode/KernelEngineD.lib")
+	#pragma comment (lib,"../../../../系统模块-ewin升级版/链接库/Unicode/KernelEngineD.lib")
 #endif
 #endif
 

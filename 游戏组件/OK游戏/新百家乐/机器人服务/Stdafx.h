@@ -121,11 +121,11 @@ typedef void * POINTER_64 PVOID64;
 #pragma comment (lib,"../../../../系统模块/链接库/Ansi/SkinControlD.lib")
 #pragma comment (lib,"../../../../系统模块/链接库/Ansi/ServiceCoreD.lib")
 #else
-#pragma comment (lib,"../../../../系统模块/链接库/Unicode/WHImageD.lib")
-#pragma comment (lib,"../../../../系统模块/链接库/Unicode/GameFrameD.lib")
-#pragma comment (lib,"../../../../系统模块/链接库/Unicode/GameEngineD.lib")
-#pragma comment (lib,"../../../../系统模块/链接库/Unicode/SkinControlD.lib")
-#pragma comment (lib,"../../../../系统模块/链接库/Unicode/ServiceCoreD.lib")
+#pragma comment (lib,"../../../../链接库/Unicode/WHImageD.lib")
+#pragma comment (lib,"../../../../链接库/Unicode/GameFrameD.lib")
+#pragma comment (lib,"../../../../链接库/Unicode/GameEngineD.lib")
+#pragma comment (lib,"../../../../链接库/Unicode/SkinControlD.lib")
+#pragma comment (lib,"../../../../链接库/Unicode/ServiceCoreD.lib")
 #endif
 #endif
 

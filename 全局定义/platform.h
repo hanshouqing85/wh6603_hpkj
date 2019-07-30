@@ -18,7 +18,9 @@
 #include "PacketAide.h"
 #include "ServerRule.h"
 #include "RightDefine.h"
-
+using namespace std;
+#include <vector>
+#include <map>
 //////////////////////////////////////////////////////////////////////////////////
 
 //程序版本
@@ -35,14 +37,14 @@
 
 #ifndef _DEBUG
 //平台常量
-const TCHAR szProduct[]=TEXT("九亿娱乐");							//产品名字
-const TCHAR szPlazaClass[]=TEXT("AQYGamePlaza");						//广场类名
-const TCHAR szProductKey[]=TEXT("AQYGamePlatform");						//产品主键
+const TCHAR szProduct[]=TEXT("娱乐大厅");									//产品名字
+const TCHAR szPlazaClass[]=TEXT("QPYLGamePlaza");							//广场类名
+const TCHAR szProductKey[]=TEXT("QPYLGamePlatform");						//产品主键
 
 //地址定义
 const TCHAR szCookieUrl[]=TEXT("http://reg.hhsmtw.com");					//记录地址
-//const TCHAR szLogonServer[]=TEXT("127.0.0.1");						//登录地址
-//const TCHAR szLogonServer[]=TEXT("210.56.60.26");						//登录地址
+//const TCHAR szLogonServer[]=TEXT("127.0.0.1");							//登录地址
+//const TCHAR szLogonServer[]=TEXT("210.56.60.26");							//登录地址
 const TCHAR szPlatformLink[]=TEXT("http://114.55.52.46:9999/");					//平台网站
 const TCHAR szPlatformPublicize[]=TEXT("http://www.baidu.com/ads/GameIndex.aspx");		//公告网站
 const TCHAR szPlatformTopPublicize[]=TEXT("http://www.baidu.com/ads/GameTopNotice.aspx");	//顶部公告
@@ -55,17 +57,17 @@ const TCHAR szValidateLink[]=TEXT("UserService/ClientHandler.ashx?action=clientl
 //////////////////////////////////////////////////////////////////////////////////
 //内测版本
 //平台常量
-const TCHAR szProduct[]=TEXT("三和棋牌");							//产品名字
-const TCHAR szPlazaClass[]=TEXT("3HQPGamePlaza");						//广场类名
-const TCHAR szProductKey[]=TEXT("3HQPGamePlatform");						//产品主键
+const TCHAR szProduct[]=TEXT("QPYLGamePlaza");							//产品名字
+const TCHAR szPlazaClass[]=TEXT("QPYLGamePlaza");						//广场类名
+const TCHAR szProductKey[]=TEXT("QPYLGamePlaza");						//产品主键
 
 //地址定义
-const TCHAR szCookieUrl[]=TEXT("http://www.3hqipai.com");					//记录地址
-const TCHAR szLogonServer[]=TEXT("www.3hqipai.com");						//登录地址
-const TCHAR szPlatformLink[]=TEXT("http://www.3hqipai.com/");					//平台网站
-const TCHAR szPlatformPublicize[]=TEXT("http://www.3hqipai.com/ads/GameIndex.aspx");		//公告网站
-const TCHAR szPlatformTopPublicize[]=TEXT("http://www.3hqipai.com/ads/GameTopNotice.aspx");	//顶部公告
-const TCHAR szPlatformLeftPublicize[]=TEXT("http://www.3hqipai.com/ads/PlazaIndex.html");	//左下角广告
+const TCHAR szCookieUrl[]=TEXT("http://www.BAIDU.com");					//记录地址
+const TCHAR szLogonServer[]=TEXT("www.BAIDU.com");						//登录地址
+const TCHAR szPlatformLink[]=TEXT("http://www.BAIDU.com/");					//平台网站
+const TCHAR szPlatformPublicize[]=TEXT("http://www.BAIDU.com/ads/GameIndex.aspx");		//公告网站
+const TCHAR szPlatformTopPublicize[]=TEXT("http://www.BAIDU.com/ads/GameTopNotice.aspx");	//顶部公告
+const TCHAR szPlatformLeftPublicize[]=TEXT("http://www.BAIDU.com/ads/PlazaIndex.html");	//左下角广告
 const TCHAR szValidateLink[]=TEXT("UserService/ClientHandler.ashx?action=clientlogon&UID=%d&PWD=%s&URL=/"); //验证地址 
 
 #endif

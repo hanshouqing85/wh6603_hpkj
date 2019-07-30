@@ -5,10 +5,15 @@
 #include "GameRule.h"
 #include "MessageDlg.h"
 #include "PlatformFrame.h"
+//排序
+static const int cmb_sort_x = 475;
+static const int cmb_sort_y = 136;
+static const int cmb_sort__width = 90;
+static const int cmb_sort__height = 12;
 
 //起始时间
 static const int tip_time_start_x = 140;
-static const int tip_time_start_y = 43;
+static const int tip_time_start_y = 136;
 static const int tip_time_start_width = 70;
 static const int tip_time_start_height = 20;
 static CRect rc_time_start(tip_time_start_x, 
@@ -17,13 +22,13 @@ static CRect rc_time_start(tip_time_start_x,
 						   tip_time_start_y + tip_time_start_height);
 
 static const int time_start_x = 210;
-static const int time_start_y = 43;
+static const int time_start_y = 136;
 static const int time_start_width = 100;
 static const int time_start_height = 20;
 
 //截止时间
 static const int tip_time_end_x = 310;
-static const int tip_time_end_y = 43;
+static const int tip_time_end_y = 136;
 static const int tip_time_end_width = 20;
 static const int tip_time_end_height = 20;
 static CRect rc_time_end(tip_time_end_x, 
@@ -32,14 +37,14 @@ static CRect rc_time_end(tip_time_end_x,
 						 tip_time_end_y + tip_time_end_height);
 
 static const int time_end_x = 330;
-static const int time_end_y = 43;
+static const int time_end_y = 136;
 static const int time_end_width = 100;
 static const int time_end_height = 20;
 
 
 //期号
 static const int tip_edit_qihao_x = 480;
-static const int tip_edit_qihao_y = 36;
+static const int tip_edit_qihao_y = 129;
 static const int tip_edit_qihao_width = 70;
 static const int tip_edit_qihao_height = 20;
 static CRect rc_edit_qihao(tip_edit_qihao_x, 
@@ -48,23 +53,23 @@ static CRect rc_edit_qihao(tip_edit_qihao_x,
 						   tip_edit_qihao_y + tip_edit_qihao_height);
 
 static const int edit_qihao_x = 550;
-static const int edit_qihao_y = 36;
+static const int edit_qihao_y = 129;
 static const int edit_qihao_width = 60;
 static const int edit_qihao_height = 20;
 
 //确定按钮
-static const int btn_ok_x = 640;
-static const int btn_ok_y = 42;
+static const int btn_ok_x = 740;
+static const int btn_ok_y = 128;
 
 //列表
 static const int list_log_x = 31;
-static const int list_log_y = 69;
+static const int list_log_y = 162;
 static const int list_log_width = 966;
-static const int list_log_height = 485;
+static const int list_log_height = 470;
 
 //总页数
 static const int tip_page_x = 140;
-static const int tip_page_y = 555;
+static const int tip_page_y = 638;
 static const int tip_page_width = 400;
 static const int tip_page_height = 20;
 static CRect rc_tip_page(tip_page_x, 
@@ -74,11 +79,11 @@ static CRect rc_tip_page(tip_page_x,
 
 //上一页
 static const int btn_pre_page_x = 720;
-static const int btn_pre_page_y = 555;
+static const int btn_pre_page_y = 638;
 
 //下一页
 static const int btn_next_page_x = 800;
-static const int btn_next_page_y = 555;
+static const int btn_next_page_y = 638;
 
 static const int page_size = 19;
 
@@ -95,20 +100,6 @@ CTzhLogDlg::CTzhLogDlg(CWnd* pParent /*=NULL*/)
 , m_maxPage(1)
 , m_byTime(TRUE)
 {
-	/*	m_tStart = CTime::GetCurrentTime();
-	CString starttime ;
-
-	starttime.Format(L"%d-%02d-%02d",m_tStart.GetYear(),m_tStart.GetMonth(),1);
-
-
-	COleDateTime tm;
-	tm.ParseDateTime(starttime);
-	SYSTEMTIME st;
-	tm.GetAsSystemTime(st);
-	CTime t(st);
-	m_tStart = t;*/
-
-	//任务组件
 
 	m_bGetTouzhuLog = false;
 	m_bGetTouzhuLogCount = false;
@@ -122,7 +113,7 @@ CTzhLogDlg::~CTzhLogDlg()
 {
 	if (m_bmpBk != NULL)
 	{
-		delete m_bmpBk;
+		SafeDelete(m_bmpBk);
 	}
 }
 
@@ -140,6 +131,9 @@ void CTzhLogDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_DateTimeCtrl(pDX, IDC_DATE_END, m_tEnd);
 	DDX_Control(pDX, IDC_BTN_CLOSE, m_btnClose);
 	DDX_Text(pDX, IDC_EDIT_QIHAO, m_qihao);
+	DDX_Control(pDX, IDC_COMBO_SORT, m_cmbSort);
+	DDX_Control(pDX, IDC_COMBO_STATUS, m_cmbStatus);
+
 }
 
 
@@ -157,9 +151,17 @@ BEGIN_MESSAGE_MAP(CTzhLogDlg, CDialog)
 	ON_COMMAND(ID_TOUZHU_LOG_CHAKANXX, &CTzhLogDlg::OnTouzhuLogChakanxx)
 	ON_BN_CLICKED(IDC_BTN_CLOSE, &CTzhLogDlg::OnBnClickedBtnClose)
 	ON_COMMAND(ID_TOUZHU_LOG_CHEXIAO, &CTzhLogDlg::OnTouzhuLogChexiao)
+	ON_WM_SHOWWINDOW()
+	ON_WM_LBUTTONDOWN()
+
 END_MESSAGE_MAP()
 
+void CTzhLogDlg::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	PostMessage(WM_NCLBUTTONDOWN,HTCAPTION,MAKELPARAM(point.x,   point.y));
 
+	CDialog::OnLButtonDown(nFlags, point);
+}
 // CTzhLogDlg 消息处理程序
 
 void CTzhLogDlg::OnPaint()
@@ -179,10 +181,12 @@ void CTzhLogDlg::OnPaint()
 	Graphics graphics(cacheDC.m_hDC);
 
 	graphics.DrawImage(m_bmpBk, Rect(0, 0,  rect.Width(), rect.Height()), 0, 0, m_bmpBk->GetWidth(), m_bmpBk-> GetHeight(), UnitPixel);
+	int nX = (rect.Width()-m_ImgTitle.GetWidth())/2+5;
+	m_ImgTitle.DrawImage(&cacheDC,nX,30);
 
 	int oldBkMode = cacheDC.SetBkMode(TRANSPARENT);
 	CFont* pOldFont = cacheDC.SelectObject(&m_font);
-	COLORREF oldTextColor = cacheDC.SetTextColor(RGB(88, 78, 77));
+	COLORREF oldTextColor = cacheDC.SetTextColor(RGB(255,255,255));
 
 	cacheDC.DrawText(_T("起始时间"), rc_time_start, DT_RIGHT|DT_VCENTER|DT_SINGLELINE);
 	cacheDC.DrawText(_T("至"), rc_time_end, DT_CENTER|DT_VCENTER|DT_SINGLELINE);
@@ -213,12 +217,12 @@ BOOL CTzhLogDlg::OnEraseBkgnd(CDC* pDC)
 // CZhanghuDlg 消息处理程序
 void CTzhLogDlg::OnBnClickedBtnClose()
 {
-	CWnd* pParent = GetParent();
-	if(pParent!=NULL)
-	{
-		pParent->PostMessage(IDM_RETURN_GAME,1,0);
-	}
-
+// 	CWnd* pParent = GetParent();
+// 	if(pParent!=NULL)
+// 	{
+// 		pParent->PostMessage(IDM_RETURN_GAME,1,0);
+// 	}
+	CDialog::OnCancel();
 	return;
 }
 
@@ -232,7 +236,7 @@ void CTzhLogDlg::OnSize(UINT nType, int cx, int cy)
 	}
 	if(m_btnClose.GetSafeHwnd() != NULL)
 	{
-		m_btnClose.SetWindowPos(NULL, cx - m_btnClose.Width() - 8, -1, m_btnClose.Width(), m_btnClose.Height(), SWP_NOZORDER);
+		m_btnClose.SetWindowPos(NULL, cx - m_btnClose.Width()- 9-15, 24, m_btnClose.Width(), m_btnClose.Height(), SWP_NOZORDER);
 	}
 
 	AdjustCtrls();
@@ -252,6 +256,7 @@ void CTzhLogDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 
 		m_page = 1;
 
+		SendToServer(4);
 		SendToServer(1); //查询日志数量
 		SendToServer(2);
 	}
@@ -428,8 +433,8 @@ void CTzhLogDlg::OnTouzhuLogChexiao()
 		CString sGameType = m_listLog.GetItemText(nItem, 1);
 		CString sQihao = m_listLog.GetItemText(nItem, 3);
 		CString sState = m_listLog.GetItemText(nItem,6);
-		int nState = _ttoi(sState);
-		if(nState > 0 )
+		
+		if(sState.Compare(L"未开奖"))
 		{
 			MyMessageBox(_T("亲，开奖前一分钟不支持撤单哦！"));
 			return;
@@ -456,17 +461,41 @@ void CTzhLogDlg::OnTouzhuLogChexiao()
 			bCheDan = rule.IsCanCancel(sQihao);
 			nGameKind = CZXinJiangSSC;
 		}
-		else if (sGameType == _T("吉利分分彩"))
+		else if (sGameType == _T("台湾分分彩"))
 		{
 			CFenFenCaiRule rule;
 			bCheDan = rule.IsCanCancel(sQihao);
 			nGameKind = CZ_FENFEN_CAI;
 		}
-		else if (sGameType == _T("吉利五分彩"))
+		else if (sGameType == _T("腾讯分分彩"))
+		{
+			CTXFenFenCaiRule rule;
+			bCheDan = rule.IsCanCancel(sQihao);
+			nGameKind = CZ_TXfenfencai;
+		}
+// 		else if (sGameType == _T("QQ分分彩"))
+// 		{
+// 			CQQFenFenCaiRule rule;
+// 			bCheDan = rule.IsCanCancel(sQihao);
+// 			nGameKind = CZ_QQfenfencai;
+// 		}
+		else if (sGameType == _T("印尼二分彩"))
+		{
+			CErFenCaiRule rule;
+			bCheDan = rule.IsCanCancel(sQihao);
+			nGameKind = CZ_ErFenCai;
+		}
+		else if (sGameType == _T("东京五分彩"))
 		{
 			CWuFenCaiRule rule;
 			bCheDan = rule.IsCanCancel(sQihao);
 			nGameKind = CZ_WUFEN_CAI;
+		}
+		else if (sGameType == _T("北京5分彩"))
+		{
+			CKuaiLe8RUle rule;
+			bCheDan = rule.IsCanCancel(sQihao);
+			nGameKind = CZ_BJ5FC;
 		}
 		else if (sGameType == _T("韩国1.5分彩"))
 		{
@@ -479,6 +508,14 @@ void CTzhLogDlg::OnTouzhuLogChexiao()
 			CGD11X5Rule rule;
 			bCheDan = rule.IsCanCancel(sQihao);
 			nGameKind = CZGD11Xuan5;
+		}
+		else if (sGameType == _T("加拿大3.5分彩"))
+		{
+			CCanadaRule rule;
+			rule.SetQihaoStart(theCanadaQihao,theCanadaStartTime);
+			bCheDan = rule.IsCanCancel(sQihao);
+
+			nGameKind = CZ_JiaNaDaSSC;
 		}
 		else if (sGameType == _T("山东11选5"))
 		{
@@ -521,11 +558,11 @@ void CTzhLogDlg::OnTouzhuLogChexiao()
 			nGameKind = CZXingYun28;
 		}
 
-		if (!bCheDan)
-		{
-			MyMessageBox(_T("亲，开奖前一分钟不支持撤单哦！"));
-			return;
-		}
+// 		if (!bCheDan)
+// 		{
+// 			MyMessageBox(_T("亲，开奖前一分钟不支持撤单哦！"));
+// 			return;
+// 		}
 
 		int t_id = m_listLog.GetItemData(nItem);
 		m_nCancelID=t_id;
@@ -539,19 +576,32 @@ BOOL CTzhLogDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	// TODO:  在此添加额外的初始化
-	m_bmpBk = new Bitmap(CBmpUtil::GetExePath() + _T("skin\\n_bg1.png"));
+	if(m_bmpBk == NULL)
+	{
+		m_bmpBk = new Bitmap(CBmpUtil::GetExePath() + _T("skin\\n_bg.png"));
+
+		m_font.CreateFont(16, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, 
+			OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH|FF_DONTCARE, _T("Arial")); 
+		m_cmbfont.CreateFont(14, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, 
+			OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH|FF_DONTCARE, _T("Arial")); 
+		m_ImgTitle.LoadImage(CBmpUtil::GetExePath() + _T("skin\\BTzhgl_05.png"));
+
+	}
 	m_btnClose.SetImage(CBmpUtil::GetExePath() + _T("skin\\return_bt.png"));
 
 	m_btnOK.SetImage(CBmpUtil::GetExePath() + _T("skin\\quedingt_bt.png"));
 	m_btnPrePage.SetImage(CBmpUtil::GetExePath() + _T("skin\\syy_bt.png"));
 	m_btnNextPage.SetImage(CBmpUtil::GetExePath() + _T("skin\\xyy_bt.png"));
+	m_cmbSort.SetButtonImage(AfxGetInstanceHandle(),IDB_BT_COMBOBOX_ACT,CSize(16,18));
+	m_cmbStatus.SetButtonImage(AfxGetInstanceHandle(),IDB_BT_COMBOBOX_ACT,CSize(16,18));
 
-	m_font.CreateFont(16, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, 
-		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH|FF_DONTCARE, _T("Arial")); 
+
 
 	InitListCtrl();
 	m_dwTickCount = 0;
+
+	SetWindowPos(NULL,0,0,m_bmpBk->GetWidth(),m_bmpBk->GetHeight(),SWP_NOMOVE|SWP_NOACTIVATE|SWP_NOZORDER);
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 异常: OCX 属性页应返回 FALSE
 }
@@ -571,7 +621,7 @@ void CTzhLogDlg::InitListCtrl()
 	m_listLog.ModifyStyle(WS_HSCROLL, LVS_SINGLESEL);
 	m_listLog.SetExtendedStyle(m_listLog.GetExtendedStyle()|LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES|LVS_EX_UNDERLINEHOT);
 	m_listLog.SetFont(&m_font);
-	m_listLog.SetTextColor(RGB(95,82,81));
+	m_listLog.SetTextColor(RGB(56,90,154));
 	//m_listLog.SetHeaderTextColor(RGB(210,210,210));
 
 	m_listLog.InsertColumn(0, _T("订单ID"), LVCFMT_CENTER, 90);
@@ -583,10 +633,82 @@ void CTzhLogDlg::InitListCtrl()
 	m_listLog.InsertColumn(5, _T("投注日期"), LVCFMT_CENTER, 170);
 	m_listLog.InsertColumn(6, _T("状态"), LVCFMT_CENTER, 80);
 	m_listLog.InsertColumn(7, _T("实际盈亏"), LVCFMT_CENTER, 120);
+
+	
+	m_cmbStatus.SetFont(&m_cmbfont);
+	m_cmbStatus.ResetContent();
+	m_cmbStatus.AddString(TEXT("全部状态"));
+	m_cmbStatus.AddString(TEXT("中奖"));
+	m_cmbStatus.AddString(TEXT("未中奖"));
+	m_cmbStatus.AddString(TEXT("未开奖"));
+	m_cmbStatus.AddString(TEXT("撤单"));
+	m_cmbStatus.AddString(TEXT("追号"));
+	m_cmbStatus.AddString(TEXT("追号撤单"));
+	m_cmbStatus.SetCurSel(0);
+
+	m_cmbSort.SetFont(&m_cmbfont);
+	m_cmbSort.ResetContent();
+
+	int nCount = CZCount;
+	int nGameType[CZCount] = {	0,		//重庆时时彩
+		CZChongQingSSC,			//重庆时时彩
+		CZ_FENFEN_CAI,			//分分彩：5分钟开奖，24小时不停。每天288期
+		CZ_WUFEN_CAI,			//5分彩
+		CZ_BJ5FC,
+//		CZ_HGYDWFC,
+		CZ_ErFenCai,			//吉利二分彩
+		CZ_TianJinSSC ,			//天津时时彩
+		CZXinJiangSSC,			//新疆时时彩
+//		CZ_JiaNaDaSSC ,			//加拿大时时彩
+		CZGD11Xuan5,			//广东11选5
+		CZSD11Xuan5,			//山东11选5
+		CZJX11Xuan5,			//江西11选5
+		CZHLJ11Xuan5,			//黑龙江11选5
+		CZ3D,					//福彩3D
+		CZPaiLie3,				//排列3
+		CZKUAILE8,				//北京快乐8
+		CZXingYun28,
+		CZ_PK10,				//PK10
+		CZ_LIUHECAI ,
+		CZ_QiXingCai ,			//七星彩--lly
+//		CZHLJ11Xuan5,			//黑龙江11选5
+//		CZXingYun28,
+//		CZ_TianJinSSC ,			//天津时时彩
+//		CZ_BJ5FC,
+//		CZ_JiaNaDaSSC,			//加拿大时时彩
+//		CZ_ErFenCai,			//吉利二分彩
+		CZ_CaiZhangdie,			//猜涨跌
+		CZ_TXfenfencai,			//腾讯分分彩
+};
+	m_cmbSort.AddString(TEXT("全部彩种"));
+	for(int i = 1;i <= nCount;i++)
+	{
+		int nType = 0;
+		nType = nGameType[i];
+		if(nType == 0)
+		{
+			break;
+		}
+
+		int nRow = m_cmbSort.AddString(theGameType[nType]);
+		m_cmbSort.SetItemData(nRow, nType);
+	}
+	m_cmbSort.SetCurSel(0);
+
 }
 
 void CTzhLogDlg::AdjustCtrls()
 {
+	if (m_cmbSort.GetSafeHwnd() != NULL)
+	{
+		m_cmbSort.SetWindowPos(NULL, cmb_sort_x, cmb_sort_y, cmb_sort__width,cmb_sort__height, SWP_NOZORDER);
+	}
+
+	if (m_cmbStatus.GetSafeHwnd() != NULL)
+	{
+		m_cmbStatus.SetWindowPos(NULL, cmb_sort_x+120, cmb_sort_y, cmb_sort__width,cmb_sort__height, SWP_NOZORDER);
+	}
+
 	if (m_dateStart.GetSafeHwnd() != NULL)
 	{
 		m_dateStart.SetWindowPos(NULL, time_start_x, time_start_y, time_start_width, time_start_height, SWP_NOZORDER);
@@ -626,6 +748,17 @@ bool CTzhLogDlg::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wDat
 	{
 		switch (Command.wSubCmdID)
 		{
+		case SUB_GP_GET_QIHAO_CHA_RET:
+			{
+				ASSERT((wDataSize == sizeof(CMD_GP_GetQihaoCha)));
+				if((wDataSize != sizeof(CMD_GP_GetQihaoCha)) )return false;
+
+				CMD_GP_GetQihaoCha* pGetQihao = (CMD_GP_GetQihaoCha*)pData;
+
+				CHgydwfcRule  HgydwfcRule;
+				HgydwfcRule.SetQihaocha(pGetQihao->n_t_qishu);
+				return true;
+			}
 		case SUB_GR_GET_TOUZHU_LOG_COUNT_RET:
 			{
 				ASSERT(wDataSize == sizeof(CMD_GR_GetTouzhuLogCountRet));
@@ -648,6 +781,7 @@ bool CTzhLogDlg::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wDat
 
 				WORD wCount = wDataSize/sizeof(CMD_GR_GetTouzhuLogRet);
 				m_listLog.DeleteAllItems();
+				m_listLog.RemoveAllItemTextColor();
 				for(int i = 0;i < wCount;i++)
 				{
 					CMD_GR_GetTouzhuLogRet *pTouzhuLogRet = ((CMD_GR_GetTouzhuLogRet*)pData+i);
@@ -672,7 +806,7 @@ bool CTzhLogDlg::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wDat
 					else if(pTouzhuLogRet->n_t_moshi == MoShi_Li)
 						danzhujine=0.002;
 
-					if(pTouzhuLogRet->n_t_type == CZ_LIUHECAI)
+					if(pTouzhuLogRet->n_t_type == CZ_LIUHECAI||pTouzhuLogRet->n_t_type == CZXingYun28)
 						strTmp.Format(_T("%.3lf"), pTouzhuLogRet->n_t_zhushu * pTouzhuLogRet->n_t_beishu*1.000 );
 					else
 						strTmp.Format(_T("%.3lf"), pTouzhuLogRet->n_t_zhushu * pTouzhuLogRet->n_t_beishu * danzhujine);
@@ -706,13 +840,34 @@ bool CTzhLogDlg::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wDat
 						{
 							strNextQishu = m_wfcRule.GetNextExpect();
 						}
+						else if(pTouzhuLogRet->n_t_type == CZ_BJ5FC)
+						{
+							strNextQishu = m_bj5fcRule.GetNextExpect();
+						}
 						else if(pTouzhuLogRet->n_t_type == CZ_FENFEN_CAI)
 						{
 							strNextQishu = m_ffcRule.GetNextExpect();
 						}
+						else if(pTouzhuLogRet->n_t_type == CZ_ErFenCai)
+						{
+							strNextQishu = m_efcRule.GetNextExpect();
+						}
+						else if(pTouzhuLogRet->n_t_type == CZ_TXfenfencai)
+						{
+							strNextQishu = m_txffcRule.GetNextExpect();
+						}
+						else if(pTouzhuLogRet->n_t_type == CZ_QQfenfencai)
+						{
+							strNextQishu = m_qqffcRule.GetNextExpect();
+						}
 						else if(pTouzhuLogRet->n_t_type == CZ_HGYDWFC)
 						{
 							strNextQishu = m_hgRule.GetNextExpect();
+						}
+						else if(pTouzhuLogRet->n_t_type == CZ_JiaNaDaSSC)
+						{
+							m_jndRule.SetQihaoStart(theCanadaQihao,theCanadaStartTime);
+							strNextQishu = m_jndRule.GetNextExpect();
 						}
 						else if(pTouzhuLogRet->n_t_type == CZCQ11Xuan5)
 						{
@@ -765,21 +920,39 @@ bool CTzhLogDlg::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wDat
 							bKaijiang = true;
 						}
 
-						if(bKaijiang)
-							strTmp = _T("未派奖");
-						else
-						{
+// 						if(bKaijiang)
+// 						{
+// 							//if(pTouzhuLogRet->n_t_zhuihao>=2)
+// 								strTmp = _T("未开奖");
+// 						}
+// 						else
+// 						{
 							if(pTouzhuLogRet->n_t_zhuihao>=2)
 								strTmp = _T("追号");
 							else
 								strTmp = _T("未开奖");
-						}
+				//		}
+
+						m_listLog.SetItemTextColor(6,item,RGB(45,97,124));
 					}
 					else if (1 == t_state)
 					{
 						TCHAR szWinzhu[33]=TEXT("");
 						_sntprintf(szWinzhu,CountArray(szWinzhu),TEXT("中奖%d注"),t_winzhushu);
 						strTmp = t_winzhushu==0? _T("未中奖"): szWinzhu;
+						CString strLog;
+
+						if(t_winzhushu>0)
+						{
+							strLog.Format(L"item:%d %s RGB(231,76,69)",item,strTmp);
+							m_listLog.SetItemTextColor(6,item,RGB(231,76,69));
+						}
+						else
+						{
+							strLog.Format(L"item:%d %s RGB(25,143,2)",item,strTmp);
+							m_listLog.SetItemTextColor(6,item,RGB(25,143,2));
+						}
+						OutputDebugString(strLog);
 					}
 					else if (2 == t_state)
 					{
@@ -787,6 +960,7 @@ bool CTzhLogDlg::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wDat
 							strTmp = _T("追号撤单");
 						else
 							strTmp = _T("撤单");
+						m_listLog.SetItemTextColor(6,item,RGB(45,97,124));
 					}
 					m_listLog.SetItemText(item, 6, strTmp);
 
@@ -824,20 +998,51 @@ bool CTzhLogDlg::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wDat
 					MyMessageBox(strLog);
 				}
 				break;
-				//return true;
+				
 			}
 		}
 		RedrawWindow(NULL,NULL,RDW_INVALIDATE|RDW_NOERASE|RDW_UPDATENOW);
+		return true;
 	}
-
-	//错误断言
-	ASSERT(FALSE);
 
 	return true;
 }
 
 VOID CTzhLogDlg::SendToServer(int nSendType)
 {
+	int nGameType[CZCount] = {	0,
+		CZChongQingSSC,			//重庆时时彩
+		CZ_FENFEN_CAI,			//分分彩：5分钟开奖，24小时不停。每天288期
+		CZ_WUFEN_CAI,			//5分彩
+		CZ_BJ5FC,
+//		CZ_HGYDWFC,
+		CZ_ErFenCai,			//吉利二分彩
+		CZ_TianJinSSC ,			//天津时时彩
+		CZXinJiangSSC,			//新疆时时彩
+//		CZ_JiaNaDaSSC ,			//加拿大时时彩
+		CZGD11Xuan5,			//广东11选5
+		CZSD11Xuan5,			//山东11选5
+		CZJX11Xuan5,			//江西11选5
+		CZHLJ11Xuan5,			//黑龙江11选5
+		CZ3D,					//福彩3D
+		CZPaiLie3,				//排列3
+		CZKUAILE8,				//北京快乐8
+		CZXingYun28,
+		CZ_PK10,				//PK10
+		CZ_LIUHECAI ,
+		CZ_QiXingCai ,			//七星彩--lly
+//		CZHLJ11Xuan5,			//黑龙江11选5
+//		CZXingYun28,
+//		CZ_TianJinSSC ,			//天津时时彩
+//		CZ_BJ5FC,
+//		CZ_JiaNaDaSSC,			//加拿大时时彩
+//		CZ_ErFenCai,			//吉利二分彩
+		CZ_CaiZhangdie,			//猜涨跌
+		CZ_TXfenfencai,			//腾讯分分彩
+};
+
+	int nState[7] = {-1,2,3,1,5,0,4};
+
 	if(nSendType == 1)   //下注记录数量
 	{
 		m_bGetTouzhuLogCount = true;
@@ -849,18 +1054,18 @@ VOID CTzhLogDlg::SendToServer(int nSendType)
 
 			GetTouzhuLogCount.dwUserID = theAccount.user_id;
 			GetTouzhuLogCount.bTime = m_byTime;
-// 			CTime tEnd;
-// 			tEnd = m_tEnd;
-// 			if(m_tStart == m_tEnd)
-// 			{
-// 				tEnd += CTimeSpan(1L, 0, 0, 0);
-// 			}
+			int nSel = m_cmbSort.GetCurSel();
+			int nCaizhong = m_cmbSort.GetItemData(nSel);
+			GetTouzhuLogCount.nCaiZhong = nCaizhong;
+			nSel = m_cmbStatus.GetCurSel();
+			int nNowState = nState[nSel];
+			GetTouzhuLogCount.nStatus = nNowState;
 
 			CopyMemory(GetTouzhuLogCount.szTimeStart , m_tStart.Format(_T("%Y-%m-%d 00:00:00")),sizeof(GetTouzhuLogCount.szTimeStart));
 			CopyMemory(GetTouzhuLogCount.szTimeEnd , m_tEnd.Format(_T("%Y-%m-%d 23:59:59.999")),sizeof(GetTouzhuLogCount.szTimeEnd));
 
-			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_TOUZHU_LOG_COUNT,&GetTouzhuLogCount,sizeof(GetTouzhuLogCount));
+			if(m_MissionManager!=NULL)
+				m_MissionManager->SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_TOUZHU_LOG_COUNT,&GetTouzhuLogCount,sizeof(GetTouzhuLogCount));
 			return;
 		}
 
@@ -881,11 +1086,18 @@ VOID CTzhLogDlg::SendToServer(int nSendType)
 			TouzhuLog.nPage = m_page;
 			TouzhuLog.nSize = page_size;
 			TouzhuLog.bByTime = m_byTime;
+			int nSel = m_cmbSort.GetCurSel();
+			int nCaizhong = m_cmbSort.GetItemData(nSel);
+			TouzhuLog.nCaiZhong = nCaizhong;
+			nSel = m_cmbStatus.GetCurSel();
+			int nNowState = nState[nSel];
+
+			TouzhuLog.nStatus = nNowState;
 			CopyMemory(TouzhuLog.szTimeStart ,m_tStart.Format(_T("%Y-%m-%d 00:00:00")),sizeof(TouzhuLog.szTimeStart));
 			CopyMemory(TouzhuLog.szTimeEnd  , m_tEnd.Format(_T("%Y-%m-%d 23:59:59.999")),sizeof(TouzhuLog.szTimeEnd));
 
-			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_TOUZHU_LOG,&TouzhuLog,sizeof(TouzhuLog));
+			if(m_MissionManager!=NULL)
+				m_MissionManager->SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_TOUZHU_LOG,&TouzhuLog,sizeof(TouzhuLog));
 			return;
 		}
 	}
@@ -903,12 +1115,19 @@ VOID CTzhLogDlg::SendToServer(int nSendType)
 			CancelTouzhu.n_t_userid = theAccount.user_id;
 	//		_sntprintf(CancelTouzhu.s_t_qihao ,CountArray(CancelTouzhu.s_t_qihao),TEXT("%s"), m_strQihao);
 			CopyMemory(CancelTouzhu.s_t_qihao  ,m_strQihao,sizeof(CancelTouzhu.s_t_qihao));
-			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_CANCEL_TOUZHU,&CancelTouzhu,sizeof(CancelTouzhu));
+			if(m_MissionManager!=NULL)
+				m_MissionManager->SendData(MDM_GP_USER_SERVICE,SUB_GP_CANCEL_TOUZHU,&CancelTouzhu,sizeof(CancelTouzhu));
 			return;
 
 
 		}
+	}
+
+	if(nSendType == 4)
+	{
+		if(m_MissionManager!=NULL)
+			m_MissionManager->SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_QIHAO_CHA);
+
 	}
 
 }

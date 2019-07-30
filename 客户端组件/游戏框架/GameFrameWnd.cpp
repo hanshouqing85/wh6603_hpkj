@@ -102,7 +102,7 @@ CGameFrameWnd::CGameFrameWnd()
 	m_nScrollYMax=0L;
 
 	//状态变量
-	m_bMaxShow=false;
+	m_bMaxShow=true;
 	m_bShowControl=true;
 	m_rcNormalSize.SetRect(0,0,0,0);
 
@@ -172,6 +172,7 @@ BOOL CGameFrameWnd::OnCommand(WPARAM wParam, LPARAM lParam)
 {
 	//变量定义
 	UINT nCommandID=LOWORD(wParam);
+
 	//功能按钮
 	switch (nCommandID)
 	{
@@ -182,19 +183,19 @@ BOOL CGameFrameWnd::OnCommand(WPARAM wParam, LPARAM lParam)
 		}
 	case IDC_MAX:				//最大按钮
 		{
-	//		return TRUE;
-	//		//窗口控制
-	//		if (m_bMaxShow==true)
-	//		{
-	//			RestoreWindow();
-	//		}
-	//		else
-	//		{
-	//			MaxSizeWindow();
-	//		}
+			return TRUE;
+			//窗口控制
+			if (m_bMaxShow==true)
+			{
+				RestoreWindow();
+			}
+			else
+			{
+				MaxSizeWindow();
+			}
 
-	//		//更新界面
-	//		RedrawWindow(NULL,NULL,RDW_ERASE|RDW_INVALIDATE|RDW_ERASENOW|RDW_UPDATENOW);
+			//更新界面
+			RedrawWindow(NULL,NULL,RDW_ERASE|RDW_INVALIDATE|RDW_ERASENOW|RDW_UPDATENOW);
 
 			return TRUE;
 		}
@@ -207,17 +208,33 @@ BOOL CGameFrameWnd::OnCommand(WPARAM wParam, LPARAM lParam)
 			//强退提示
 			if ((pIClientUserItem!=NULL)&&(pIClientUserItem->GetUserStatus()==US_PLAYING))
 			{
-				//提示消息
-				CInformation Information(this);
-				if (Information.ShowMessageBox(TEXT("您正在游戏中，请在游戏空闲时退出！强退有可能导致扣分哦。"),MB_ICONQUESTION|MB_YESNO,0)!=IDYES)
+				if(m_pIClientKernel)
 				{
-					return TRUE;
+					//2018.10.8增加判断，游戏空闲的时候可以自由退出。
+					DWORD dwGameStatus = m_pIClientKernel->GetGameStatus();
+					if(dwGameStatus != GAME_STATUS_FREE)
+					{
+						//提示消息
+						CInformation Information(this);
+						if (Information.ShowMessageBox(TEXT("您正在游戏中，请在游戏空闲时退出！强退有可能导致扣分哦。"),MB_ICONQUESTION|MB_YESNO,0)!=IDYES)
+						{
+							return TRUE;
+						}
+
+					}
 				}
+
+				//提示消息
+				//CInformation Information(this);
+				//if (Information.ShowMessageBox(TEXT("您正在游戏中，请在游戏空闲时退出！强退有可能导致扣分哦。"),MB_ICONQUESTION|MB_YESNO,0)!=IDYES)
+				//{
+				//	return TRUE;
+				//}
 			}
-			if(m_pIClientKernel->GetServerAttribute()->wServerType==GAME_GENRE_MATCH)
-			{
-//				m_pIClientKernel->SendProcessData(IPC_CMD_GF_MATCH_INFO,IPC_SUB_GF_EXIT_MATCH);
-			}
+// 			if(m_pIClientKernel->GetServerAttribute()->wServerType==GAME_GENRE_MATCH)
+// 			{
+// //				m_pIClientKernel->SendProcessData(IPC_CMD_GF_MATCH_INFO,IPC_SUB_GF_EXIT_MATCH);
+// 			}
 			
 			//投递关闭
 			PostMessage(WM_CLOSE,0,0);
@@ -286,11 +303,8 @@ BOOL CGameFrameWnd::OnCommand(WPARAM wParam, LPARAM lParam)
 				return false; 
 			}
 
-			
-
 			return true;
 		}
-	
 	}
 
 	return __super::OnCommand(wParam,lParam);
@@ -303,7 +317,7 @@ bool CGameFrameWnd::RestoreWindow()
 	if (m_bMaxShow==true)
 	{
 		//设置变量
-		m_bMaxShow=false;
+		m_bMaxShow=true;
 		m_bShowControl = false;
 		//设置按钮
 		m_btMax.SetButtonImage(IDB_BT_MAX,GetModuleHandle(GAME_FRAME_DLL_NAME),false,false);
@@ -320,27 +334,28 @@ bool CGameFrameWnd::RestoreWindow()
 //最大窗口
 bool CGameFrameWnd::MaxSizeWindow()
 {
+	m_bMaxShow = true;
 	//状态判断
-	//if (m_bMaxShow==false)
-	//{
-	//	//设置变量
-	//	m_bMaxShow=true;
-	//	m_bShowControl = true;
-	//	//默认位置
-	//	GetWindowRect(&m_rcNormalSize);
+	if (m_bMaxShow==false)
+	{
+		//设置变量
+		m_bMaxShow=true;
+		m_bShowControl = true;
+		//默认位置
+		GetWindowRect(&m_rcNormalSize);
 
-	//	//设置按钮
-	//	m_btMax.SetButtonImage(IDB_BT_RESORE,GetModuleHandle(GAME_FRAME_DLL_NAME),false,false);
+		//设置按钮
+		m_btMax.SetButtonImage(IDB_BT_RESORE,GetModuleHandle(GAME_FRAME_DLL_NAME),false,false);
 
-	//	//获取位置
-	//	CRect rcArce;
-	//	SystemParametersInfo(SPI_GETWORKAREA,0,&rcArce,SPIF_SENDCHANGE);
+		//获取位置
+		CRect rcArce;
+		SystemParametersInfo(SPI_GETWORKAREA,0,&rcArce,SPIF_SENDCHANGE);
 
-	//	//移动窗口
-	//	LockWindowUpdate();
-	//	SetWindowPos(NULL,rcArce.left-2,rcArce.top-2,rcArce.Width()+4,rcArce.Height()+4,SWP_NOZORDER);
-	//	UnlockWindowUpdate();
-	//}
+		//移动窗口
+		LockWindowUpdate();
+		SetWindowPos(NULL,rcArce.left-2,rcArce.top-2,rcArce.Width()+4,rcArce.Height()+4,SWP_NOZORDER);
+		UnlockWindowUpdate();
+	}
 
 	return true;
 }
@@ -394,10 +409,10 @@ VOID CGameFrameWnd::RectifyControl(INT nWidth, INT nHeight)
 
 	//控制按钮
 	DeferWindowPos(hDwp,m_btOption,NULL,m_nScrollXMax-225,4,0,0,uFlags|SWP_NOSIZE);
-	DeferWindowPos(hDwp,m_btMuteContrl,NULL,m_nScrollXMax-181,4,0,0,uFlags|SWP_NOSIZE);
-	DeferWindowPos(hDwp,m_btRule,NULL,m_nScrollXMax-136,4,0,0,uFlags|SWP_NOSIZE);
+	DeferWindowPos(hDwp,m_btMuteContrl,NULL,m_nScrollXMax-179,4,0,0,uFlags|SWP_NOSIZE);
+	DeferWindowPos(hDwp,m_btRule,NULL,m_nScrollXMax-133,4,0,0,uFlags|SWP_NOSIZE);
 	DeferWindowPos(hDwp,m_btMin,NULL,m_nScrollXMax-59,4,0,0,uFlags|SWP_NOSIZE);
-	//DeferWindowPos(hDwp,m_btMax,NULL,m_nScrollXMax-59,4,0,0,uFlags|SWP_NOSIZE);
+	DeferWindowPos(hDwp,m_btMax,NULL,m_nScrollXMax-59,4,0,0,uFlags|SWP_NOSIZE);
 	DeferWindowPos(hDwp,m_btClose,NULL,m_nScrollXMax-31,4,0,0,uFlags|SWP_NOSIZE);
 	
 	//移动控件
@@ -517,7 +532,6 @@ LRESULT CGameFrameWnd::OnNcHitTest(CPoint Point)
 //位置消息
 VOID CGameFrameWnd::OnSize(UINT nType, INT cx, INT cy) 
 {
-
 	__super::OnSize(nType, cx, cy);
 
 	//滚动数据
@@ -587,13 +601,9 @@ INT CGameFrameWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	ModifyStyle(WS_CAPTION,0,0);
 	ModifyStyleEx(WS_BORDER|WS_EX_CLIENTEDGE|WS_EX_WINDOWEDGE,0,0);
 
-	//ModifyStyle(WS_CAPTION,WS_MINIMIZEBOX|WS_MAXIMIZEBOX,0);
-	//ModifyStyleEx(WS_BORDER|WS_EX_CLIENTEDGE|WS_EX_WINDOWEDGE,0,0);
-
-	//ModifyStyle(WS_OVERLAPPEDWINDOW,0,0);
-	ModifyStyle(0,WS_MINIMIZEBOX|WS_MAXIMIZEBOX,0);
-
-	ModifyStyle(WS_THICKFRAME, 0, 0);
+	//设置窗口
+	ModifyStyle(0, WS_MINIMIZEBOX);
+	ModifyStyle(0, WS_MAXIMIZEBOX);
 
 	//变量定义
 	ASSERT(CGlobalUnits::GetInstance()!=NULL);
@@ -606,7 +616,7 @@ INT CGameFrameWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	//创建按钮
 	CRect rcCreate(0,0,0,0);
 	m_btMin.Create(NULL,WS_CHILD|WS_VISIBLE,rcCreate,this,IDC_MIN);
-	//m_btMax.Create(NULL,WS_CHILD|WS_VISIBLE,rcCreate,this,IDC_MAX);
+	m_btMax.Create(NULL,WS_CHILD|WS_VISIBLE,rcCreate,this,IDC_MAX);
 	m_btClose.Create(NULL,WS_CHILD|WS_VISIBLE,rcCreate,this,IDC_CLOSE);
 	m_btOption.Create(NULL,WS_CHILD|WS_VISIBLE,rcCreate,this,IDC_OPTION);
 	m_btMuteContrl.Create(NULL,WS_CHILD|WS_VISIBLE,rcCreate,this,IDC_MUTE);
@@ -615,7 +625,7 @@ INT CGameFrameWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	//设置按钮
 	HINSTANCE hInstance=GetModuleHandle(GAME_FRAME_DLL_NAME);
 	m_btMin.SetButtonImage(IDB_BT_MIN,hInstance,false,false);
-	//m_btMax.SetButtonImage(IDB_BT_MAX,hInstance,false,false);
+	m_btMax.SetButtonImage(IDB_BT_MAX,hInstance,false,false);
 	m_btClose.SetButtonImage(IDB_BT_CLOSE,TEXT("BT_CLOSE"),hInstance,false,false);
 	m_btOption.SetButtonImage(IDB_BT_OPTION,hInstance,false,false);
 	m_btMuteContrl.SetButtonImage((pGlobalUnits->m_bMuteStatuts==false)?IDB_BT_MUTE:IDB_BT_SLIENT,hInstance,false,false);
@@ -631,7 +641,7 @@ INT CGameFrameWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_ToolTipCtrl.Create(this);
 	m_ToolTipCtrl.Activate(TRUE);
 	m_ToolTipCtrl.AddTool(&m_btMin,TEXT("最小化"));
-	//m_ToolTipCtrl.AddTool(&m_btMax,TEXT("最大化"));
+	m_ToolTipCtrl.AddTool(&m_btMax,TEXT("最大化"));
 	m_ToolTipCtrl.AddTool(&m_btClose,TEXT("关闭游戏"));
 
 	//设置位置

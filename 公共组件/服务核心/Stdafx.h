@@ -1,9 +1,5 @@
 #pragma once
 
-#define POINTER_64 __ptr64
-
-typedef void *PVOID;
-typedef void * POINTER_64 PVOID64; //add by zrh20160801
 //////////////////////////////////////////////////////////////////////////////////
 
 #ifndef VC_EXTRALEAN

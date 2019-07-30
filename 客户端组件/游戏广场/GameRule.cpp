@@ -1,7 +1,8 @@
 #include "StdAfx.h"
 #include "GamePlaza.h"
 #include "GameRule.h"
-
+#include "xDate.h"
+int nHgydwfcStart = 1588649;
 CGameRule::CGameRule(void)
 {
 
@@ -19,10 +20,10 @@ long CGameRule::GetKjShjDiff()
 	theApp.GetTime(t);
 	CTimeSpan span = GetNextKjShj() - t;
 
-// 	CTime nexttime = GetNextKjShj();
-// 	CString strLog;
-// 	strLog.Format(L"CHLJ11X5Rule %d %d:%d:%d,%d %d:%d:%d",nexttime.GetDay(),nexttime.GetHour(),nexttime.GetMinute(),nexttime.GetSecond(),t.GetDay(),t.GetHour(),t.GetMinute(),t.GetSecond());
-// 	OutputDebugString(strLog);
+ 	CTime nexttime = GetNextKjShj();
+	 	CString strLog;
+	 	strLog.Format(L"TXFENCAI %d %d:%d:%d,%d %d:%d:%d",nexttime.GetDay(),nexttime.GetHour(),nexttime.GetMinute(),nexttime.GetSecond(),t.GetDay(),t.GetHour(),t.GetMinute(),t.GetSecond());
+	 	OutputDebugString(strLog);
 
  
 	return (long)span.GetTotalSeconds();
@@ -92,7 +93,7 @@ CString CGameRule::GetKjShjDiffDesc(int nSecond)
 		second = secDiff % 60;
 	}
 	CString str;
-	str.Format(_T("%02d:%02d"), minute, second);
+	str.Format(_T("00 :  %02d  : %02d"), minute, second);
 // 	strLog.Format(L"KAIJIANGDEF %s",str);
 // 	OutputDebugString(strLog);
 
@@ -304,7 +305,7 @@ CString CChqSSCRule::GetKjShjDiffDesc(int nSecond)
 {
 	long secDiff = GetKjShjDiff();
 
- 	if(secDiff >= 600&&secDiff<=645)
+ 	if(secDiff >= 600&&secDiff<=635)
  	{
  		secDiff -= 600;
  	}
@@ -315,11 +316,16 @@ CString CChqSSCRule::GetKjShjDiffDesc(int nSecond)
 	{
 		secDiff-=nSecond;
 	}
-	minute = secDiff / 60 /*- 1*/;
-	second = secDiff % 60;
+	int nHour = 0;
+	nHour = secDiff/3600;
+	int nRest = secDiff%3600;
+	minute = nRest / 60 /*- 1*/;
+	nRest = nRest%60;
+	second = nRest % 60;
 
 	CString str;
-	str.Format(_T("%02d:%02d"), minute, second);
+	str.Format(_T("%02d :  %02d  : %02d "), nHour,minute, second);
+	
 
 	return str;
 }
@@ -336,7 +342,7 @@ bool CChqSSCRule::IsCanCancel(CString qihao)
 		return false;
 	}
 
-	return GetKjShjDiff() > 45; 
+	return GetKjShjDiff() > 35; 
 }
 //////////////韩国1.5分彩/////////////////////////////////
 CHgydwfcRule::CHgydwfcRule(void)
@@ -350,7 +356,7 @@ CHgydwfcRule::CHgydwfcRule(void)
 , timespan_ye_kj_shj(300)
 ,m_tStartTime(2016,7,21,0,0,0)
 {
-	m_nStartQihao = 1588749;
+	m_nStartQihao = 1588649;  //8.2官方开奖 少开100期，初始值减掉100
 
 
 
@@ -369,23 +375,26 @@ long CHgydwfcRule::GetQiSpan()
 //下期期号
 CString CHgydwfcRule::GetNextExpect(int nDelta)
 {
-	CTime ct;
+	CTime ct = CTime::GetCurrentTime();
 	theApp.GetTime(ct);
 
 
-	CTime t(ct.GetYear(), ct.GetMonth(), ct.GetDay(), 0, 0, 10);
+//	CTime t(ct.GetYear(), ct.GetMonth(), ct.GetDay(), 0, 0, 10);
+	CTime t(m_tStartTime.GetYear(), m_tStartTime.GetMonth(), m_tStartTime.GetDay(), 0,0,10);
+	CTime tToday(ct.GetYear(), ct.GetMonth(), ct.GetDay(), 0,0,10);
 
 	
 	int hour = ct.GetHour();
 
 
-	CTimeSpan tSpan = ct - m_tStartTime;
+	CTimeSpan tSpan = ct - t;
 	int nDays = tSpan.GetDays();
-	int nQihao = m_nStartQihao + (tSpan.GetDays()*880);
+	int nQihao =  m_nStartQihao+nQihaocha+ (tSpan.GetDays()*880);
 
 	if (hour<m_t1_end)
 	{
-		CTimeSpan span = ct-t;
+		CTime tNow(ct.GetYear(), ct.GetMonth(), ct.GetDay(), 7, 0, 0);
+		CTimeSpan span = ct-tNow;
 		nQihao += ((span.GetTotalSeconds() / 90) + 1);
 	}
 	else if (hour>=m_t1_end&&hour<m_t2_start)
@@ -400,8 +409,9 @@ CString CHgydwfcRule::GetNextExpect(int nDelta)
 	else
 	{
 
-		CTimeSpan span = ct - t; 
-		nQihao += ((span.GetTotalSeconds() / 90) + 1);
+		CTimeSpan span = ct - tToday; 
+		int nTodayQ =  ((span.GetTotalSeconds() / 90) + 1);
+		nQihao += nTodayQ;
 		nQihao -= 80;
 	}   
 
@@ -412,7 +422,14 @@ CString CHgydwfcRule::GetNextExpect(int nDelta)
 	rQh.Format(_T("%d"), nQihao);
 	return rQh;
 }
-
+void CHgydwfcRule::SetStartQihao(int nStartQihao,CTime tStartTime)
+{
+	if(m_nStartQihao != nStartQihao || m_tStartTime != tStartTime)
+	{
+		m_nStartQihao = nStartQihao;
+		m_tStartTime = tStartTime;
+	}
+}
 //下期开奖时间
 CTime CHgydwfcRule::GetNextKjShj()
 {
@@ -427,9 +444,9 @@ CTime CHgydwfcRule::GetNextKjShj()
 	int hour = ct.GetHour();
 
 
-	CTimeSpan tSpan = ct - t;
+	CTimeSpan tSpan = ct - m_tStartTime;
 	int nDays = tSpan.GetDays();
-	int nQihao = m_nStartQihao + (tSpan.GetDays()*880);
+	int nQihao = m_nStartQihao+nQihaocha + (tSpan.GetDays()*880);
 
 	
 	if (hour<m_t1_end)
@@ -453,33 +470,44 @@ CTime CHgydwfcRule::GetNextKjShj()
 
 		CTimeSpan span = ct - t; 
 		nQihao = ((span.GetTotalSeconds() / 90) + 1);
-		//nQihao -= 80;
+	//	nQihao -= 80;
 		t += CTimeSpan(nQihao * timespan_kj_shj);
 	}   
 
 	return t;
 }
+void CHgydwfcRule::SetQihaocha(int nQihao)
+{
+	if(nQihaocha == 0||nQihaocha!=nQihao)
+	{
+		nQihaocha = nQihao;
+	//	m_nStartQihao += nQihaocha;
+	//	nHgydwfcStart = m_nStartQihao;
+	}
+
+}
+
 //离下次开奖时间还剩下的时间-字符串描述
 CString CHgydwfcRule::GetKjShjDiffDesc(int nSecond)
 {
 	long secDiff = GetKjShjDiff();
 
-	if(secDiff >= 90&&secDiff<=95)
-	{
-		secDiff -= 90;
-	}
+// 	if(secDiff >= 90&&secDiff<=95)
+// 	{
+// 		secDiff -= 90;
+// 	}
 
 	int minute = 0;
 	int second = 0;
-	if(secDiff > nSecond)
-	{
-		secDiff-=nSecond;
-	}
+// 	if(secDiff > nSecond)
+// 	{
+// 		secDiff-=nSecond;
+// 	}
 	minute = secDiff / 60 /*- 1*/;
 	second = secDiff % 60;
 
 	CString str;
-	str.Format(_T("%02d:%02d"), minute, second);
+	str.Format(_T("00 :  %02d  : %02d"), minute, second);
 
 	return str;
 }
@@ -496,7 +524,168 @@ bool CHgydwfcRule::IsCanCancel(CString qihao)
 		return false;
 	}
 
-	return GetKjShjDiff() > 5; 
+	return GetKjShjDiff() > 0; 
+}
+
+//////////////////////////////////////////////////////////
+//////////////加拿大3.5分彩/////////////////////////////////
+TCHAR CCanadaRule::m_lastExpect[KJ_QIHAO_LENGTH] = _T("");
+TCHAR CCanadaRule::m_lastKjShj[KJ_SHIJIAN_LENGTH] = _T("");
+
+CCanadaRule::CCanadaRule(void)
+: m_t1_start(0)
+, m_t1_end(19)
+, m_t2_start(20)
+, m_t2_end(24)	
+, m_t3_start(22)
+, m_t3_end(24)
+, timespan_kj_shj(210)
+, timespan_ye_kj_shj(300)
+,m_tStartTime(2016,8,11,0,2,30)
+{
+	m_nStartQihao = 0;  //8.2官方开奖 少开100期，初始值减掉100
+	bGetFirstQihao = false;
+
+
+}
+CCanadaRule::~CCanadaRule(void)
+{
+
+}
+
+//获取每期时间间隔,像重庆时时彩，有时候5分钟，有时候10分钟。
+long CCanadaRule::GetQiSpan()
+{
+	return timespan_kj_shj;
+}
+
+//下期期号
+CString CCanadaRule::GetNextExpect(int nDelta)
+{
+	int nQihao = m_nStartQihao;
+	if(nQihao == 0)
+	{
+		return _T("00 00 00");
+	}
+
+	CTime tStart;
+	theApp.GetTime(tStart);
+
+	CTimeSpan tSpan = tStart - m_tStartTime;
+
+	nQihao += ((tSpan.GetTotalSeconds()/ 210) + 1);
+	
+	nQihao+=nDelta;
+	CString strQihao;
+	strQihao.Format(L"%d",nQihao);
+	return strQihao;
+
+}
+int CCanadaRule::GetZhuihaoQishu()
+{
+	int nQihao = m_nStartQihao;
+	if(nQihao == 0)
+	{
+		return 0;
+	}
+
+	CTime tNow;
+	theApp.GetTime(tNow);
+
+// 	if(tNow.GetHour()==19)
+// 	{
+// 		return 0;
+// 	}
+	CTime tFDtime(tNow.GetYear(),tNow.GetMonth(),tNow.GetDay(),19,0,0);
+	if(tNow.GetHour()>=20&&tNow.GetHour()<=23)
+	{
+		tFDtime+=CTimeSpan(1,0,0,0);
+	}
+
+	CTimeSpan tSpan = tFDtime-m_tStartTime;
+	int nStopQihao = nQihao;
+	nStopQihao += ((tSpan.GetTotalSeconds()/ 210) );
+
+	tSpan = tNow - m_tStartTime;
+	nQihao += ((tSpan.GetTotalSeconds()/ 210) + 1);
+
+	CString strLog;
+	strLog.Format(L"JIANADAQIHAO nStopQihao:%d,nQihao:%d",nStopQihao,nQihao);
+	OutputDebugString(strLog);
+	return (nStopQihao-nQihao);
+}
+//下期开奖时间
+CTime CCanadaRule::GetNextKjShj()
+{
+	if (m_nStartQihao != 0)
+	{
+		CTime tStart;
+		theApp.GetTime(tStart);
+		CTime t = m_tStartTime;
+		CTimeSpan tSpan = tStart - m_tStartTime;
+		int nQiHao =((tSpan.GetTotalSeconds()/ 210) + 1);
+		t += CTimeSpan(0, 0, 0, nQiHao * 210);
+
+		CString strLog;
+		strLog.Format(L"JIANADARULE %d %d:%d:%d,%d %d:%d:%d,%d %d:%d:%d qihao:%d",tStart.GetDay(),tStart.GetHour(),tStart.GetMinute(),tStart.GetSecond(),t.GetDay(),t.GetHour(),t.GetMinute(),t.GetSecond(),m_tStartTime.GetDay(),m_tStartTime.GetHour(),m_tStartTime.GetMinute(),m_tStartTime.GetSecond(),m_nStartQihao);
+		OutputDebugString(strLog);
+
+		return t;
+	}
+	else
+	{
+		m_tStartTime += CTimeSpan(0,0,0,210);
+		return m_tStartTime;
+	}
+	
+
+}
+void CCanadaRule::SetQihaoStart(int nQihao,CTime time)
+{
+	m_nStartQihao = nQihao;
+	m_tStartTime = time;
+	return ;
+
+}
+
+//离下次开奖时间还剩下的时间-字符串描述
+CString CCanadaRule::GetKjShjDiffDesc(int nSecond)
+{
+	long secDiff = GetKjShjDiff();
+
+// 	CString strLog;
+// 	strLog.Format(L"CHLJ11X5Rule %d %d:%d:%d,%d %d:%d:%d",nexttime.GetDay(),nexttime.GetHour(),nexttime.GetMinute(),nexttime.GetSecond(),t.GetDay(),t.GetHour(),t.GetMinute(),t.GetSecond());
+// 	OutputDebugString(strLog);
+
+
+	int minute = 0;
+	int second = 0;
+	if(secDiff > nSecond)
+	{
+		secDiff-=nSecond;
+	}
+	minute = secDiff / 60 /*- 1*/;
+	second = secDiff % 60;
+
+	CString str;
+	str.Format(_T("00 :  %02d  : %02d"), minute, second);
+
+	return str;
+}
+
+//是否可撤单-离开奖时间大于两分钟
+bool CCanadaRule::IsCanCancel(CString qihao)
+{
+	//比下期旗号还要早，允许撤单
+
+	if(qihao > GetNextExpect())
+		return true;
+	if(qihao != GetNextExpect())
+	{
+		return false;
+	}
+
+	return GetKjShjDiff() > 45; 
 }
 
 //////////////////////////////////////////////////////////
@@ -614,7 +803,7 @@ CString CJxSSCRule::GetFdShjDiffDesc()
 	int second = secDiff % 60;
 
 	CString str;
-	str.Format(_T("%02d:%02d"), minute, second);
+	str.Format(_T("00 :  %02d  : %02d"), minute, second);
 
 
 	return str;
@@ -631,7 +820,7 @@ bool CJxSSCRule::IsCanCancel(CString qihao)
 		return false;
 	}
 
-	return GetFdShjDiff() > 60; 
+	return GetFdShjDiff() > 140; 
 }
 long CJxSSCRule::GetQiSpan()
 {
@@ -643,9 +832,9 @@ CString CJxSSCRule::GetKjShjDiffDesc(int nSecond)
 {
 	long secDiff = GetKjShjDiff();
 
-	if(secDiff >= 200)
+	if(secDiff >= 140)
 	{
-		secDiff -= 180;
+		secDiff -= 120;
 	}
 
 	if(nSecond==10&&secDiff <= nSecond)
@@ -697,8 +886,11 @@ CString CJxSSCRule::GetKjShjDiffDesc(int nSecond)
 		second = secDiff % 60;
 	}
 	CString str;
-	str.Format(_T("%02d:%02d"), minute, second);
+	str.Format(_T("00 :  %02d  : %02d"), minute, second);
 
+	CString strLog;
+	strLog.Format(L"jxssc sec:%d,str:%s",GetFdShjDiff(),str);
+	OutputDebugString(strLog);
 	return str;
 }
 
@@ -738,7 +930,7 @@ CString CXJSSCRule::GetNextExpect(int nDelta)
 		{
 			nQiHao = (int)(tSpan.GetTotalSeconds() / timespan_fd_shj) + 1;
 		}
-
+nQiHao += nDelta;
 		CString tmp = t.Format(_T("%Y%m%d"));
 
 		rQh.Format(_T("%s%02d"), tmp, nQiHao);
@@ -759,7 +951,7 @@ CString CXJSSCRule::GetNextExpect(int nDelta)
 		{
 			nQiHao = (int)(tSpan.GetTotalSeconds() / timespan_fd_shj) + 1;
 		}
-
+nQiHao += nDelta;
 		nQiHao+=84;
 		t -= CTimeSpan(1,0,0,0);
 		CString tmp = t.Format(_T("%Y%m%d"));
@@ -849,7 +1041,7 @@ CString CXJSSCRule::GetKjShjDiffDesc(int nSecond)
 	int second = secDiff % 60;
 
 	CString str;
-	str.Format(_T("%02d:%02d"), minute, second);
+	str.Format(_T("00 :  %02d  : %02d"), minute, second);
 
 	return str;
 }
@@ -1026,7 +1218,331 @@ CTime CFenFenCaiRule::GetNextKjShj()
 // 	}
 }
 ////////////////////////////////////////////
+////////////////////////////////////////////
 
+CTXFenFenCaiRule::CTXFenFenCaiRule(void)
+: m_t1_start(0)
+, m_t1_end(2)
+, m_t2_start(10)
+, m_t2_end(22)	
+, m_t3_start(22)
+, m_t3_end(24)
+, timespan_kj_shj(60)
+, timespan_ye_kj_shj(300)
+{
+
+}
+
+CTXFenFenCaiRule::~CTXFenFenCaiRule(void)
+{
+
+}
+
+//获取每期时间间隔,像重庆时时彩，有时候5分钟，有时候10分钟。
+long CTXFenFenCaiRule::GetQiSpan()
+{
+	return timespan_kj_shj;
+}
+long CTXFenFenCaiRule::GetFdShjDiff()
+{
+
+	CTime t;
+	theApp.GetTime(t);
+	CTimeSpan span = GetNextKjShj() - t;
+
+	return (long)span.GetTotalSeconds();
+}
+//下期期号
+CString CTXFenFenCaiRule::GetNextExpect(int nDelta)
+{
+	int nQiHao =0;
+	CTime tm ;//= CTime::GetCurrentTime();
+	theApp.GetTime(tm);
+
+	tm+= CTimeSpan(0,0,0,10);
+	nQiHao = tm.GetHour() * 60 + tm.GetMinute() +1;
+
+	nQiHao+=nDelta;
+	if(nQiHao<=0)
+		nQiHao+=1;
+
+	CString strQiHao;
+	strQiHao.Format(L"%s%04ld", tm.Format(L"%Y%m%d"), nQiHao);
+	return strQiHao;
+
+}
+//是否可撤单-离开奖时间大于两分钟
+bool CTXFenFenCaiRule::IsCanCancel(CString qihao)
+{
+	//比下期旗号还要早，允许撤单
+	if(qihao > GetNextExpect())
+		return true;
+
+	if(qihao != GetNextExpect())
+	{
+		return false;
+	}
+
+	return GetFdShjDiff() > 0; 
+}
+
+//下期开奖时间
+CTime CTXFenFenCaiRule::GetNextKjShj()
+{
+		CTime ct;
+		theApp.GetTime(ct);
+
+
+	 	CTime t(ct.GetYear(), ct.GetMonth(), ct.GetDay(), 0, 0, 50);
+		CTimeSpan tSpan = ct - t;
+		int qishu = 0;
+
+		qishu = (int)(tSpan.GetTotalSeconds() / timespan_kj_shj)+1;
+		t += CTimeSpan(qishu * timespan_kj_shj);
+
+		CString strLog;
+		strLog.Format(L"TXFFC FD:%s,NOW:%s",t.Format(_T("%Y%m%d %H:%M:%S")),ct.Format(_T("%Y%m%d %H:%M:%S")));
+		OutputDebugString(strLog);
+		return t;
+
+}
+CString CTXFenFenCaiRule::GetKjShjDiffDesc(int nSecond)
+{
+	long secDiff = GetKjShjDiff();
+
+	CString strLog;
+	strLog.Format(L"TXFENCAI secDiff:%d",secDiff);
+	OutputDebugString(strLog);
+
+	int minute = 0;
+	int second = 0;
+
+	minute = secDiff / 60 /*- 1*/;
+	second = secDiff % 60;
+
+	CString str;
+	str.Format(_T("00 :  %02d  : %02d"), minute, second);
+
+	return str;
+}
+
+////////////////////////////////////////////
+////////////////////////////////////////////
+
+CQQFenFenCaiRule::CQQFenFenCaiRule(void)
+: m_t1_start(0)
+, m_t1_end(2)
+, m_t2_start(10)
+, m_t2_end(22)	
+, m_t3_start(22)
+, m_t3_end(24)
+, timespan_kj_shj(60)
+, timespan_ye_kj_shj(300)
+{
+
+}
+
+CQQFenFenCaiRule::~CQQFenFenCaiRule(void)
+{
+
+}
+
+//获取每期时间间隔,像重庆时时彩，有时候5分钟，有时候10分钟。
+long CQQFenFenCaiRule::GetQiSpan()
+{
+	return timespan_kj_shj;
+}
+long CQQFenFenCaiRule::GetFdShjDiff()
+{
+
+	CTime t;
+	theApp.GetTime(t);
+	CTimeSpan span = GetNextKjShj() - t;
+
+	return (long)span.GetTotalSeconds();
+}
+//下期期号
+CString CQQFenFenCaiRule::GetNextExpect(int nDelta)
+{
+	int nQiHao =0;
+	CTime tm;
+	theApp.GetTime(tm);
+	tm-= CTimeSpan(0,0,0,10);
+
+	nQiHao = tm.GetHour() * 60 + tm.GetMinute() +1;
+
+	nQiHao+=nDelta;
+	CString strQiHao;
+	strQiHao.Format(L"%s%04ld", tm.Format(L"%Y%m%d"), nQiHao);
+	return strQiHao;
+
+}
+//是否可撤单-离开奖时间大于两分钟
+bool CQQFenFenCaiRule::IsCanCancel(CString qihao)
+{
+	//比下期旗号还要早，允许撤单
+	if(qihao > GetNextExpect())
+		return true;
+
+	if(qihao != GetNextExpect())
+	{
+		return false;
+	}
+
+	return GetFdShjDiff() > 5; 
+}
+
+//下期开奖时间
+CTime CQQFenFenCaiRule::GetNextKjShj()
+{
+		CTime ct;
+		theApp.GetTime(ct);
+
+
+	 	CTime t(ct.GetYear(), ct.GetMonth(), ct.GetDay(), 0, 1, 10);
+		CTimeSpan tSpan = ct - t;
+		int qishu = 0;
+
+		qishu = (int)(tSpan.GetTotalSeconds() / timespan_kj_shj)+1;
+		t += CTimeSpan(qishu * timespan_kj_shj);
+
+		CString strLog;
+		strLog.Format(L"TXFFC FD:%s,NOW:%s",t.Format(_T("%Y%m%d %H:%M:%S")),ct.Format(_T("%Y%m%d %H:%M:%S")));
+		OutputDebugString(strLog);
+
+		return t;
+
+}
+CString CQQFenFenCaiRule::GetKjShjDiffDesc(int nSecond)
+{
+	long secDiff = GetKjShjDiff();
+
+	CString strLog;
+	strLog.Format(L"TXFENCAI secDiff:%d",secDiff);
+	OutputDebugString(strLog);
+
+	int minute = 0;
+	int second = 0;
+
+	minute = secDiff / 60 /*- 1*/;
+	second = secDiff % 60;
+
+	CString str;
+	str.Format(_T("00 :  %02d  : %02d"), minute, second);
+
+	return str;
+}
+
+////////////////////////////////////////////
+CErFenCaiRule::CErFenCaiRule(void)
+: m_t1_start(0)
+, m_t1_end(2)
+, m_t2_start(10)
+, m_t2_end(22)	
+, m_t3_start(22)
+, m_t3_end(24)
+, timespan_kj_shj(120)
+, timespan_ye_kj_shj(300)
+{
+
+}
+
+CErFenCaiRule::~CErFenCaiRule(void)
+{
+
+}
+
+//获取每期时间间隔,像重庆时时彩，有时候5分钟，有时候10分钟。
+long CErFenCaiRule::GetQiSpan()
+{
+	return timespan_kj_shj;
+}
+long CErFenCaiRule::GetFdShjDiff()
+{
+
+	CTime t;
+	theApp.GetTime(t);
+	CTimeSpan span = GetNextKjShj() - t;
+
+	return (long)span.GetTotalSeconds();
+}
+//下期期号
+CString CErFenCaiRule::GetNextExpect(int nDelta)
+{
+	int nQiHao =0;
+	CTime tm;//=CTime::GetCurrentTime();
+	theApp.GetTime(tm);	
+	CTime t(tm.GetYear(), tm.GetMonth(), tm.GetDay(), 0, 0, 0);
+	CTimeSpan tSpan = tm - t;
+
+
+	nQiHao = (tSpan.GetTotalSeconds())/timespan_kj_shj +1;
+
+	nQiHao+=nDelta;
+	CString strQiHao;
+	strQiHao.Format(L"%s%03ld", tm.Format(L"%Y%m%d"), nQiHao);
+	return strQiHao;
+
+}
+//是否可撤单-离开奖时间大于两分钟
+bool CErFenCaiRule::IsCanCancel(CString qihao)
+{
+	//比下期旗号还要早，允许撤单
+	if(qihao > GetNextExpect())
+		return true;
+
+	if(qihao != GetNextExpect())
+	{
+		return false;
+	}
+
+	return GetFdShjDiff() > 13; 
+}
+
+//下期开奖时间
+CTime CErFenCaiRule::GetNextKjShj()
+{
+	CTime ct;
+	theApp.GetTime(ct);
+
+	CTime t(ct.GetYear(), ct.GetMonth(), ct.GetDay(), 0, 0, 0);
+	CTimeSpan tSpan = ct - t;
+
+	int qishu = 0;
+
+	qishu = (int)(tSpan.GetTotalSeconds() / timespan_kj_shj)+1;
+	t += CTimeSpan(qishu * timespan_kj_shj);
+
+	CString strLog;
+	strLog.Format(L"%s",t.Format(L"ERFENCAI %Y%m%d %H:%M:%S"));
+	OutputDebugString(strLog);
+	return t;
+}
+CString CErFenCaiRule::GetKjShjDiffDesc(int nSecond)
+{
+	long secDiff = GetKjShjDiff();
+	
+	CString strLog;
+	strLog.Format(L"ERFENCAI secDiff:%d",secDiff);
+	OutputDebugString(strLog);
+	if(secDiff > nSecond)
+	{
+		secDiff-=15;
+	}
+	int minute = 0;
+	int second = 0;
+
+	minute = secDiff / 60 /*- 1*/;
+	second = secDiff % 60;
+
+	CString str;
+	str.Format(_T("00 :  %02d  : %02d"), minute, second);
+
+	return str;
+}
+
+
+////////////////////////////////////////////
 CWuFenCaiRule::CWuFenCaiRule(void)
 : m_t1_start(0)
 , m_t1_end(2)
@@ -1070,7 +1586,7 @@ CString CWuFenCaiRule::GetKjShjDiffDesc(int nSecond)
 	second = secDiff % 60;
 
 	CString str;
-	str.Format(_T("%02d:%02d"), minute, second);
+	str.Format(_T("00 :  %02d  : %02d"), minute, second);
 
 	return str;
 }
@@ -1240,7 +1756,7 @@ CString CGD11X5Rule::GetKjShjDiffDesc(int nSecond)
 	second = secDiff % 60;
 
 	CString str;
-	str.Format(_T("%02d:%02d"), minute, second);
+	str.Format(_T("00 :  %02d  : %02d"), minute, second);
 
 	return str;
 }
@@ -1473,7 +1989,7 @@ CString CJX11X5Rule::GetNextExpect(int nDelta)
 	theApp.GetTime(t);
 	CString rQh;
 
-	if (((t.GetHour() == 9 && t.GetMinute()>=10)||t.GetHour()>=10) && (t.GetHour() < 22) ){
+	if (((t.GetHour() == 9 && t.GetMinute()>=10)||t.GetHour()>=10) && (t.GetHour() < 23) ){
 
 		int qishu = 1;
 		CTime starttime(t.GetYear(),t.GetMonth(),t.GetDay(),9,0,0);
@@ -1493,7 +2009,7 @@ CString CJX11X5Rule::GetNextExpect(int nDelta)
 		rQh.Format(_T("%d%02d%02d%02d"), t.GetYear(),t.GetMonth(),t.GetDay(), qishu);
 	}
 	else {
-		if(t.GetHour() >=22 && t.GetHour() <=24)
+		if(t.GetHour() >=23 && t.GetHour() <=24)
 			t+=CTimeSpan(1L,0,0,0);
 		rQh.Format(_T("%d%02d%02d01"), t.GetYear(), t.GetMonth(), t.GetDay());
 	}
@@ -1550,7 +2066,7 @@ CString CJX11X5Rule::GetKjShjDiffDesc(int nSecond)
 	second = secDiff % 60;
 
 	CString str;
-	str.Format(_T("%02d:%02d"), minute, second);
+	str.Format(_T("00 :  %02d  : %02d"), minute, second);
 
 	return str;
 }
@@ -1602,10 +2118,9 @@ CString CSD11X5Rule::GetNextExpect(int nDelta)
 	theApp.GetTime(t);
 
 	CString rQh;
-	if (((t.GetHour() == 9 && t.GetMinute()>=5)||t.GetHour()>9) && (t.GetHour() < 21 || (t.GetHour() == 21 && t.GetMinute()<55))){
-
+	if (((t.GetHour() == 8 && t.GetMinute()>=35)||t.GetHour()>=9) && (t.GetHour() < 22 || (t.GetHour() == 22 && t.GetMinute()<55))){
 		int qishu = 1;
-		CTime starttime(t.GetYear(),t.GetMonth(),t.GetDay(),8,55,0);
+		CTime starttime(t.GetYear(),t.GetMonth(),t.GetDay(),8,25,0);
 		CTimeSpan tSpan = t - starttime;
 
 		int nTotalSeconds = tSpan.GetTotalSeconds();
@@ -1624,7 +2139,7 @@ CString CSD11X5Rule::GetNextExpect(int nDelta)
 		rQh.Format(_T("%d%02d%02d%02d"),t.GetYear(),t.GetMonth(),t.GetDay(),qishu);
 	}
 	else {
-		if(t.GetHour() >= 22 ||((t.GetHour() == 21 && t.GetMinute()>55)))
+		if(t.GetHour() > 22 ||((t.GetHour() == 22 && t.GetMinute()> 55)))
 			t+=CTimeSpan(1L,0,0,0);
 		rQh.Format(_T("%d%02d%02d01"), t.GetYear(), t.GetMonth(), t.GetDay());
 	}
@@ -1638,10 +2153,10 @@ CTime CSD11X5Rule::GetNextKjShj()
 	CTime t;
 	theApp.GetTime(t);
 	CString rQh;
-	if (((t.GetHour() == 9 && t.GetMinute()>=5)||t.GetHour()>9) && (t.GetHour() < 21 || (t.GetHour() == 21 && t.GetMinute()<55)) ){
+	if ((t.GetHour() == 8 && t.GetMinute()>=35)||(t.GetHour()>=9) && (t.GetHour() < 22) || (t.GetHour() == 22 && t.GetMinute()< 55 ) ){
 
 		int qishu = 1;
-		CTime starttime(t.GetYear(),t.GetMonth(),t.GetDay(),8,55,0);
+		CTime starttime(t.GetYear(),t.GetMonth(),t.GetDay(),8,25,0);
 		CTimeSpan tSpan = t - starttime;
 
 		int nTotalSeconds = tSpan.GetTotalSeconds();
@@ -1658,9 +2173,9 @@ CTime CSD11X5Rule::GetNextKjShj()
 		return starttime;
 	}
 	else {
-		if(t.GetHour() >= 22 ||((t.GetHour() == 21 && t.GetMinute()>55)))
+		if(t.GetHour() > 22 ||((t.GetHour() == 22 && t.GetMinute()>55)))
 			t+=CTimeSpan(1L,0,0,0);
-		CTime ctm(t.GetYear(), t.GetMonth(), t.GetDay(), 9, 5, 0);
+		CTime ctm(t.GetYear(), t.GetMonth(), t.GetDay(), 8, 25, 0);
 		return ctm;
 	}
 }
@@ -1681,7 +2196,7 @@ CString CSD11X5Rule::GetKjShjDiffDesc(int nSecond)
 	second = secDiff % 60;
 
 	CString str;
-	str.Format(_T("%02d:%02d"), minute, second);
+	str.Format(_T("00 :  %02d  : %02d"), minute, second);
 
 	return str;
 }
@@ -1691,12 +2206,10 @@ CString CSD11X5Rule::GetKjShjDiffDesc(int nSecond)
 
 TCHAR CBJPK10Rule::m_lastExpect[KJ_QIHAO_LENGTH] = _T("");
 TCHAR CBJPK10Rule::m_lastKjShj[KJ_SHIJIAN_LENGTH] = _T("");
-
 CBJPK10Rule::CBJPK10Rule(void)
 : timespan_kj_shj(300)
 , timespan_ye_kj_shj(300)
 {
-
 }
 
 CBJPK10Rule::~CBJPK10Rule(void)
@@ -1719,19 +2232,31 @@ bool CBJPK10Rule::IsCanCancel(CString qihao)
 	if(qihao > GetNextExpect())
 		return true;
 
-	if(qihao != GetNextExpect())
-	{
-		return false;
-	}
+// 	if(qihao != GetNextExpect())
+// 	{
+// 		return false;
+// 	}
 
 	return GetFdShjDiff() > 30; 
+}
+void CBJPK10Rule::SetStartQihao(int nQihao,CTime tStartTime)
+{
+	m_nStartQihao = nQihao;
+	m_tStartTime = tStartTime;
 }
 //下期期号
 CString CBJPK10Rule::GetNextExpect(int nDelta)
 {
+	xDate	xD;
+	WORD iLunarYear=0;
+	WORD iLunarMon=0;
+	WORD iLunarDay=0;
+	CTime	tm_now = CTime::GetCurrentTime();
+	xD.GetLunarDate(tm_now.GetYear(), tm_now.GetMonth(), tm_now.GetDay(), iLunarYear, iLunarMon, iLunarDay);
+	int nRestDays = (iLunarYear - 2017)*7;
 
-	CTime startTime = CTime(2016,3,3,0,0,0);
-	int startqihao = 540746;
+	CTime startTime = CTime(2017,6,22,0,0,0);
+	int startqihao = 624677;
 	int nQiHao =0;
 	CTime tm;
 	theApp.GetTime(tm);
@@ -1764,12 +2289,11 @@ CString CBJPK10Rule::GetNextExpect(int nDelta)
 	CTimeSpan temp = tm-startTime;
 
 	nQiHao = startqihao + temp.GetDays()*179 +TodayQihao;
+	nQiHao -= nRestDays* 179;
 
-
-
-	nQiHao+=nDelta;
 	CString strQiHao;
 	strQiHao.Format(L"%ld",  nQiHao);
+	OutputDebugString(L"AAA " + strQiHao);
 	return strQiHao;
 
 }
@@ -1833,7 +2357,7 @@ CString CBJPK10Rule::GetKjShjDiffDesc(int nSecond)
 	second = secDiff % 60;
 
 	CString str;
-	str.Format(_T("%02d:%02d"), minute, second);
+	str.Format(_T("00 :  %02d  : %02d"), minute, second);
 
 	return str;
 }
@@ -1885,7 +2409,7 @@ CString CHLJ11X5Rule::GetNextExpect(int nDelta)
 	theApp.GetTime(t);
 
 	CString rQh;
-	if (((t.GetHour() == 8 && t.GetMinute()>=5)||t.GetHour()>8) && (t.GetHour() < 22 || (t.GetHour() == 22 && t.GetMinute()<5))){
+	if (((t.GetHour() == 8 && t.GetMinute()>=5)||t.GetHour()>8) && (t.GetHour() < 22 || (t.GetHour() == 22 && t.GetMinute()<25))){
 
 		int qishu = 1;
 		CTime starttime(t.GetYear(),t.GetMonth(),t.GetDay(),7,55,0);
@@ -1962,11 +2486,13 @@ CString CHLJ11X5Rule::GetKjShjDiffDesc(int nSecond)
 	second = secDiff % 60;
 
 	CString str;
-	str.Format(_T("%02d:%02d"), minute, second);
+	str.Format(_T("00 :  %02d  : %02d"), minute, second);
 
 	return str;
 }
 
+TCHAR CQiXingCaiRule::m_lastExpect[KJ_QIHAO_LENGTH] = _T("");
+TCHAR CQiXingCaiRule::m_lastKjShj[KJ_SHIJIAN_LENGTH] = _T("");
 
 CQiXingCaiRule::CQiXingCaiRule(void)
 : timespan_kj_shj(600)
@@ -1979,9 +2505,40 @@ CQiXingCaiRule::~CQiXingCaiRule(void)
 {
 
 }
+void CQiXingCaiRule::SetStartQihao(int nQihao,CTime tStartTime)
+{
+		startqihao = nQihao;
+		startTime = tStartTime;
+}
+
 //下期期号
 CString CQiXingCaiRule::GetNextExpect(int nDelta)
 {
+
+	CTime tNow;
+	theApp.GetTime(tNow);
+
+	int weekday = tNow.GetDayOfWeek();
+	int deltaDays = 0;
+
+	while (weekday != 1 && weekday != 3 &&weekday != 6)
+	{
+		deltaDays ++;
+		weekday++;
+		weekday%=7;
+	}
+
+	int nLastExpect = _ttoi(m_lastExpect);
+	CTime tTime = tNow;
+	tTime+=CTimeSpan(0,0,0,86400*deltaDays);
+
+	int tempExpect = tTime.GetYear()*1000;
+
+	int nQihao = max(nLastExpect,tempExpect);
+	CString strQihao ;
+	strQihao.Format(L"%ld",nQihao+1);
+	return strQihao;
+
 	//注意，本代码默认礼拜天为每周第一天，
 
 	int nQiHao =0;
@@ -2074,29 +2631,32 @@ CTime CQiXingCaiRule::GetNextFdShj()
 CKuaiLe8RUle::CKuaiLe8RUle(void)
 : timespan_kj_shj(300)
 {
-	startqihao = 746175;
-	startTime = CTime(2016,3,3,9,5,0);
+	startqihao = 813744;
+	startTime = CTime(2017,3,22,16,20,0);
 }
 
 CKuaiLe8RUle::~CKuaiLe8RUle(void)
 {
-
-
 }
-
-
-
-
+void CKuaiLe8RUle::SetStartQihao(int nQihao,CTime tStartTime)
+{
+		startqihao = nQihao;
+		startTime = tStartTime;
+}
 //下期期号
 CString CKuaiLe8RUle::GetNextExpect(int nDelta)
 {
+	xDate	xD;
+	WORD iLunarYear=0;
+	WORD iLunarMon=0;
+	WORD iLunarDay=0;
+	CTime	tm_now = CTime::GetCurrentTime();
+	xD.GetLunarDate(tm_now.GetYear(), tm_now.GetMonth(), tm_now.GetDay(), iLunarYear, iLunarMon, iLunarDay);
+	int nRestDays = (iLunarYear - 2017)*4;
+
 	int nQiHao =0;
 	CTime tm;
 	theApp.GetTime(tm);
-
-	//一年中第几天
-	CString strDay = tm.Format(_T("%j"));
-	int nDay = _wtoi(strDay.GetBuffer(strDay.GetLength()));
 
 	int TodayQihao =1;
 	if ( (tm.GetHour()>=9)&&(tm.GetHour()<23)  || (tm.GetHour()==23)&&(tm.GetMinute()<55))
@@ -2105,9 +2665,9 @@ CString CKuaiLe8RUle::GetNextExpect(int nDelta)
 
 		CTimeSpan tCha = tm-ctm;
 
-		if(tCha.GetTotalSeconds()%300 > 240)
-			TodayQihao = tCha.GetTotalMinutes()/5+2;
-		else
+// 		if(tCha.GetTotalSeconds()%300 > 240)
+// 			TodayQihao = tCha.GetTotalMinutes()/5+2;
+// 		else
 			TodayQihao = tCha.GetTotalMinutes()/5+1;
 	}
 	else //if((tm.GetHour()==23)&&(tm.GetMinute()>55))
@@ -2121,19 +2681,15 @@ CString CKuaiLe8RUle::GetNextExpect(int nDelta)
 
 	CTimeSpan temp = tm-startTime;
 
-	nQiHao = startqihao + temp.GetDays()*179 +TodayQihao;
+	int nAllDay = temp.GetDays();
+	nQiHao = startqihao + nAllDay*179 +TodayQihao;
+	nQiHao -= nRestDays * 179;
 
-
-
-	nQiHao+=nDelta;
 	CString strQiHao;
 	strQiHao.Format(L"%ld",  nQiHao);
 	return strQiHao;
 
 }
-
-
-
 //下期开奖时间
 CTime CKuaiLe8RUle::GetNextKjShj()
 {
@@ -2146,9 +2702,9 @@ CTime CKuaiLe8RUle::GetNextKjShj()
 
 		CTimeSpan tCha = t-ctm;
 		int TodayQihao=1;
-		if(tCha.GetTotalSeconds()%300 > 240)
-			TodayQihao = tCha.GetTotalMinutes()/5+2;
-		else
+// 		if(tCha.GetTotalSeconds()%300 > 240)
+// 			TodayQihao = tCha.GetTotalMinutes()/5+2;
+// 		else
 			TodayQihao = tCha.GetTotalMinutes()/5+1;
 
  		CTime NextKj = ctm;
@@ -2164,4 +2720,25 @@ CTime CKuaiLe8RUle::GetNextKjShj()
 		CTime ctm(t.GetYear(), t.GetMonth(), t.GetDay(), 9, 5, 0);
 		return ctm;
 	}
+}
+//离下次开奖时间还剩下的时间-字符串描述
+CString CKuaiLe8RUle::GetKjShjDiffDesc(int nSecond)
+{
+	long secDiff = GetKjShjDiff();
+	int minute = 0;
+	int second = 0;
+// 	if(secDiff >= timespan_kj_shj&&secDiff<=(timespan_kj_shj+nSecond))
+// 	{
+// 		secDiff -= timespan_kj_shj;
+// 		minute = secDiff / 60 ;
+// 	}
+// 	else
+	if(secDiff > 60)
+		minute = secDiff / 60 - 1;
+	second = secDiff % 60;
+
+	CString str;
+	str.Format(_T("00 :  %02d  : %02d"), minute, second);
+
+	return str;
 }

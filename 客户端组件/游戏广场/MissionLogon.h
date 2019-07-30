@@ -32,6 +32,9 @@ protected:
 protected:
 	static CMissionLogon *			m_pMissionLogon;					//对象指针
 
+	BYTE							m_cbIsYanzheng;
+	CString							m_strPhoneNum;
+	CString							m_strWebSiteURL;					//网页版URL
 	//函数定义
 public:
 	//构造函数
@@ -58,9 +61,8 @@ public:
 public:
 	//显示登录
 	VOID ShowLogon();
-	//显示注册
-	VOID ShowRegister();
-
+	bool PerformSendYanZhengma(CString strYanzhengma);
+	CString		GetWebSiteURL();
 	//辅助函数
 protected:
 	//更新用户
@@ -79,12 +81,15 @@ protected:
 	bool OnSocketSubLogonFinish(VOID * pData, WORD wDataSize);
 	//升级提示
 	bool OnSocketSubUpdateNotify(VOID * pData, WORD wDataSize);
+	//验证码
+	bool OnSocketSubCheckYzmRet(VOID * pData, WORD wDataSize);
 
 	//静态函数
 public:
 	//获取对象
 	static CMissionLogon * GetInstance() { return m_pMissionLogon; }
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	afx_msg LRESULT OnMessageSendRandNum(WPARAM wParam, LPARAM lParam);
 
 	DECLARE_MESSAGE_MAP()
 };

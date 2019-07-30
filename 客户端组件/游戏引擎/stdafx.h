@@ -4,19 +4,35 @@
 
 #pragma once
 
+
+//////////////////////////////////////////////////////////////////////////////////
+
 #ifndef VC_EXTRALEAN
-#define VC_EXTRALEAN            // 从 Windows 头中排除极少使用的资料
+#define VC_EXTRALEAN
 #endif
 
-#include "targetver.h"
+#ifndef WINVER
+#define WINVER 0x0500
+#endif
 
-#define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS      // 某些 CString 构造函数将是显式的
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0500
+#endif
 
-// add by hxh 20160801
-#define POINTER_64 __ptr64
+#ifndef _WIN32_WINDOWS
+#define _WIN32_WINDOWS 0x0410
+#endif
 
-typedef void *PVOID;
-typedef void * POINTER_64 PVOID64;
+#ifndef _WIN32_IE
+#define _WIN32_IE 0x0400
+#endif
+
+#define _ATL_ATTRIBUTES
+#define _AFX_ALL_WARNINGS
+#define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS
+
+//////////////////////////////////////////////////////////////////////////////////
+
 
 #include <afxwin.h>         // MFC 核心组件和标准组件
 #include <afxext.h>         // MFC 扩展
@@ -45,11 +61,8 @@ typedef void * POINTER_64 PVOID64;
 #include <map>
 using namespace std;
 
-//OGL 文件
-#include "glut.h"
-
-
-#pragma comment(lib,"bass.lib")
-#pragma comment(lib,"D3D9.lib")
-#pragma comment(lib,"D3dx9.lib")
+//#pragma comment(lib,"../../公共组件/sdk/bass.lib")
+#pragma comment(lib,"../../公共组件/sdk/Lib/x86/D3D9.lib")
+#pragma comment(lib,"../../公共组件/sdk/Lib/x86/D3dx9.lib")
+#pragma comment(lib,"../../公共组件/sdk/Lib/x86/dsound.lib")
 #pragma comment(lib,"Winmm.lib")

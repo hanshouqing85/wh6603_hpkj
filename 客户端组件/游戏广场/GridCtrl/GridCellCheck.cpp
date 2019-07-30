@@ -31,11 +31,10 @@
 //             - Read-only now honoured - Yogurt
 //
 /////////////////////////////////////////////////////////////////////////////
-
 #include "stdafx.h"
+
 #include "../GridCtrl/GridCell.h"
 #include "../GridCtrl/GridCtrl.h"
-
 #include "GridCellCheck.h"
 
 

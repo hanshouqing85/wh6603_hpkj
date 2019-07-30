@@ -43,6 +43,7 @@ protected:
 	CJxSSCRule m_jxRule;
 	CXJSSCRule m_xjRule;
 	CFenFenCaiRule m_ffcRule;
+	CErFenCaiRule m_efcRule;
 	CWuFenCaiRule m_wfcRule;
 	CHgydwfcRule	m_hgRule;
 	CCQ11X5Rule m_chq11x5Rule;
@@ -52,10 +53,17 @@ protected:
 	CHLJ11X5Rule m_hlj11x5Rule;
 	CQiXingCaiRule m_qxcRule;
 	CBJPK10Rule m_pk10Rule;
+	CCanadaRule	m_jndRule;
+	CKuaiLe8RUle	m_bj5fcRule;
+	CTXFenFenCaiRule m_txffcRule;
+	CQQFenFenCaiRule m_qqffcRule;
 
 	CPaiLie3 m_dlgPaiLie3;
 	C3D	m_dlg3D;
 	int	GetZuxuanType(string strNumber);
+	//ÉúÐ¤µÄË³Ðò×ª»»
+	int	GetShengXiaoIndex(int nIndex, int nYearXiuZheng);
+
 	bool	ChangeStringToA(CString strInput, string&  strOutput);
 	CString GetNiuString(CString strNiu);
 protected:

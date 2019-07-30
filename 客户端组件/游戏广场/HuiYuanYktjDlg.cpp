@@ -73,23 +73,23 @@ static const int btn_chkxj_width = 114;
 static const int btn_chkxj_height = 25;
 
 //确定按钮
-static const int btn_ok_x = 680;
-static const int btn_ok_y = 48;
+static const int btn_ok_x = 700;
+static const int btn_ok_y = 43;
 //排序
 static const int cmb_sort_x = 575;
 static const int cmb_sort_y = 46;
-static const int cmb_sort__width = 95;
+static const int cmb_sort__width = 105;
 static const int cmb_sort__height = 14;
 
 //列表
 static const int list_log_x = 10;
 static const int list_log_y = 77;
 static const int list_log_width = 987;
-static const int list_log_height = 409;
+static const int list_log_height = 347;
 
 //总页数
 static const int tip_page_x = 20;
-static const int tip_page_y = 490;
+static const int tip_page_y = 430;
 static const int tip_page_width = 400;
 static const int tip_page_height = 20;
 static CRect rc_tip_page(tip_page_x, 
@@ -99,11 +99,11 @@ static CRect rc_tip_page(tip_page_x,
 
 //上一页
 static const int btn_pre_page_x = 793;
-static const int btn_pre_page_y = 490;
+static const int btn_pre_page_y = 430;
 
 //下一页
 static const int btn_next_page_x = 873;
-static const int btn_next_page_y = 490;
+static const int btn_next_page_y = 430;
 
 
 static const int page_size = 19;
@@ -128,13 +128,14 @@ CHuiYuanYktjDlg::CHuiYuanYktjDlg(CWnd* pParent /*=NULL*/)
 	m_bGetXjYkTjByID=false;
 	m_bGetXjYkTjByAct=false;
 	m_nTestCount = 1;
+	m_nIndex = 0;
 }
 
 CHuiYuanYktjDlg::~CHuiYuanYktjDlg()
 {
 	if (m_bmpBk != NULL)
 	{
-		delete m_bmpBk;
+		SafeDelete(m_bmpBk);
 	}
 }
 
@@ -217,7 +218,7 @@ void CHuiYuanYktjDlg::OnPaint()
 
 	int oldBkMode = cacheDC.SetBkMode(TRANSPARENT);
 	CFont* pOldFont = cacheDC.SelectObject(&m_font);
-	COLORREF oldTextColor = cacheDC.SetTextColor(RGB(88, 78, 77));
+	COLORREF oldTextColor = cacheDC.SetTextColor(RGB(255,255,255));
 
 	cacheDC.DrawText(_T("起始时间"), rc_time_start, DT_RIGHT|DT_VCENTER|DT_SINGLELINE);
 	cacheDC.DrawText(_T("至"), rc_time_end, DT_CENTER|DT_VCENTER|DT_SINGLELINE);
@@ -240,11 +241,11 @@ void CHuiYuanYktjDlg::OnPaint()
 	}
 	cacheDC.DrawText(strTmp, rc_tip_page, DT_LEFT|DT_VCENTER|DT_SINGLELINE);
 
+	dc.BitBlt(0, 0, rect.Width(), rect.Height(), &cacheDC, 0, 0, SRCCOPY);
 	cacheDC.SetTextColor(oldTextColor);
 	cacheDC.SelectObject(pOldFont);
 	cacheDC.SetBkMode(oldBkMode);
 
-	dc.BitBlt(0, 0, rect.Width(), rect.Height(), &cacheDC, 0, 0, SRCCOPY);
 
 	cacheDC.SelectObject(pOldCacheBmp);
 	cacheBmp.DeleteObject();
@@ -269,45 +270,61 @@ void CHuiYuanYktjDlg::OnSize(UINT nType, int cx, int cy)
 
 	AdjustCtrls();
 }
+void CHuiYuanYktjDlg::ResetContent()
+{
+		m_nIndex = 0;
+	m_tStart = CTime::GetCurrentTime();
+	m_tEnd = CTime::GetCurrentTime();
+	for(int i = 1;i < CountArray(m_btnChkxj);i++)
+	{
+		m_btnChkxj[i].ShowWindow(SW_HIDE);
+	}
+	m_listLog.DeleteAllItems();
 
+	m_tStart = CTime::GetCurrentTime();
+	m_tEnd = CTime::GetCurrentTime();
+	m_UserID1.clear();
+	m_dateStart.SetTime(&m_tStart);
+	m_dateEnd.SetTime(&m_tEnd);
+	m_page = 1;
+	m_editAct.SetWindowText(L"");
+	m_editID.SetWindowText(L"");
+
+}
 void CHuiYuanYktjDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 {
 	CDialog::OnShowWindow(bShow, nStatus);
-	m_nIndex = 0;
+//
 
 	if(bShow)
 	{
+		m_nIndex=0;									//added by david, 2018.10.7
+
 		if(theAccount.user_id <=0)
 			return;
 
-		m_tStart = CTime::GetCurrentTime();
-		m_tEnd = CTime::GetCurrentTime();
-		for(int i = 1;i < CountArray(m_btnChkxj);i++)
+		if(m_UserID1.size() <= 0)
 		{
-			m_btnChkxj[i].ShowWindow(SW_HIDE);
-		}
+			m_tStart = CTime::GetCurrentTime();
+			m_tEnd = CTime::GetCurrentTime();
+			for(int i = 1;i < CountArray(m_btnChkxj);i++)
+			{
+				m_btnChkxj[i].ShowWindow(SW_HIDE);
+			}
 
-		m_btnChkxj[m_nIndex].ShowWindow(SW_SHOW);
-		m_btnChkxj[m_nIndex].SetWindowText(theAccount.account);
+			m_btnChkxj[m_nIndex].ShowWindow(SW_SHOW);
+			m_btnChkxj[m_nIndex].SetWindowText(theAccount.account);
+			m_UserID1[0] = theAccount.user_id;
+
+			m_user_id = 0;
+		}
 
 		m_byType=0;
 		m_page = 1;
-		m_user_id = theAccount.user_id;
 		EnAbleCtrls(true);
 	}
 	else
-	{
-		m_listLog.DeleteAllItems();
-
-		m_tStart = CTime::GetCurrentTime();
-		m_tEnd = CTime::GetCurrentTime();
-
-		m_dateStart.SetTime(&m_tStart);
-		m_dateEnd.SetTime(&m_tEnd);
-		m_page = 1;
-		m_editAct.SetWindowText(L"");
-		m_editID.SetWindowText(L"");
-	}
+		m_UserID1.clear();						//2018.10.10
 }
 
 void CHuiYuanYktjDlg::OnBnClickedBtnOk()
@@ -341,7 +358,7 @@ void CHuiYuanYktjDlg::OnBnClickedBtnOk()
 	}
 	else 
 	{
-		m_user_id = theAccount.user_id;
+		m_user_id = 0;
 		m_byType=0;
 		m_nIndex = 0;
 		CString strText;
@@ -363,25 +380,9 @@ void CHuiYuanYktjDlg::OnBnClickedBtnOk()
 	m_byTime = TRUE;
 	m_listLog.DeleteAllItems();
 	m_page = 1;
-	//读取配置文件
-	//工作目录
-	TCHAR szDirectory[MAX_PATH]=TEXT("");
-	CWHService::GetWorkDirectory(szDirectory,CountArray(szDirectory));
-
-	//构造路径
-	TCHAR szFileName[MAX_PATH]=TEXT("");
-	_sntprintf(szFileName,CountArray(szFileName),TEXT("%s\\GamePlaza.ini"),szDirectory);
-
-
-	m_nTestCount = GetPrivateProfileInt(_T("TESTVERSION"),_T("HYTESTCOUNT"),1,szFileName);
-
-//	for(int i = 0;i < m_nTestCount;i++)
-//	{
-		SendToServer(1);
-		SendToServer(2);
-//		Sleep(1000);
-//	}
-	//m_btnOK.EnableWindow(FALSE);
+	SendToServer(1);
+	SendToServer(2);
+	SendToServer(3);
 
 	InvalidateRect(rc_tip_page);
 }
@@ -437,13 +438,13 @@ void CHuiYuanYktjDlg::OnXjyktjChkxx()
 				m_btnChkxj[m_nIndex].ShowWindow(SW_SHOW);
 				m_btnChkxj[m_nIndex].SetWindowText(strAccount);
 				m_UserID1[m_nIndex] = m_user_id;
-				m_editAct.SetWindowText(strAccount);
+				m_editAct.SetWindowText(L"");
 
 				strAccount.Format(L"%d",m_user_id);
 				m_editID.SetWindowText(strAccount);
 			}
 
-			SendToServer(1);
+			//SendToServer(1);
 			SendToServer(2);
 		}
 	}
@@ -469,6 +470,11 @@ void CHuiYuanYktjDlg::OnXjyktjChkmx()
 void CHuiYuanYktjDlg::OnNMRClickListLog(NMHDR *pNMHDR, LRESULT *pResult)
 {
 
+	POSITION pos = m_listLog.GetFirstSelectedItemPosition();
+	if (pos == NULL) 
+	{
+		return;
+	}
 	CPoint pt(0,0);
 	GetCursorPos(&pt);
 	CMenu menu;
@@ -476,6 +482,11 @@ void CHuiYuanYktjDlg::OnNMRClickListLog(NMHDR *pNMHDR, LRESULT *pResult)
 	CMenu* pMenu = menu.GetSubMenu(0);
 	if (pMenu != NULL)
 	{
+		int nItem = m_listLog.GetNextSelectedItem(pos);
+		int user_id = m_listLog.GetItemData(nItem);
+		if(user_id == theAccount.user_id)
+			pMenu->EnableMenuItem(ID_HYYK_CHKXJYK, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+
 		pMenu->TrackPopupMenu(TPM_LEFTBUTTON, pt.x, pt.y, this);
 	}
 
@@ -497,6 +508,11 @@ void CHuiYuanYktjDlg::OnNMLclickListLog(NMHDR *pNMHDR, LRESULT *pResult)
 	CMenu* pMenu = menu.GetSubMenu(0);
 	if (pMenu != NULL)
 	{
+		int nItem = m_listLog.GetNextSelectedItem(pos);
+		int user_id = m_listLog.GetItemData(nItem);
+		if(user_id == theAccount.user_id)
+			pMenu->EnableMenuItem(ID_HYYK_CHKXJYK, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+
 		pMenu->TrackPopupMenu(TPM_LEFTBUTTON, pt.x, pt.y, this);
 	}
 
@@ -508,27 +524,32 @@ BOOL CHuiYuanYktjDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	// TODO:  在此添加额外的初始化
-	m_bmpBk = new Bitmap(CBmpUtil::GetExePath() + _T("skin\\n_bg3.png"));
+	if(m_bmpBk == NULL)
+	{
+		m_bmpBk = new Bitmap(CBmpUtil::GetExePath() + _T("skin\\n_bg3.png"));
 
-	m_btnOK.SetImage(CBmpUtil::GetExePath() + _T("skin\\quedingt_bt.png"));
-	m_btnPrePage.SetImage(CBmpUtil::GetExePath() + _T("skin\\syy_bt.png"));
-	m_btnNextPage.SetImage(CBmpUtil::GetExePath() + _T("skin\\xyy_bt.png"));
+		m_btnOK.SetImage(CBmpUtil::GetExePath() + _T("skin\\quedingt_bt.png"));
+		m_btnPrePage.SetImage(CBmpUtil::GetExePath() + _T("skin\\syy_bt.png"));
+		m_btnNextPage.SetImage(CBmpUtil::GetExePath() + _T("skin\\xyy_bt.png"));
 
-	m_font.CreateFont(14, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, 
-		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH|FF_DONTCARE, _T("Arial")); 
+		m_font.CreateFont(18, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, 
+			OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH|FF_DONTCARE, _T("Arial")); 
+		m_cmbfont.CreateFont(14, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, 
+			OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH|FF_DONTCARE, _T("Arial")); 
+		m_cmbSort.SetButtonImage(AfxGetInstanceHandle(),IDB_BT_COMBOBOX_ACT,CSize(16,18));
+		for(int i = 0;i < CountArray(m_btnChkxj);i++)
+		{
+			m_btnChkxj[i].SetBkImage(CBmpUtil::GetExePath() + _T("skin\\btn_xj.png"));
+		}
+
+	}
+	InitListCtrl();
 	m_byType=0;
 	m_dwTickCount=0;
-	InitListCtrl();
-	m_cmbSort.SetButtonImage(AfxGetInstanceHandle(),IDB_BT_COMBOBOX_ACT,CSize(16,18));
-	m_editAct.SetEnableColor(RGB(107,102,101),RGB(250,242,228),RGB(20,20,20));
-	m_editID.SetEnableColor(RGB(107,102,101),RGB(250,242,228),RGB(20,20,20));
+	m_editAct.SetEnableColor(RGB(56,90,154),RGB(241,233,255),RGB(241,233,255));
+	m_editID.SetEnableColor(RGB(56,90,154),RGB(241,233,255),RGB(241,233,255));
 
-	for(int i = 0;i < CountArray(m_btnChkxj);i++)
-	{
-		m_btnChkxj[i].SetBkImage(CBmpUtil::GetExePath() + _T("skin\\btn_xj.png"));
-	}
-
+	m_DlgStatus.SetStatusViewSink(this);
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 异常: OCX 属性页应返回 FALSE
 }
@@ -542,38 +563,62 @@ void CHuiYuanYktjDlg::OnOK()
 {
 	//CDialog::OnOK();
 }
+//取消连接
+VOID CHuiYuanYktjDlg::OnStatusCancel()
+{
+	//关闭房间
+	PostMessage(WM_COMMAND,IDM_DELETE_SERVER_ITEM,0);
+
+	return;
+}
 
 void CHuiYuanYktjDlg::InitListCtrl()
 {
 	m_listLog.ModifyStyle(NULL, LVS_SINGLESEL);
 	m_listLog.SetExtendedStyle(m_listLog.GetExtendedStyle()|LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES);
 	m_listLog.SetFont(&m_font);
-	m_listLog.SetTextColor(RGB(95,82,81));
+	m_listLog.SetTextColor(RGB(56,90,154));
 
-	m_listLog.InsertColumn(0, _T("用户ID"), LVCFMT_CENTER, 80);
-	m_listLog.InsertColumn(1, _T("用户名"), LVCFMT_CENTER, 96);
-	m_listLog.InsertColumn(2, _T("类型"), LVCFMT_CENTER, 70);
-	m_listLog.InsertColumn(3, _T("团队充值"), LVCFMT_CENTER, 95);
-	m_listLog.InsertColumn(4, _T("团队取款"), LVCFMT_CENTER, 95);
-	m_listLog.InsertColumn(5, _T("团队投注"), LVCFMT_CENTER, 96);
-	m_listLog.InsertColumn(6, _T("团队中奖"), LVCFMT_CENTER, 97);
-	m_listLog.InsertColumn(7, _T("团队返点"), LVCFMT_CENTER, 97);
-	m_listLog.InsertColumn(8, _T("团队盈亏"), LVCFMT_CENTER, 97);
-	m_listLog.InsertColumn(9, _T("团队活动"), LVCFMT_CENTER, 80);
-	m_listLog.InsertColumn(10, _T("团队余额"), LVCFMT_CENTER, 80);
+	m_listLog.InsertColumn(0, _T("用户ID"), LVCFMT_CENTER, 50);
+	m_listLog.InsertColumn(1, _T("用户名"), LVCFMT_CENTER, 90);
+//	m_listLog.InsertColumn(2, _T("类型"), LVCFMT_CENTER, 90);
+	m_listLog.InsertColumn(2, _T("团队充值"), LVCFMT_CENTER, 85);
+	m_listLog.InsertColumn(3, _T("团队取款"), LVCFMT_CENTER, 85);
+	m_listLog.InsertColumn(4, _T("团队彩票投注"), LVCFMT_CENTER, 100);
+	m_listLog.InsertColumn(5, _T("团队彩票返点"), LVCFMT_CENTER, 100);
+	m_listLog.InsertColumn(6, _T("团队彩票盈亏"), LVCFMT_CENTER, 100);
+	m_listLog.InsertColumn(7, _T("团队棋牌盈亏"), LVCFMT_CENTER, 100);
+	m_listLog.InsertColumn(8, _T("团队棋牌返点"), LVCFMT_CENTER, 95);
+	m_listLog.InsertColumn(9, _T("团队活动"), LVCFMT_CENTER, 70);
+	m_listLog.InsertColumn(10, _T("团队综合盈亏"), LVCFMT_CENTER, 95);
+	m_listLog.InsertColumn(11, _T("充值手续费"), LVCFMT_CENTER, 75);
+	m_listLog.InsertColumn(12, _T("团队余额"), LVCFMT_CENTER, 75);
 
- 	m_cmbSort.SetFont(&m_font);
+	//m_listLog.InsertColumn(0, _T("用户ID"), LVCFMT_CENTER, 70);
+	//m_listLog.InsertColumn(1, _T("用户名"), LVCFMT_CENTER, 90);
+	//m_listLog.InsertColumn(2, _T("类型"), LVCFMT_CENTER, 56);
+	//m_listLog.InsertColumn(3, _T("团队充值"), LVCFMT_CENTER, 90);
+	//m_listLog.InsertColumn(4, _T("团队取款"), LVCFMT_CENTER, 90);
+	//m_listLog.InsertColumn(5, _T("团队投注"), LVCFMT_CENTER, 96);
+	//m_listLog.InsertColumn(6, _T("团队中奖"), LVCFMT_CENTER, 92);
+	//m_listLog.InsertColumn(7, _T("团队返点"), LVCFMT_CENTER, 92);
+	//m_listLog.InsertColumn(8, _T("团队盈亏"), LVCFMT_CENTER, 92);
+	//m_listLog.InsertColumn(9, _T("团队活动"), LVCFMT_CENTER, 70);
+	//m_listLog.InsertColumn(10, _T("团队余额"), LVCFMT_CENTER, 75);
+	//m_listLog.InsertColumn(11, _T("充值手续费"), LVCFMT_CENTER, 75);
+
+ 	m_cmbSort.SetFont(&m_cmbfont);
  	m_cmbSort.ResetContent();
 	m_cmbSort.AddString(TEXT("团队充值(降)"));
 	m_cmbSort.AddString(TEXT("团队充值(升)"));
 	m_cmbSort.AddString(TEXT("团队取款(降)"));
 	m_cmbSort.AddString(TEXT("团队取款(升)"));
-	m_cmbSort.AddString(TEXT("团队投注(降)"));
-	m_cmbSort.AddString(TEXT("团队投注(升)"));
-	m_cmbSort.AddString(TEXT("团队中奖(降)"));
-	m_cmbSort.AddString(TEXT("团队中奖(升)"));
-	m_cmbSort.AddString(TEXT("团队返点(降)"));
-	m_cmbSort.AddString(TEXT("团队返点(升)"));
+	m_cmbSort.AddString(TEXT("团队彩票投注(降)"));
+	m_cmbSort.AddString(TEXT("团队彩票投注(升)"));
+	m_cmbSort.AddString(TEXT("团队彩票盈亏(降)"));
+	m_cmbSort.AddString(TEXT("团队彩票盈亏(升)"));
+	m_cmbSort.AddString(TEXT("团队棋牌盈亏(降)"));
+	m_cmbSort.AddString(TEXT("团队棋牌盈亏(升)"));
 // 	m_cmbSort.AddString(TEXT("日工资(降)"));
 // 	m_cmbSort.AddString(TEXT("日工资(升)"));
  	m_cmbSort.SetCurSel(0);
@@ -622,6 +667,9 @@ void CHuiYuanYktjDlg::AdjustCtrls()
 
 	for(int i = 0;i < CountArray(m_btnChkxj);i++)
 	{
+		if(m_btnChkxj[i].GetSafeHwnd() == NULL)
+			continue;
+
 		m_btnChkxj[i].SetWindowPos(NULL,btn_chkxj_x+i*(btn_chkxj_width),btn_chkxj_y,btn_chkxj_width,btn_chkxj_height,SWP_NOZORDER);
 		if(i>7)
 		{
@@ -647,6 +695,31 @@ bool CHuiYuanYktjDlg::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD
 	{
 		switch (Command.wSubCmdID)
 		{
+		case SUB_GR_GET_PARENT_RET:
+			{
+				ASSERT(wDataSize == sizeof(CMD_GetParentRet));
+				if(wDataSize!=sizeof(CMD_GetParentRet)) return false;
+
+				CMD_GetParentRet* pGetParentRet = (CMD_GetParentRet*)pData;
+
+				m_UserID1.clear();
+				for(int i = 1;i < CountArray(m_btnChkxj);i++)
+				{
+					m_btnChkxj[i].ShowWindow(SW_HIDE);
+				}
+
+				int nCount = pGetParentRet->n_t_result;
+
+				CString strLog;
+				for(int i = 0;i < nCount;i++)
+				{
+					m_btnChkxj[i].ShowWindow(SW_SHOW);
+					strLog.Format(L"%s",pGetParentRet->s_t_desc[nCount-i-1]);
+					m_btnChkxj[i].SetWindowText(strLog);
+					m_UserID1[i] = pGetParentRet->n_t_userid[nCount-i-1];
+				}
+				break;
+			}
 		case SUB_GR_GET_XJYK_TJ_COUNT_RET:
 			{
 				ASSERT(wDataSize == sizeof(CMD_GR_GetXJYKTjCountRet));
@@ -658,15 +731,19 @@ bool CHuiYuanYktjDlg::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD
 				m_maxPage = (m_itemCount % page_size == 0)? m_itemCount / page_size: (m_itemCount / page_size + 1);
 				m_maxPage = max(1,m_maxPage);
 
-				break;
+				InvalidateRect(&rc_tip_page);
+				return true;
 			}
 		case SUB_GP_GET_XJYK_TJ_RET:
 			{
 				ASSERT(wDataSize % sizeof(CMD_GR_GetXJYKTjRet)==0);
 				if(wDataSize % sizeof(CMD_GR_GetXJYKTjRet)!=0) return false;
 
+				m_DlgStatus.HideStatusWindow();
 				m_btnOK.EnableWindow(TRUE);
 				m_listLog.DeleteAllItems();
+
+				SendToServer(1);
 				WORD wCount = wDataSize/sizeof(CMD_GR_GetXJYKTjRet);
 				for(int i = 0;i < wCount;i++)
 				{
@@ -678,58 +755,29 @@ bool CHuiYuanYktjDlg::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD
 						strTmp.Format(_T("%d"), pXJYKLogRet->n_t_id);
 						int item = m_listLog.InsertItem(0, strTmp);
 						m_listLog.SetItemData(0, pXJYKLogRet->n_t_id);
-						if(m_byType!=0)
-						{
-							for(map<int ,DWORD >::iterator pos = m_UserID1.begin();pos!=m_UserID1.end();++pos)
-							{
-								if(pos->second == m_user_id)
-								{
-									m_nIndex = pos->first;
-									break;
-								}
-								else
-								{
-									m_nIndex = 1;
-								}
-							}
-							for(int i = 0;i < CountArray(m_btnChkxj);i++)
-							{
-								if(i<=m_nIndex)
-								{
-									m_btnChkxj[i].ShowWindow(SW_SHOW);
-								}
-								else
-								{
-									m_btnChkxj[i].ShowWindow(SW_HIDE);
-								}
-							}
-							m_btnChkxj[m_nIndex].SetWindowText(pXJYKLogRet->s_t_account);
-							m_UserID1[m_nIndex] = pXJYKLogRet->n_t_id;
-
-						}
 
 						m_listLog.SetItemText(0, 1,pXJYKLogRet->s_t_account);
 
-						int t_type = pXJYKLogRet->n_t_type;
-						switch (t_type)
-						{
-						case 0: strTmp = _T("会员"); break;
-						case 1: strTmp = _T("代理"); break;
-						default: strTmp = _T(""); break;
-						}
-						m_listLog.SetItemText(0, 2, strTmp);
+// 						int t_type = pXJYKLogRet->n_t_type;
+// 						switch (t_type)
+// 						{
+// 						case 0: strTmp = _T("会员"); break;
+// 						case 1: strTmp = _T("代理"); break;
+// 						default: strTmp = _T(""); break;
+// 						}
+// 						m_listLog.SetItemText(0, 2, strTmp);
 
 						strTmp.Format(_T("%.2lf"), pXJYKLogRet->f_t_chongzhi_ze);
-						m_listLog.SetItemText(0, 3, strTmp);
+						m_listLog.SetItemText(0, 2, strTmp);
 
 						strTmp.Format(_T("%.2lf"),fabs( pXJYKLogRet->f_t_qukuan_ze));
-						m_listLog.SetItemText(0, 4, strTmp);
+						m_listLog.SetItemText(0, 3, strTmp);
 
 						strTmp.Format(_T("%.3lf"), fabs(pXJYKLogRet->f_t_touzhu_ze));
-						m_listLog.SetItemText(0, 5, strTmp);
+						m_listLog.SetItemText(0, 4, strTmp);
 
-						strTmp.Format(_T("%.3lf"), fabs(pXJYKLogRet->f_t_zhongjiang_ze));
-						m_listLog.SetItemText(0, 6, strTmp);
+// 						strTmp.Format(_T("%.3lf"), fabs(pXJYKLogRet->f_t_zhongjiang_ze));
+// 						m_listLog.SetItemText(0, 6, strTmp);
 
 
 						DOUBLE fandian = pXJYKLogRet->f_t_fandian_ze;
@@ -738,18 +786,31 @@ bool CHuiYuanYktjDlg::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD
 						DOUBLE xiajifandian = pXJYKLogRet->f_t_xjfandian_ze;
 
 						strTmp.Format(_T("%.3lf"), fandian + xiajifandian);
+						m_listLog.SetItemText(0, 5, strTmp);
+						DOUBLE f_chongzhi_feiyong = 0.000f;
+						f_chongzhi_feiyong = pXJYKLogRet->f_t_chongzhi_ze*pXJYKLogRet->n_t_permillage/1000;
+
+						strTmp.Format(_T("%.3lf"), /*pXJYKLogRet->f_t_yingkui_ze*/(pXJYKLogRet->f_t_touzhu_ze+pXJYKLogRet->f_t_zhongjiang_ze+fandian + xiajifandian+pXJYKLogRet->f_t_huodong_ze+f_chongzhi_feiyong));
+
+						m_listLog.SetItemText(0, 6, strTmp);
+
+						//7   团队棋牌盈亏
+						strTmp.Format(_T("%.3lf"),pXJYKLogRet->f_t_qipai_yk);
 						m_listLog.SetItemText(0, 7, strTmp);
-
-						strTmp.Format(_T("%.3lf"), /*pXJYKLogRet->f_t_yingkui_ze*/(pXJYKLogRet->f_t_touzhu_ze+pXJYKLogRet->f_t_zhongjiang_ze+fandian + xiajifandian+pXJYKLogRet->f_t_huodong_ze));
-
+						//8   团队棋牌返点
+						strTmp.Format(_T("%.3lf"),pXJYKLogRet->f_t_qipai_fd);
 						m_listLog.SetItemText(0, 8, strTmp);
 
 						strTmp.Format(_T("%.3lf"), pXJYKLogRet->f_t_huodong_ze);
 						m_listLog.SetItemText(0, 9, strTmp);
 
-						strTmp.Format(_T("%.3lf"), pXJYKLogRet->f_t_tuandui_ye);
-						m_listLog.SetItemText(0, 10, strTmp);
+						strTmp.Format(_T("%.3lf"), (pXJYKLogRet->f_t_touzhu_ze+pXJYKLogRet->f_t_zhongjiang_ze+fandian + xiajifandian+pXJYKLogRet->f_t_huodong_ze+f_chongzhi_feiyong)+pXJYKLogRet->f_t_qipai_yk);
+						m_listLog.SetItemText(0, 10, strTmp);		//综合盈亏    棋牌盈亏+ 彩票盈亏
 
+						strTmp.Format(_T("%.3lf"), f_chongzhi_feiyong);
+						m_listLog.SetItemText(0, 11, strTmp);
+						strTmp.Format(_T("%.3lf"), pXJYKLogRet->f_t_tuandui_ye);
+						m_listLog.SetItemText(0, 12, strTmp);
 
 					}
 					else
@@ -783,34 +844,38 @@ bool CHuiYuanYktjDlg::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD
 									m_btnChkxj[i].ShowWindow(SW_HIDE);
 								}
 							}
-							m_btnChkxj[m_nIndex].SetWindowText(pXJYKLogRet->s_t_account);
-							m_UserID1[m_nIndex] = pXJYKLogRet->n_t_id;
+							if(pXJYKLogRet->n_t_id == m_user_id)
+							{
+								m_btnChkxj[m_nIndex].SetWindowText(pXJYKLogRet->s_t_account);
+								m_UserID1[m_nIndex] = pXJYKLogRet->n_t_id;
+
+							}
 
 						}
 
 
 						m_listLog.SetItemText(item, 1,pXJYKLogRet->s_t_account);
 
-						int t_type = pXJYKLogRet->n_t_type;
-						switch (t_type)
-						{
-						case 0: strTmp = _T("会员"); break;
-						case 1: strTmp = _T("代理"); break;
-						default: strTmp = _T(""); break;
-						}
-						m_listLog.SetItemText(item, 2, strTmp);
+// 						int t_type = pXJYKLogRet->n_t_type;
+// 						switch (t_type)
+// 						{
+// 						case 0: strTmp = _T("会员"); break;
+// 						case 1: strTmp = _T("代理"); break;
+// 						default: strTmp = _T(""); break;
+// 						}
+// 						m_listLog.SetItemText(item, 2, strTmp);
 
 						strTmp.Format(_T("%.2lf"), pXJYKLogRet->f_t_chongzhi_ze);
-						m_listLog.SetItemText(item, 3, strTmp);
+						m_listLog.SetItemText(item, 2, strTmp);
 
 						strTmp.Format(_T("%.2lf"),fabs( pXJYKLogRet->f_t_qukuan_ze));
-						m_listLog.SetItemText(item, 4, strTmp);
+						m_listLog.SetItemText(item, 3, strTmp);
 
 						strTmp.Format(_T("%.3lf"), fabs(pXJYKLogRet->f_t_touzhu_ze));
-						m_listLog.SetItemText(item, 5, strTmp);
+						m_listLog.SetItemText(item, 4, strTmp);
 
-						strTmp.Format(_T("%.3lf"), fabs(pXJYKLogRet->f_t_zhongjiang_ze));
-						m_listLog.SetItemText(item, 6, strTmp);
+// 						strTmp.Format(_T("%.3lf"), fabs(pXJYKLogRet->f_t_zhongjiang_ze));
+// 						m_listLog.SetItemText(item, 6, strTmp);
 
 
 						DOUBLE fandian = pXJYKLogRet->f_t_fandian_ze;
@@ -819,30 +884,42 @@ bool CHuiYuanYktjDlg::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD
 						DOUBLE xiajifandian = pXJYKLogRet->f_t_xjfandian_ze;
 
 						strTmp.Format(_T("%.3lf"), fandian + xiajifandian);
+						m_listLog.SetItemText(item, 5, strTmp);
+						DOUBLE f_chongzhi_feiyong = 0.000f;
+						f_chongzhi_feiyong = pXJYKLogRet->f_t_chongzhi_ze*pXJYKLogRet->n_t_permillage/1000;
+
+						strTmp.Format(_T("%.3lf"), /*pXJYKLogRet->f_t_yingkui_ze*/(pXJYKLogRet->f_t_touzhu_ze+pXJYKLogRet->f_t_zhongjiang_ze+fandian + xiajifandian+pXJYKLogRet->f_t_huodong_ze+f_chongzhi_feiyong));
+						m_listLog.SetItemText(item, 6, strTmp);
+
+						//7   团队棋牌盈亏
+						strTmp.Format(_T("%.3lf"),pXJYKLogRet->f_t_qipai_yk);
 						m_listLog.SetItemText(item, 7, strTmp);
-
-						strTmp.Format(_T("%.3lf"), /*pXJYKLogRet->f_t_yingkui_ze*/(pXJYKLogRet->f_t_touzhu_ze+pXJYKLogRet->f_t_zhongjiang_ze+fandian + xiajifandian+pXJYKLogRet->f_t_huodong_ze));
+						//8   团队棋牌返点
+						strTmp.Format(_T("%.3lf"),pXJYKLogRet->f_t_qipai_fd);
 						m_listLog.SetItemText(item, 8, strTmp);
-
 
 						strTmp.Format(_T("%.3lf"), pXJYKLogRet->f_t_huodong_ze);
 						m_listLog.SetItemText(item, 9, strTmp);
 
+						strTmp.Format(_T("%.3lf"),  (pXJYKLogRet->f_t_touzhu_ze+pXJYKLogRet->f_t_zhongjiang_ze+fandian + xiajifandian+pXJYKLogRet->f_t_huodong_ze+f_chongzhi_feiyong)+pXJYKLogRet->f_t_qipai_yk);
+						m_listLog.SetItemText(item, 10, strTmp); //综合盈亏    棋牌盈亏+ 彩票盈亏
+
+						strTmp.Format(_T("%.3lf"), f_chongzhi_feiyong);
+						m_listLog.SetItemText(item, 11, strTmp);
 						strTmp.Format(_T("%.3lf"), pXJYKLogRet->f_t_tuandui_ye);
-						m_listLog.SetItemText(item, 10, strTmp);
+						m_listLog.SetItemText(item, 12, strTmp);
 
 					}
 
 				}
-				break;
+
+				return true;
 			}
 
 		}
 	}
 	RedrawWindow(NULL,NULL,RDW_INVALIDATE|RDW_NOERASE|RDW_UPDATENOW);
 
-	//错误断言
-	ASSERT(FALSE);
 
 	return true;
 }
@@ -858,10 +935,10 @@ VOID CHuiYuanYktjDlg::SendToServer(int nSendType)
 			CMD_GP_GetXJYKTjCount GetXJYKTjCount;
 			ZeroMemory(&GetXJYKTjCount,sizeof(GetXJYKTjCount));
 
-			GetXJYKTjCount.dwUserID = m_user_id;
+			GetXJYKTjCount.dwUserID = theAccount.user_id;
 			GetXJYKTjCount.n_t_type = m_byType;
 			int xj_id = _ttoi(m_strID);
-			GetXJYKTjCount.n_t_user_id = xj_id;
+			GetXJYKTjCount.n_t_user_id =m_user_id;// xj_id;
 			lstrcpyn(GetXJYKTjCount.s_t_account,m_strAct.GetBuffer(),sizeof(GetXJYKTjCount.s_t_account));
 
 			GetXJYKTjCount.bTime = m_byTime;
@@ -869,8 +946,8 @@ VOID CHuiYuanYktjDlg::SendToServer(int nSendType)
 			CopyMemory(GetXJYKTjCount.szTimeStart ,m_tStart.Format(_T("%Y-%m-%d 00:00:00")),sizeof(GetXJYKTjCount.szTimeStart));
 			CopyMemory(GetXJYKTjCount.szTimeEnd , m_tEnd.Format(_T("%Y-%m-%d 23:59:59.999")),sizeof(GetXJYKTjCount.szTimeEnd));
 
-			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_XJYK_TJ_COUNT,&GetXJYKTjCount,sizeof(GetXJYKTjCount));
+			if(m_MissionManager!=NULL)
+				m_MissionManager->SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_XJYK_TJ_COUNT,&GetXJYKTjCount,sizeof(GetXJYKTjCount));
 			return;
 		}
 
@@ -878,31 +955,45 @@ VOID CHuiYuanYktjDlg::SendToServer(int nSendType)
 
 	if(nSendType == 2)
 	{
-		m_bGetXjYkTj = true;
-		if(m_bGetXjYkTj)
-		{
-			m_bGetXjYkTj = false;
-			CMD_GP_GetXJYKTj GetXJYKTj;
-			ZeroMemory(&GetXJYKTj,sizeof(GetXJYKTj));
+		CString strLog;
+		DWORD dwTickCount = GetTickCount();
+		strLog.Format(L"HUIYUANYKTJ  1 %d",dwTickCount);
+		OutputDebugString(strLog);
+		CMD_GP_GetXJYKTj GetXJYKTj;
+		ZeroMemory(&GetXJYKTj,sizeof(GetXJYKTj));
 
-			GetXJYKTj.dwUserID = m_user_id;
-			GetXJYKTj.n_t_type = m_byType;
-			int xj_id = _ttoi(m_strID);
-			GetXJYKTj.n_t_user_id = xj_id;
-			lstrcpyn(GetXJYKTj.s_t_account,m_strAct.GetBuffer(),sizeof(GetXJYKTj.s_t_account));
+		GetXJYKTj.dwUserID = theAccount.user_id;
+		GetXJYKTj.n_t_type = m_byType;
+		int xj_id = _ttoi(m_strID);
+		GetXJYKTj.n_t_user_id = m_user_id;//xj_id;
+		lstrcpyn(GetXJYKTj.s_t_account,m_strAct.GetBuffer(),sizeof(GetXJYKTj.s_t_account));
 
-			GetXJYKTj.nPage = m_page;
-			GetXJYKTj.nSize = page_size;
-			GetXJYKTj.bByTime = m_byTime;
-			GetXJYKTj.n_sort_type = m_cmbSort.GetCurSel();
+		GetXJYKTj.nPage = m_page;
+		GetXJYKTj.nSize = page_size;
+		GetXJYKTj.bByTime = m_byTime;
+		GetXJYKTj.n_sort_type = m_cmbSort.GetCurSel();
 
-			CopyMemory(GetXJYKTj.szTimeStart ,m_tStart.Format(_T("%Y-%m-%d 00:00:00")),sizeof(GetXJYKTj.szTimeStart));
-			CopyMemory(GetXJYKTj.szTimeEnd  , m_tEnd.Format(_T("%Y-%m-%d 23:59:59.999")),sizeof(GetXJYKTj.szTimeEnd));
+		CopyMemory(GetXJYKTj.szTimeStart ,m_tStart.Format(_T("%Y-%m-%d 00:00:00")),sizeof(GetXJYKTj.szTimeStart));
+		CopyMemory(GetXJYKTj.szTimeEnd  , m_tEnd.Format(_T("%Y-%m-%d 23:59:59.999")),sizeof(GetXJYKTj.szTimeEnd));
 
-			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_XJYK_TJ,&GetXJYKTj,sizeof(GetXJYKTj));
+		if(m_MissionManager!=NULL)
+			m_MissionManager->SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_XJYK_TJ,&GetXJYKTj,sizeof(GetXJYKTj));
+
+		m_DlgStatus.ShowStatusWindow(L"正在查询中，请稍等……");
+		return;
+	}
+	if(nSendType == 3)
+	{
+		if(m_user_id == theAccount.user_id)
 			return;
-		}
+		CMD_GetParent SetXjPeie;
+		SetXjPeie.n_t_userid = theAccount.user_id;
+		SetXjPeie.n_t_xj_id = m_user_id;
+
+		if(m_MissionManager!=NULL)
+			m_MissionManager->SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_PARENT,&SetXjPeie,sizeof(SetXjPeie));
+
+		return;
 
 	}
 
@@ -959,7 +1050,7 @@ void CHuiYuanYktjDlg::OnBnClickedBtnChkxj2()
 
 	m_byType=0;
 	//OnBnClickedBtnOk();
-	SendToServer(1);
+	//SendToServer(1);
 	SendToServer(2);
 }
 void CHuiYuanYktjDlg::OnBnClickedBtnChkxj3()
@@ -1020,7 +1111,7 @@ void CHuiYuanYktjDlg::OnBnClickedBtnChkxj4()
 	m_byType=0;
 
 	//	OnBnClickedBtnOk();
-	SendToServer(1);
+	//SendToServer(1);
 	SendToServer(2);
 
 }
@@ -1051,7 +1142,7 @@ void CHuiYuanYktjDlg::OnBnClickedBtnChkxj5()
 	m_byType=0;
 
 	//	OnBnClickedBtnOk();
-	SendToServer(1);
+	//SendToServer(1);
 	SendToServer(2);
 
 }
@@ -1083,7 +1174,7 @@ void CHuiYuanYktjDlg::OnBnClickedBtnChkxj6()
 	m_byType=0;
 
 	//	OnBnClickedBtnOk();
-	SendToServer(1);
+	//SendToServer(1);
 	SendToServer(2);
 }
 void CHuiYuanYktjDlg::OnBnClickedBtnChkxj7()
@@ -1113,7 +1204,7 @@ void CHuiYuanYktjDlg::OnBnClickedBtnChkxj7()
 	m_byType=0;
 
 	//	OnBnClickedBtnOk();
-	SendToServer(1);
+	//SendToServer(1);
 	SendToServer(2);
 }
 void CHuiYuanYktjDlg::OnBnClickedBtnChkxj8()
@@ -1143,7 +1234,7 @@ void CHuiYuanYktjDlg::OnBnClickedBtnChkxj8()
 	m_byType=0;
 
 	//	OnBnClickedBtnOk();
-	SendToServer(1);
+	//SendToServer(1);
 	SendToServer(2);
 }
 void CHuiYuanYktjDlg::OnBnClickedBtnChkxj9()
@@ -1173,7 +1264,7 @@ void CHuiYuanYktjDlg::OnBnClickedBtnChkxj9()
 	m_byType=0;
 
 	//	OnBnClickedBtnOk();
-	SendToServer(1);
+	//SendToServer(1);
 	SendToServer(2);
 }
 void CHuiYuanYktjDlg::OnBnClickedBtnChkxj10()

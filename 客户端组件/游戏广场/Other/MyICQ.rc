@@ -1,0 +1,226 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Chinese (P.R.C.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+#ifdef _WIN32
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(936)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 4, 2\r\n"
+    "#pragma code_page(936)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\MyICQ.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""l.chs\\afxres.rc""          // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\FriendButton.ico"
+IDI_MOBILE              ICON    DISCARDABLE     "res\\MobileMsgButton.ico"
+IDI_ZONE                ICON    DISCARDABLE     "res\\QQhome.ico"
+IDI_MUSIC               ICON    DISCARDABLE     "res\\QQMusicButton.ico"
+IDI_RESEARCH            ICON    DISCARDABLE     "res\\SearchButton.ico"
+IDI_PET                 ICON    DISCARDABLE     "res\\OpenPet.ico"
+IDI_MAIL                ICON    DISCARDABLE     "res\\MailButton.ico"
+IDI_STATE               ICON    DISCARDABLE     "res\\hide.ico"
+IDI_PAI                 ICON    DISCARDABLE     "res\\10019.ico"
+IDI_IT                  ICON    DISCARDABLE     "res\\BlankPanel.ico"
+IDI_HEART               ICON    DISCARDABLE     "res\\1381love.ico"
+IDI_ONE                 ICON    DISCARDABLE     "res\\11002.ico"
+IDI_ONLINE              ICON    DISCARDABLE     "res\\NetDiskButton.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_MYICQ_DIALOG DIALOGEX 0, 0, 115, 263
+STYLE WS_POPUP | WS_VISIBLE
+EXSTYLE WS_EX_APPWINDOW
+FONT 9, "宋体", 0, 0, 0x1
+BEGIN
+END
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "080404b0"
+        BEGIN
+            VALUE "Comments", "\0"
+            VALUE "CompanyName", "技术联盟\0"
+            VALUE "FileDescription", "MyICQ 原创实践作品\0"
+            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "InternalName", "MyICQ\0"
+            VALUE "LegalCopyright", "版权所有 (C) 2008\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "MyICQ.EXE\0"
+            VALUE "PrivateBuild", "\0"
+            VALUE "ProductName", "MyICQ 应用程序\0"
+            VALUE "ProductVersion", "1, 0, 0, 1\0"
+            VALUE "SpecialBuild", "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x804, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_MYICQ_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 108
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 256
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_BIT_TITLE1_LEFT     BITMAP  DISCARDABLE     "res\\BackgroundTitleLeft_Old.bmp"
+IDB_BIT_TITLE1_MID      BITMAP  DISCARDABLE     "res\\BackgroundTitleCenter.bmp"
+IDB_BIT_TITLE1_RIGHT    BITMAP  DISCARDABLE     "res\\BackgroundTitleRight.bmp"
+IDB_BIT_TITLE2_MID      BITMAP  DISCARDABLE     "res\\BackgroundTitleCenter2.bmp"
+IDB_BIT_TITLE2_RIGHT    BITMAP  DISCARDABLE     "res\\BackgroundTitleRight2.bmp"
+IDB_BIT_TITLE2_LEFT     BITMAP  DISCARDABLE     "res\\BackgroundTitleLeft2.bmp"
+IDB_BIT_CENTER_LEFT     BITMAP  DISCARDABLE     "res\\BackgroundLB.bmp"
+IDB_BIT_CENTER_RIGHT    BITMAP  DISCARDABLE     "res\\BackgroundB.bmp"
+IDB_BIT_BOTTON_LEFT     BITMAP  DISCARDABLE     "res\\ToolBarBackgroundL.bmp"
+IDB_BIT_BOTTOM_RIGHT    BITMAP  DISCARDABLE     "res\\ToolBarBackgroundR.bmp"
+IDB_BIT_BOTTOM_MID      BITMAP  DISCARDABLE     "res\\ToolBarBackgroundC.bmp"
+IDB_BIT_CLOSE_HDOWN     BITMAP  DISCARDABLE     "res\\CloseButton_Down.bmp"
+IDB_BIT_CLOSE_HOVER     BITMAP  DISCARDABLE     "res\\CloseButton_Hover.bmp"
+IDB_BIT_CLOSE_NORMAL    BITMAP  DISCARDABLE     "res\\CloseButton_Normal.bmp"
+IDB_BIT_HEAD            BITMAP  DISCARDABLE     "res\\HH.bmp"
+IDB_BIT_CRO_HDOWN       BITMAP  DISCARDABLE     "res\\ColorButton_Down.bmp"
+IDB_BIT_CRO_HOVER       BITMAP  DISCARDABLE     "res\\ColorButton_Hover.bmp"
+IDB_BIT_CRO_NORMAL      BITMAP  DISCARDABLE     "res\\ColorButton_Normal.bmp"
+IDB_BIT_MIN_HDOWN       BITMAP  DISCARDABLE     "res\\MinButton_Down.bmp"
+IDB_BIT_MIN_HOVER       BITMAP  DISCARDABLE     "res\\MinButton_Hover.bmp"
+IDB_BIT_MIN_NORMAL      BITMAP  DISCARDABLE     "res\\MinButton_Normal.bmp"
+IDB_BIT_MENU_HDOWN      BITMAP  DISCARDABLE     "res\\MenuButton_Down.bmp"
+IDB_BIT_MENU_HOVER      BITMAP  DISCARDABLE     "res\\MenuButton_Hover.bmp"
+IDB_BIT_MENU_NORMAL     BITMAP  DISCARDABLE     "res\\MenuButton_Normal.bmp"
+IDB_BIT_TAB_NORMAL      BITMAP  DISCARDABLE     "res\\barback2_normal.bmp"
+IDB_BIT_TAB_HDOWN       BITMAP  DISCARDABLE     "res\\bitmap1.bmp"
+IDB_BIT_TAB_HOVER       BITMAP  DISCARDABLE     "res\\dddd.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_HANDLE              CURSOR  DISCARDABLE     "res\\CloseButton.cur"
+#endif    // Chinese (P.R.C.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+#ifdef _WIN32
+LANGUAGE 4, 2
+#pragma code_page(936)
+#endif //_WIN32
+#include "res\MyICQ.rc2"  // non-Microsoft Visual C++ edited resources
+#include "l.chs\afxres.rc"          // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

@@ -414,7 +414,7 @@ bool CDataBaseEngineSink::OnRequestLogonMobile(DWORD dwContextID, VOID * pData, 
 	{
 		CString strLog;
 		strLog.Format(L"CXCP CDataBaseEngineSink wDataSize = %d,sizeof = %d",wDataSize,sizeof(DBR_GR_LogonMobile));
-		//OutputDebugString(strLog);
+		OutputDebugString(strLog);
 
 		//效验参数
 		ASSERT(wDataSize==sizeof(DBR_GR_LogonMobile));
@@ -468,7 +468,7 @@ bool CDataBaseEngineSink::OnRequestLogonMobile(DWORD dwContextID, VOID * pData, 
 		CTraceService::TraceString(pIException->GetExceptionDescribe(),TraceLevel_Exception);
 
 		//错误处理
-		OnLogonDisposeResult(dwContextID,DB_ERROR,TEXT("由于链接服务器出现错误，请退出后重新登录！"),true);
+		OnLogonDisposeResult(dwContextID,DB_ERROR,TEXT("游戏登录：请退出后重新登录！"),true);
 
 		return false;
 	}
@@ -1477,8 +1477,8 @@ VOID CDataBaseEngineSink::OnLogonDisposeResult(DWORD dwContextID, DWORD dwErrorC
 	//	m_GameDBAide.GetValue_String(TEXT("IpAddrDescribe"),m_LogonSuccess.szAddrDescribe,CountArray(m_LogonSuccess.szAddrDescribe));
 
 		CString strLog;
-		strLog.Format(L"\nIPAddr = %s",m_LogonSuccess.szAddrDescribe);
-		//OutputDebugString(strLog);
+		strLog.Format(L"\ndESC = %s",m_LogonSuccess.szAddrDescribe);
+		OutputDebugString(strLog);
 		//获取信息
 		lstrcpyn(m_LogonSuccess.szDescribeString,pszErrorString,CountArray(m_LogonSuccess.szDescribeString));
 

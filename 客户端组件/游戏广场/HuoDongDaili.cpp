@@ -5,16 +5,17 @@
 #include "PlatformFrame.h"
 #define  IDC_BTN_QIANDAO	100
 // CHuoDongDaliBao 对话框
-static int qiandao_begin_x = 239;
-static int qiandao_begin_y = 174;
+//新手领取按钮
+static int qiandao_begin_x = 360;
+static int qiandao_begin_y = 128;
 
-
-static int reg_start_x = 192;
-static int reg_start_y = 93;
+//消费金额信息
+static int reg_start_x = 308;
+static int reg_start_y = 58;
 static int reg_start_cx = 100;
 static int reg_start_cy = 20;
 
-static int reg_span_cx = 298;
+static int reg_span_cx = 258;
 static int reg_span_cy = 109;
 IMPLEMENT_DYNAMIC(CHuoDongDaili, CDialog)
 
@@ -23,15 +24,16 @@ CHuoDongDaili::CHuoDongDaili(CWnd* pParent /*=NULL*/)
 	, m_bmpBk(NULL)
 {
 	m_cbNewRegUser=0;
+	m_bInit=false;
 }
 
 CHuoDongDaili::~CHuoDongDaili()
 {	
 	if (m_bmpBk != NULL)
 	{
-		delete m_bmpBk;
+		SafeDelete(m_bmpBk);
 	}
-	m_font.DeleteObject();
+	//m_font.DeleteObject();
 }
 
 void CHuoDongDaili::DoDataExchange(CDataExchange* pDX)
@@ -59,17 +61,20 @@ BOOL CHuoDongDaili::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	m_bmpBk = new Bitmap(CBmpUtil::GetExePath() + _T("skin\\hd\\hd_daili.png"));
-
-	m_font.CreateFont(18, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, 
-		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH|FF_DONTCARE, _T("微软雅黑")); 
-
-	CRect rcCreate(0,0,0,0);
-	for (int i = 0;i < CountArray(m_btnQianDao);i++)
+	if(m_bmpBk == NULL)
 	{
-		m_btnQianDao[i].Create(NULL,WS_CHILD|WS_VISIBLE,rcCreate,this,IDC_BTN_QIANDAO+i);
-		m_btnQianDao[i].SetImage(CBmpUtil::GetExePath() + _T("skin\\hd\\btn_lingjiang2.png"));
-		//m_btnQianDao[i].EnableWindow(FALSE);
+		m_bmpBk = new Bitmap(CBmpUtil::GetExePath() + _T("skin\\hd\\hd_daili.png"));
+
+		m_font.CreateFont(18, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, 
+			OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH|FF_DONTCARE, _T("微软雅黑")); 
+
+		CRect rcCreate(0,0,0,0);
+		for (int i = 0;i < CountArray(m_btnQianDao);i++)
+		{
+			m_btnQianDao[i].Create(NULL,WS_CHILD|WS_VISIBLE,rcCreate,this,IDC_BTN_QIANDAO+i);
+			m_btnQianDao[i].SetImage(CBmpUtil::GetExePath() + _T("skin\\hd\\btn_lingjiang2.png"));
+			//m_btnQianDao[i].EnableWindow(FALSE);
+		}
 	}
 	AdjustLingjiang();
 	m_nToday = 0;
@@ -96,7 +101,7 @@ void CHuoDongDaili::OnPaint()
 
 	cacheDC.SetBkMode(TRANSPARENT);
 
-	COLORREF crTextColor = cacheDC.SetTextColor(RGB(88,78,131));
+	COLORREF crTextColor = cacheDC.SetTextColor(RGB(250,250,250));
 	CFont* pOldFont = cacheDC.SelectObject(&m_font);
 	CString str;
 	DOUBLE fScore[9] = {488.00,988.00,1988.00,5800.00,8800.00,9888.00,14888.00,16888.00,22888.00};
@@ -141,7 +146,7 @@ void CHuoDongDaili::AdjustLingjiang()
 	int n_space_x = 0;
 	int n_space_y = 0;
 
-	n_space_x =  298;
+	n_space_x =  258;
 	n_space_y =  109;
 	int nWidth = 83;
 	int nHeight = 28;
@@ -201,6 +206,15 @@ void CHuoDongDaili::OnBnClickedLingJiang()
 void CHuoDongDaili::OnShowWindow(BOOL bShow, UINT nStatus)
 {
 	CDialog::OnShowWindow(bShow, nStatus);
+	for (int i = 0;i < CountArray(m_btnQianDao);i++)
+	{
+		if(!m_bInit)
+		{
+			m_btnQianDao[i].SetImage(CBmpUtil::GetExePath() + _T("skin\\hd\\btn_lingjiang3.png"));
+			m_bInit=true;
+		}
+		m_btnQianDao[i].EnableWindow(FALSE);
+	}
 
 	if (bShow)
 	{
@@ -233,8 +247,8 @@ bool CHuoDongDaili::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD w
 				
 				for (int i = 0;i < CountArray(m_btnQianDao);i++)
 				{
-					m_btnQianDao[i].EnableWindow(FALSE);
 					m_btnQianDao[i].SetImage(CBmpUtil::GetExePath() + _T("skin\\hd\\btn_lingjiang3.png"));
+					m_btnQianDao[i].EnableWindow(FALSE);
 				}
 			//	MessageBox(L"EnableWindow");
 				if(m_cbNewRegUser == 1)
@@ -303,7 +317,7 @@ bool CHuoDongDaili::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD w
 		}
 	}
 	RedrawWindow(NULL,NULL,RDW_INVALIDATE|RDW_NOERASE|RDW_UPDATENOW);
-
+	return true;
 	//错误断言
 	ASSERT(FALSE);
 
@@ -320,7 +334,8 @@ VOID CHuoDongDaili::SendToServer(int nSendType)
 		GetDailiHuikui.n_t_userid = theAccount.user_id;
 
 		CPlatformFrame* pPlatformFrame = CPlatformFrame::GetInstance();
-		pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_DAILI_HUIKUI,&GetDailiHuikui,sizeof(GetDailiHuikui));
+		if(pPlatformFrame!=NULL)
+			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_DAILI_HUIKUI,&GetDailiHuikui,sizeof(GetDailiHuikui));
 		return;
 	}
 
@@ -332,7 +347,8 @@ VOID CHuoDongDaili::SendToServer(int nSendType)
 		DailiLingjiang.n_t_userid = theAccount.user_id;
 
 		CPlatformFrame* pPlatformFrame = CPlatformFrame::GetInstance();
-		pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_DAILI_LJ,&DailiLingjiang,sizeof(DailiLingjiang));
+		if(pPlatformFrame!=NULL)
+			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_DAILI_LJ,&DailiLingjiang,sizeof(DailiLingjiang));
 		return;
 
 	}

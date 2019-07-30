@@ -157,7 +157,8 @@ VOID CServerListData::OnEventListFinish()
 {
 	//事件通知
 	ASSERT(m_pIServerListDataSink!=NULL);
-	if (m_pIServerListDataSink!=NULL) m_pIServerListDataSink->OnGameItemFinish();
+	if (m_pIServerListDataSink!=NULL) 
+		m_pIServerListDataSink->OnGameItemFinish();
 
 	return;
 }

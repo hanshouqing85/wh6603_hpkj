@@ -15,7 +15,8 @@
 	#pragma comment(lib,"Compress\\Plataform.lib")
 #else
 	#pragma comment(lib,"Version")
-	#pragma comment(lib,"Compress\\ZLibD.lib")
+#pragma comment(lib,"Compress\\ZLibD.lib")
+#pragma comment(lib,"Compress\\PlataformD.lib")
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////

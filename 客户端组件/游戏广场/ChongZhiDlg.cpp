@@ -7,60 +7,56 @@
 //#define new DEBUG_NEW
 //#endif
 
-static const int bk_chongzhi_x = 220;
-static const int bk_chongzhi_y = 50;
-static const int bk_chongzhi_width = 725;
-static const int bk_chongzhi_height = 415;
 
-static const int logo_chongzhi_x = 0;
-static const int logo_chongzhi_y = 0;
-static const int logo_chongzhi_width = 220;
-static const int logo_chongzhi_height = 617;
+
 
 //银行按钮数据
-static const int btn_yinhang_width = 150;
+static const int bnt_left			= 216;				//充值方式按钮X
+static const int btn_yinhang_y		= 140+90;			//充值方式按钮Y
+static const int btn_yinhang_width	= 150;
 static const int btn_yinhang_height = 34;
-static const int btn_yinhang_y = 115;
-static const int btn_space = 150;
-static const int bnt_left = 143;
+static const int btn_space			= 140;
 
-//工商银行
-static const int btn_gongshang_x = bnt_left;
-//支付宝
-static const int btn_zhifubao_x = bnt_left + btn_space * 1;
-//财付通
-static const int btn_caifutong_x = bnt_left + btn_space * 2;
-//建设银行
-static const int btn_jianshe_x = bnt_left + btn_space * 3;
-//农业银行
-static const int btn_nongye_x = bnt_left + btn_space * 4;
+//工商银行1
+static const int btn_gongshang_x	= bnt_left;
+//支付宝2
+static const int btn_zhifubao_x		= bnt_left + btn_space * 1;
+//财付通3
+static const int btn_caifutong_x	= bnt_left + btn_space * 2;
+//建设银行4
+static const int btn_jianshe_x		= bnt_left + btn_space * 3;
+//农业银行5
+static const int btn_nongye_x		= bnt_left + btn_space * 4;
+
 
 //打开网银充值按钮数据
-static const int	btn_chongzhipage_x = 430;
-static const int	btn_chongzhipage_y = 505;
-static const int	btn_chongzhipage_width = 175;
-static const int	btn_chongzhipage_height = 50;
+static const int	btn_chongzhipage_x = 520;
+static const int	btn_chongzhipage_y = 450;
+static const int	btn_chongzhipage_width  = 290;
+static const int	btn_chongzhipage_height = 66;
 
 //复制按钮数据
-static const int btn_copy_x = 710;
-static const int btn_copy_width = 73;
-static const int btn_copy_height = 29;
+static const int btn_copy_x			= 838;
+static const int btn_copy_width		= 105;
+static const int btn_copy_height	= 36;
 //复制账号
-static const int btn_cp_zhanghu_y = 191;
+static const int btn_cp_zhanghu_y	= 198+90;
 //复制开户人
-static const int btn_cp_kaihuren_y = 237;
+static const int btn_cp_kaihuren_y	= 237+90;
 //复制开户银行
-static const int btn_cp_yinhang_y = 280;
+static const int btn_cp_yinhang_y	= 277+90;
 //复制游戏ID
-static const int btn_cp_gameid_y = 324;
+static const int btn_cp_gameid_y	= 317+90;
 
-//账户信息数据
-static const CRect rc_zhanghu(407, 160, 650, 255);
-static const CRect rc_kaihuren(407, 207, 650, 300);
-static const CRect rc_kaihuhang(407,248, 650, 346);
-static const CRect rc_gameid(407, 297, 650, 316+70);
-static const CRect rc_invalidate(225, 190, 920, 768);
-static const CRect rc_BeiZhu(225, 368, 920, 768);
+//需要刷新的账户信息数据
+static const CRect rc_invalidate(225, btn_yinhang_y+30, 950, 768);
+
+static const CRect rc_zhanghu(525,	btn_cp_zhanghu_y,	800, btn_cp_zhanghu_y +30);
+static const CRect rc_kaihuren(525, btn_cp_kaihuren_y,	800, btn_cp_kaihuren_y+30);
+static const CRect rc_kaihuhang(525,btn_cp_yinhang_y,	800, btn_cp_yinhang_y +30);
+static const CRect rc_gameid(525,	btn_cp_gameid_y,	800, btn_cp_gameid_y+ 30);
+
+static const CRect rc_BeiZhu(350, 550, 950, 768);			//备注信息区域
 
 IMPLEMENT_DYNAMIC(CChongZhiDlg, CDialog)
 
@@ -73,6 +69,7 @@ CChongZhiDlg::CChongZhiDlg(CWnd* pParent /*=NULL*/)
 {
 	m_bGetChongzhiType = false;
 	m_bGetAllYinHangName = false;
+	m_cbChongzhiType=0;
 }
 
 CChongZhiDlg::~CChongZhiDlg()
@@ -125,8 +122,17 @@ BEGIN_MESSAGE_MAP(CChongZhiDlg, CDialog)
 	ON_BN_CLICKED(IDC_BTN_CP_YINHANG, &CChongZhiDlg::OnBnClickedBtnCpYinhang)
 	ON_BN_CLICKED(IDC_BTN_CP_GANEID, &CChongZhiDlg::OnBnClickedBtnCpGaneid)
 	ON_BN_CLICKED(IDC_BTN_CLOSE, &CChongZhiDlg::OnBnClickedBtnClose)
+
+	ON_WM_LBUTTONDOWN()
+
 END_MESSAGE_MAP()
 
+void CChongZhiDlg::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	PostMessage(WM_NCLBUTTONDOWN,HTCAPTION,MAKELPARAM(point.x,   point.y));
+
+	CDialog::OnLButtonDown(nFlags, point);
+}
 
 // CChongzhiDlg 消息处理程序
 void CChongZhiDlg::OnShowWindow(BOOL bShow, UINT nStatus)
@@ -152,14 +158,21 @@ BOOL CChongZhiDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	// TODO:  在此添加额外的初始化
-	m_bmpBk = new Bitmap(CBmpUtil::GetExePath() + _T("skin\\n_bg1.png"));
-	m_bmpChongZhiBk = new Bitmap(CBmpUtil::GetExePath() + _T("skin\\czzx_bg.png"));
+	if(m_bmpBk == NULL)
+	{
+		m_bmpBk = new Bitmap(CBmpUtil::GetExePath() + _T("skin\\n_bg.png"));
+		m_bmpChongZhiBk = new Bitmap(CBmpUtil::GetExePath() + _T("skin\\czzx_bg.png"));
+		m_font.CreateFont(22,0,0,0,FW_NORMAL,0,0,0,0,0,0,0,FF_SWISS,TEXT("微软雅黑"));
+		m_ImgTitle.LoadImage(CBmpUtil::GetExePath() + _T("skin\\BTzhgl_03.png"));
+
+	}
 
 	InitBtns();
 	m_ChongZhiType=CZ_GONGSHANG;
-	m_font.CreateFont(22,0,0,0,FW_NORMAL,0,0,0,0,0,0,0,FF_SWISS,TEXT("微软雅黑"));
 
 	m_btnClose.SetImage(CBmpUtil::GetExePath() + _T("skin\\return_bt.png"));
+	SetWindowPos(NULL,0,0,m_bmpBk->GetWidth(),m_bmpBk->GetHeight(),SWP_NOMOVE|SWP_NOACTIVATE|SWP_NOZORDER);
+
 	//设置按钮初始状态
 	return TRUE;  
 }
@@ -175,21 +188,28 @@ void CChongZhiDlg::OnPaint()
 	CFont* pOldFont = dc.SelectObject(&m_font);
 
 	graphics.DrawImage(m_bmpBk, Rect(0, 0, rect.Width(), rect.Height()),0, 0, m_bmpBk->GetWidth(), m_bmpBk->GetHeight(), UnitPixel);
-	graphics.DrawImage(m_bmpChongZhiBk, Rect(15, 15,   m_bmpChongZhiBk->GetWidth(), m_bmpChongZhiBk->GetHeight()), 
+	graphics.DrawImage(m_bmpChongZhiBk, Rect(23, 103,   m_bmpChongZhiBk->GetWidth(), m_bmpChongZhiBk->GetHeight()), 
 		0, 0, m_bmpChongZhiBk->GetWidth(), m_bmpChongZhiBk->GetHeight(), UnitPixel);
 // 	graphics.DrawImage(m_bmpChongZhiLogo, Rect(logo_chongzhi_x, logo_chongzhi_y, logo_chongzhi_width, logo_chongzhi_height), 
 // 		0, 0, m_bmpChongZhiLogo->GetWidth(), m_bmpChongZhiLogo->GetHeight(), UnitPixel);
+	int nX = (rect.Width()-m_ImgTitle.GetWidth())/2+5;
+	m_ImgTitle.DrawImage(&dc,nX,30);
 
  	int oldBkMode = dc.SetBkMode(TRANSPARENT);
 
-	COLORREF crTextColor=dc.SetTextColor(RGB(255,0,0));
+	COLORREF crTextColor=dc.SetTextColor(RGB(255,255,255));
+	DrawMultLineText(&dc,&CRect(rc_BeiZhu),5, DT_LEFT|DT_WORDBREAK,m_chongzhi.m_strRemark);
+
 // 	switch (m_ChongZhiType) {
 // 	case CZ_GONGSHANG:
 // 		{
-			CString strBeizhu;
-			strBeizhu.Format(L"最低充值50元起，单笔最高充值10万元。");
+// 			CString strBeizhu;
+// 			strBeizhu.Format(L"操作说明：\
+// 				打开支付宝——转账——转到银行卡，填写收款人姓名,卡号,选择银行,填写充值金额（最低充值50元，最高充值50000元），点击下一步进行付款操作。一般2分钟内到账，请及时联系在线客服处理。\
+// \
+// 				注意：收款账号不定期更换，请每次充值前务必打开核实最新收款信息。\
+// ");
 
-			DrawMultLineText(&dc,&CRect(rc_BeiZhu),5, DT_LEFT|DT_WORDBREAK,strBeizhu);
 // 			strBeizhu.Format(L"2、收款账户名和收款账号会不定期更换，请在获取最新信息后充\r\n值，否则充值将无法到账。");
 // 
 // 			CRect BeiZhu;
@@ -265,11 +285,11 @@ void CChongZhiDlg::OnPaint()
 // 	default:
 // 		break;
 // 	}
-	dc.SetTextColor(RGB(88, 78, 77));
+	dc.SetTextColor(RGB(114,114,114));
 	dc.DrawText(m_chongzhi.m_strZhangHu, &CRect(rc_zhanghu), DT_CENTER|DT_VCENTER|DT_SINGLELINE);
 	dc.DrawText(m_chongzhi.m_strKaiHuRen, &CRect(rc_kaihuren), DT_CENTER|DT_VCENTER|DT_SINGLELINE);
 	dc.DrawText(m_chongzhi.m_strKaiHuHang, &CRect(rc_kaihuhang), DT_CENTER|DT_VCENTER|DT_SINGLELINE);
-	if(m_ChongZhiType != CZ_CAIFUTONG)
+	//if(m_ChongZhiType != CZ_CAIFUTONG)
 	{
 		CString sUserID;
 		sUserID.Format(_T("%d"), theAccount.user_id);
@@ -330,7 +350,7 @@ void CChongZhiDlg::OnSize(UINT nType, int cx, int cy)
 	}
 	if(m_btnClose.GetSafeHwnd() != NULL)
 	{
-		m_btnClose.SetWindowPos(NULL, cx - m_btnClose.Width() - 9, -1, m_btnClose.Width(), m_btnClose.Height(), SWP_NOZORDER);
+		m_btnClose.SetWindowPos(NULL, cx - m_btnClose.Width() - 9-15, 24, m_btnClose.Width(), m_btnClose.Height(), SWP_NOZORDER);
 	}
 	if(m_btnGongShang.GetSafeHwnd() != NULL)
 	{
@@ -398,15 +418,17 @@ void CChongZhiDlg::OnBnClickedBtnGongshang()
 		m_btnCPGameID.ShowWindow(SW_SHOW);
 		m_btnChongZhiPage.SetWindowPos(NULL, btn_chongzhipage_x, btn_chongzhipage_y, btn_chongzhipage_width, btn_chongzhipage_height, SWP_NOZORDER);
 
-		Invalidate(FALSE);
+		//Invalidate(FALSE);
 	}
 
 
 	m_ChongZhiType = CZ_GONGSHANG;
+	m_chongzhi.m_nTypeID = m_ChongZhiPage[m_ChongZhiType].m_nTypeID;
 	m_chongzhi.m_strKaiHuHang = m_ChongZhiPage[m_ChongZhiType].m_strKaiHuHang;
 	m_chongzhi.m_strKaiHuRen = m_ChongZhiPage[m_ChongZhiType].m_strKaiHuRen;
 	m_chongzhi.m_strZhangHu = m_ChongZhiPage[m_ChongZhiType].m_strZhangHu;
 	m_chongzhi.m_strWeb = m_ChongZhiPage[m_ChongZhiType].m_strWeb;
+	m_chongzhi.m_strRemark= m_ChongZhiPage[m_ChongZhiType].m_strRemark;
 
 	RedrawWindow(&rc_invalidate,NULL,RDW_INVALIDATE|RDW_NOERASE|RDW_UPDATENOW);
 }
@@ -428,14 +450,16 @@ void CChongZhiDlg::OnBnClickedBtnZhifubao()
 		m_btnCPGameID.ShowWindow(SW_SHOW);
 		m_btnChongZhiPage.SetWindowPos(NULL, btn_chongzhipage_x, btn_chongzhipage_y, btn_chongzhipage_width, btn_chongzhipage_height, SWP_NOZORDER);
 
-		Invalidate(FALSE);
+//		Invalidate(FALSE);
 	}
 
 	m_ChongZhiType=CZ_ZHIFUBAO;
+	m_chongzhi.m_nTypeID = m_ChongZhiPage[m_ChongZhiType].m_nTypeID;
 	m_chongzhi.m_strKaiHuHang = m_ChongZhiPage[m_ChongZhiType].m_strKaiHuHang;
 	m_chongzhi.m_strKaiHuRen = m_ChongZhiPage[m_ChongZhiType].m_strKaiHuRen;
 	m_chongzhi.m_strZhangHu = m_ChongZhiPage[m_ChongZhiType].m_strZhangHu;
 	m_chongzhi.m_strWeb = m_ChongZhiPage[m_ChongZhiType].m_strWeb;
+	m_chongzhi.m_strRemark= m_ChongZhiPage[m_ChongZhiType].m_strRemark;
 
 	RedrawWindow(&rc_invalidate,NULL,RDW_INVALIDATE|RDW_NOERASE|RDW_UPDATENOW);
 
@@ -450,23 +474,31 @@ void CChongZhiDlg::OnBnClickedBtnCaifutong()
 	m_btnJianShe.SetPushed(false);
 	m_btnNongYe.SetPushed(false);
 
-	if(m_ChongZhiType != CZ_CAIFUTONG)
+	if(m_ChongZhiType == CZ_CAIFUTONG)
 	{
-		m_bmpChongZhiBk = new Bitmap(CBmpUtil::GetExePath() + _T("skin\\czzx_bg1.png"));
-		m_btnChongZhiPage.SetWindowPos(NULL, btn_chongzhipage_x, btn_chongzhipage_y-200, btn_chongzhipage_width, btn_chongzhipage_height, SWP_NOZORDER);
+// 		m_bmpChongZhiBk = new Bitmap(CBmpUtil::GetExePath() + _T("skin\\czzx_bg1.png"));
+// 		m_btnChongZhiPage.SetWindowPos(NULL, btn_chongzhipage_x, btn_chongzhipage_y-200, btn_chongzhipage_width, btn_chongzhipage_height, SWP_NOZORDER);
+		m_bmpChongZhiBk = new Bitmap(CBmpUtil::GetExePath() + _T("skin\\czzx_bg.png"));
+		m_btnCPYinHang.ShowWindow(SW_SHOW);
+		m_btnCPKaiHuRen.ShowWindow(SW_SHOW);
+		m_btnCPZhangHu.ShowWindow(SW_SHOW);
+		m_btnCPGameID.ShowWindow(SW_SHOW);
+		m_btnChongZhiPage.SetWindowPos(NULL, btn_chongzhipage_x, btn_chongzhipage_y, btn_chongzhipage_width, btn_chongzhipage_height, SWP_NOZORDER);
 
 	//	Invalidate(FALSE);
 	}
 	m_ChongZhiType=CZ_CAIFUTONG;
-	m_chongzhi.m_strKaiHuHang.Empty();
-	m_chongzhi.m_strKaiHuRen.Empty();
-	m_chongzhi.m_strZhangHu.Empty();
+	m_chongzhi.m_nTypeID = m_ChongZhiPage[m_ChongZhiType].m_nTypeID;
+	m_chongzhi.m_strKaiHuHang = m_ChongZhiPage[m_ChongZhiType].m_strKaiHuHang;
+	m_chongzhi.m_strKaiHuRen = m_ChongZhiPage[m_ChongZhiType].m_strKaiHuRen;
+	m_chongzhi.m_strZhangHu = m_ChongZhiPage[m_ChongZhiType].m_strZhangHu;
 	m_chongzhi.m_strWeb = m_ChongZhiPage[m_ChongZhiType].m_strWeb;
+	m_chongzhi.m_strRemark= m_ChongZhiPage[m_ChongZhiType].m_strRemark;
 
-	m_btnCPYinHang.ShowWindow(SW_HIDE);
-	m_btnCPKaiHuRen.ShowWindow(SW_HIDE);
-	m_btnCPZhangHu.ShowWindow(SW_HIDE);
-	m_btnCPGameID.ShowWindow(SW_HIDE);
+// 	m_btnCPYinHang.ShowWindow(SW_HIDE);
+// 	m_btnCPKaiHuRen.ShowWindow(SW_HIDE);
+// 	m_btnCPZhangHu.ShowWindow(SW_HIDE);
+// 	m_btnCPGameID.ShowWindow(SW_HIDE);
 	RedrawWindow(&rc_invalidate,NULL,RDW_INVALIDATE|RDW_NOERASE|RDW_UPDATENOW);
 }
 
@@ -487,15 +519,17 @@ void CChongZhiDlg::OnBnClickedBtnJianshe()
 		m_btnCPGameID.ShowWindow(SW_SHOW);
 		m_btnChongZhiPage.SetWindowPos(NULL, btn_chongzhipage_x, btn_chongzhipage_y, btn_chongzhipage_width, btn_chongzhipage_height, SWP_NOZORDER);
 
-		Invalidate(FALSE);
+		//Invalidate(FALSE);
 	}
 
 
 	m_ChongZhiType = CZ_JIANSHE;
+	m_chongzhi.m_nTypeID = m_ChongZhiPage[m_ChongZhiType].m_nTypeID;
 	m_chongzhi.m_strKaiHuHang = m_ChongZhiPage[m_ChongZhiType].m_strKaiHuHang;
 	m_chongzhi.m_strKaiHuRen = m_ChongZhiPage[m_ChongZhiType].m_strKaiHuRen;
 	m_chongzhi.m_strZhangHu = m_ChongZhiPage[m_ChongZhiType].m_strZhangHu;
 	m_chongzhi.m_strWeb = m_ChongZhiPage[m_ChongZhiType].m_strWeb;
+	m_chongzhi.m_strRemark= m_ChongZhiPage[m_ChongZhiType].m_strRemark;
 
 	//ShellExecute(NULL, _T("open"), m_chongzhi.m_strWeb, NULL, NULL, SW_SHOWNORMAL);
 
@@ -522,14 +556,16 @@ void CChongZhiDlg::OnBnClickedBtnNongye()
 		m_btnCPGameID.ShowWindow(SW_SHOW);
 		m_btnChongZhiPage.SetWindowPos(NULL, btn_chongzhipage_x, btn_chongzhipage_y, btn_chongzhipage_width, btn_chongzhipage_height, SWP_NOZORDER);
 
-		Invalidate(FALSE);
+		//Invalidate(FALSE);
 	}
 
 	m_ChongZhiType = CZ_NONGYE;
+	m_chongzhi.m_nTypeID = m_ChongZhiPage[m_ChongZhiType].m_nTypeID;
 	m_chongzhi.m_strKaiHuHang = m_ChongZhiPage[m_ChongZhiType].m_strKaiHuHang;
 	m_chongzhi.m_strKaiHuRen = m_ChongZhiPage[m_ChongZhiType].m_strKaiHuRen;
 	m_chongzhi.m_strZhangHu = m_ChongZhiPage[m_ChongZhiType].m_strZhangHu;
 	m_chongzhi.m_strWeb = m_ChongZhiPage[m_ChongZhiType].m_strWeb;
+	m_chongzhi.m_strRemark= m_ChongZhiPage[m_ChongZhiType].m_strRemark;
 
 	RedrawWindow(&rc_invalidate,NULL,RDW_INVALIDATE|RDW_NOERASE|RDW_UPDATENOW);
 
@@ -537,6 +573,7 @@ void CChongZhiDlg::OnBnClickedBtnNongye()
 
 void CChongZhiDlg::OnBnClickedBtnChongzhiPage()
 {
+
 	char szYInHang[1024] = "";
 	switch (m_ChongZhiType) {
 	case CZ_GONGSHANG:
@@ -548,7 +585,7 @@ void CChongZhiDlg::OnBnClickedBtnChongzhiPage()
 	case CZ_CAIFUTONG:
 		{
 			CString strWeb;
-			strWeb.Format(L"%s?userid=%d",m_chongzhi.m_strWeb,theAccount.user_id);
+			strWeb.Format(L"%s?userid=%d&tid=%ld",m_chongzhi.m_strWeb,theAccount.user_id, m_chongzhi.m_nTypeID);
 			//ShellExecute(NULL, _T("open"), _T("IEXPLORE"), strWeb, NULL, SW_SHOWNORMAL);
 			ShellExecute(NULL, _T("open"), strWeb, NULL, NULL, SW_SHOWNORMAL);
 			return;
@@ -566,8 +603,9 @@ void CChongZhiDlg::OnBnClickedBtnChongzhiPage()
 		break;
 	}
 
+
 	CString strNag;
-	strNag.Format(L"%s?userid=%d",m_chongzhi.m_strWeb,theAccount.user_id);
+	strNag.Format(L"%s?userid=%d&tid=%ld",m_chongzhi.m_strWeb,theAccount.user_id, m_chongzhi.m_nTypeID);
 
 	//ShellExecute(NULL, _T("open"), _T("IEXPLORE"), m_chongzhi.m_strWeb, NULL, SW_SHOWNORMAL);
 	ShellExecute(NULL, _T("open"), strNag, NULL, NULL, SW_SHOWNORMAL);
@@ -662,12 +700,12 @@ void CChongZhiDlg::OnBnClickedBtnCpYinhang()
 }
 void CChongZhiDlg::OnBnClickedBtnClose()
 {
-	CWnd* pParent = GetParent();
-	if(pParent!=NULL)
-	{
-		pParent->PostMessage(IDM_RETURN_GAME,1,0);
-	}
-	
+// 	CWnd* pParent = GetParent();
+// 	if(pParent!=NULL)
+// 	{
+// 		pParent->PostMessage(IDM_RETURN_GAME,1,0);
+// 	}
+	CDialog::OnCancel();	
 	return;
 }
 void CChongZhiDlg::OnBnClickedBtnCpGaneid()
@@ -782,11 +820,12 @@ bool CChongZhiDlg::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wD
 
 				for (int i = 0;i < 5;i++)
 				{
+					m_ChongZhiPage[i].m_nTypeID=0;
 					m_ChongZhiPage[i].m_strKaiHuHang.Empty();
 					m_ChongZhiPage[i].m_strKaiHuRen.Empty();
 					m_ChongZhiPage[i].m_strZhangHu.Empty();
 					m_ChongZhiPage[i].m_strWeb.Empty();
-
+					m_ChongZhiPage[i].m_strRemark.Empty();
 				}
 
 				m_btnGongShang.ShowWindow(SW_HIDE);
@@ -797,16 +836,23 @@ bool CChongZhiDlg::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wD
 				WORD wCount = wDataSize/sizeof(CMD_GP_GetChongzhiTypeRet);
 
 				int m_nFirstType = -1;
-
+				wCount = min(wCount,5);
 				for(int i = 0;i < wCount;i++)
 				{
 					CMD_GP_GetChongzhiTypeRet *pChongzhiTypeRet = ((CMD_GP_GetChongzhiTypeRet*)pData+i);
 
-
+					m_ChongZhiPage[i].m_nTypeID = pChongzhiTypeRet->n_t_typeid;
 					m_ChongZhiPage[i].m_strKaiHuHang.Format(L"%s",pChongzhiTypeRet->s_t_yinhang);
 					m_ChongZhiPage[i].m_strKaiHuRen.Format(L"%s",pChongzhiTypeRet->s_t_kaihuren);
 					m_ChongZhiPage[i].m_strZhangHu.Format(L"%s",pChongzhiTypeRet->s_t_zhanghao);
 					m_ChongZhiPage[i].m_strWeb.Format(L"%s",pChongzhiTypeRet->s_t_web);
+					m_ChongZhiPage[i].m_strRemark.Format(L"%s",pChongzhiTypeRet->s_t_remark);
+
+					m_ChongZhiPage[i].m_strKaiHuHang.Trim();
+					m_ChongZhiPage[i].m_strKaiHuRen.Trim();
+					m_ChongZhiPage[i].m_strZhangHu.Trim();
+					m_ChongZhiPage[i].m_strWeb.Trim();
+					m_ChongZhiPage[i].m_strRemark.Trim();
 
 					bool bEnable = IsEnableZhanghu(m_ChongZhiPage[i]);
  					if(!bEnable)
@@ -887,6 +933,9 @@ bool CChongZhiDlg::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wD
 				default:
 					break;
 				}
+
+				//刷新备注区域
+//				InvalidateRect(&rc_BeiZhu);
 				return true;
 			}
 			break;
@@ -928,8 +977,8 @@ VOID CChongZhiDlg::SendToServer(BYTE nSendType)
 			GetChongzhiType.nUserID = theAccount.user_id;
 			GetChongzhiType.cbType = m_cbChongzhiType;
 
-			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_CHONG_ZHI_TYPE,&GetChongzhiType,sizeof(GetChongzhiType));
+			if(m_MissionManager!=NULL)
+				m_MissionManager->SendData(MDM_GP_USER_SERVICE,SUB_GP_CHONG_ZHI_TYPE,&GetChongzhiType,sizeof(GetChongzhiType));
 			m_bGetChongzhiType = false;
 		}
 		return;

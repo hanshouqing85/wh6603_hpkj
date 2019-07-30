@@ -220,7 +220,7 @@ bool CTableFrameSink::OnEventGameStart()
 	IServerUserItem* pIBankerServerUserItem = NULL;
 	if ( m_wCurrentBanker == INVALID_CHAIR )
 	{
-		m_lBankerScore = 1000000000;
+		m_lBankerScore = 10000;
 		m_GameRecord.AppendFormat(TEXT("ϵͳׯ,%I64d#"),m_lBankerScore);
 	}
 	else

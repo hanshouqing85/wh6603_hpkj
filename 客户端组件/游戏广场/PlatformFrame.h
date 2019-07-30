@@ -35,11 +35,14 @@
 #include <vector>
 using namespace std;
 #include "Other/GfxOutBarCtrl.h"
-
+#include "PlatformMessage.h"
+#include "QMTab.h"
 //////////////////////////////////////////////////////////////////////////////////
 
 //热键定义
-#define IDI_HOT_KEY_BOSS			0x0100								//老板热键
+#define IDI_HOT_KEY_BOSS					0x0100								//老板热键
+#define WM_QMTAB_CALLBACKMSG				WM_USER + 161
+
 //////////////////////////////////////////////////////////////////////////////////
 
 //平台框架
@@ -60,10 +63,16 @@ protected:
 	int								m_nTopNewY;
 	CDlgStatus						m_DlgStatus;
 	bool							m_bCreate;
+	bool							m_bInitGameKind;
+
+	CQMTab							m_qmTab;
+	CImageList						m_ImgList;
+	CBitmap							m_bitmap;
+
 	//取消连接
-	virtual VOID OnStatusCancel();
-	DWORD m_dwTickCount;
-	
+	virtual		VOID	OnStatusCancel();
+	DWORD							m_dwTickCount;
+	bool							m_bShowNetAlive;
 	//控制按钮
 public:
 	CSkinButton						m_btMin;							//最小按钮
@@ -72,10 +81,14 @@ public:
 	CSkinButton						m_btNet;							//信号按钮
 	CSkinButton						m_btNavigation[7];					//导航按钮
 	CSkinButton						m_btHome;							//首页按钮
-	static	UINT	GetLuckNumber(LPVOID lpParam);
+	CSkinButton						m_btPlazaNotice;							//公告按钮
+	CSkinButton						m_btPlazaMessage;							//公告按钮
+
+	CImageButton					m_btn_go_website;					//打开网页版
+
 	CTiShiDlg						m_tishiDlg;
 	bool							m_bKillSocket;						//强制下线
-	CGridCtrl						m_Grid;				//新闻公告
+	CGridCtrl						m_Grid;								//新闻公告
 	bool							m_bLogonFail;
 	bool							m_bSound;
 	bool							m_bShutdowSocket;					//是否关闭网络
@@ -99,12 +112,13 @@ protected:
 	bool							m_bGetNews;
 	bool							m_bGetTime;						//获取系统时间
 	bool							m_bQuitGame;					//退出
-	CZhangHuDlg					m_dlgUserAccount;					//用户账户
-	CHuiYuanDlg					m_dlgHuiyuan;						//会员管理
-	CChongZhiDlg				m_dlgChongzhi;						//充值
-	CHuoDongDlg					m_dlgHuodong;						//活动
-	CQuKuanDlg					m_dlgQukuan;						//取款
-	CTzhLogDlg			m_dlgTouZhu;						//投注记录
+	CZhangHuDlg						m_dlgUserAccount;					//用户账户
+	CHuiYuanDlg						m_dlgHuiyuan;						//会员管理
+	CChongZhiDlg					m_dlgChongzhi;						//充值
+	CHuoDongDlg						m_dlgHuodong;						//活动
+	CQuKuanDlg						m_dlgQukuan;						//取款
+	CTzhLogDlg						m_dlgTouZhu;						//投注记录
+	CPlatformMessage				m_dlgPlatformMessage;		//平台消息
 	//任务组件
 protected:
 	CMissionList					m_MissionList;						//列表任务
@@ -123,14 +137,14 @@ protected:
 	CEncirclePNG					m_FrameEncircle;					//框架资源
 	//CEncircleBMP					m_AfficheEncircle;					//框架资源
 	CEncircleBMP					m_ItemFrameEncircle;				//框架资源
-	vector<wstring>		m_vecTitle;
-	bool				m_bGame;			//是否是游戏画面，true游戏，false管理
-	int							m_nNewsYPos;	//新闻滚动时的Y坐标
-	int						m_nTop;
-	int							m_nreduce;
-	int							m_nNewsHeight;
-	CFont m_top8Font;
-	CMarkup m_xml;
+	vector<wstring>					m_vecTitle;
+	bool							m_bGame;			//是否是游戏画面，true游戏，false管理
+	int								m_nNewsYPos;	//新闻滚动时的Y坐标
+	int								m_nTop;
+	int								m_nreduce;
+	int								m_nNewsHeight;
+	CFont							m_top8Font;
+	CMarkup							m_xml;
 
 	//静态变量
 protected:
@@ -198,6 +212,7 @@ public:
 	bool EntranceServerItem(CGameServerItem * pGameServerItem);
 	void DrawTopUsers(CDC* pDC);
 
+	static	UINT	GetLuckNumber(LPVOID lpParam);
 	void	GridCtrlInit();				//初始化新闻公告
 	afx_msg void OnGridClick(NMHDR *pNotifyStruct, LRESULT* pResult);
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
@@ -218,10 +233,6 @@ protected:
 	VOID OnWindowPosChanged(WINDOWPOS * lpWndPos);
 	//鼠标消息
 	VOID OnLButtonDown(UINT nFlags, CPoint Point);
-	//显示菜单框
-	LRESULT OnShowMenu(WPARAM wParam, LPARAM lParam);
-	//查询开奖数据
-	LRESULT OnQueryGameResult(WPARAM wParam, LPARAM lParam);
 	LRESULT OnUpdateButton(WPARAM wParam, LPARAM lParam);
 	LRESULT OnUpDateAccoount(WPARAM wParam, LPARAM lParam);
 	LRESULT OnShowXgmm(WPARAM wParam, LPARAM lParam);
@@ -233,6 +244,8 @@ protected:
 	LRESULT OnZhuanhuanCaibi(WPARAM wParam, LPARAM lParam);
 	LRESULT ReturnTouzhu(WPARAM wParam, LPARAM lParam);
 	LRESULT ReleaseFace(WPARAM wParam, LPARAM lParam);
+	LRESULT OnQtmListClicked(WPARAM wParam, LPARAM lParam);
+	LRESULT ShowMapList(WPARAM wParam, LPARAM lParam);
 	bool m_bCreateType4;
 //自定消息
 protected:
@@ -240,6 +253,10 @@ protected:
 	LRESULT OnMessagePlatformEvent(WPARAM wParam, LPARAM lParam);
 	//银行更新
 	LRESULT OnMessageInsureUpdate(WPARAM wParam, LPARAM lParam);
+	//事件消息
+	LRESULT OnTurnPage(WPARAM wParam, LPARAM lParam);
+	//事件消息
+	LRESULT OnSelectUser(WPARAM wParam, LPARAM lParam);
 
 	//连接事件
 	virtual bool OnEventMissionLink(INT nErrorCode,INT nSocketID);

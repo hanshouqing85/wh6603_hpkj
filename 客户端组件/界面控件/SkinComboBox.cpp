@@ -207,12 +207,12 @@ VOID CSkinComboBox::DrawControlView(CDC * pDC)
 		if (bDisable==false)
 		{
 			COLORREF crColor=m_crBackColor;//RGB(73,62,61);//m_SkinAttribute.m_crEnableBack;
-			pDC->FillSolidRect(1,1,rcClient.Width()-m_uButtonWidth-2,rcClient.Height()-2,crColor);
+			pDC->FillSolidRect(1,1,rcClient.Width()-2,rcClient.Height()-2,crColor);
 		}
 		else
 		{
 			COLORREF crColor=m_crBackColor;//CSkinDialog::m_SkinAttribute.m_crBackGround;
-			pDC->FillSolidRect(1,1,rcClient.Width()-m_uButtonWidth-2,rcClient.Height()-2,crColor);
+			pDC->FillSolidRect(1,1,rcClient.Width()-2,rcClient.Height()-2,crColor);
 		}
 	}
 
@@ -330,7 +330,7 @@ VOID CSkinComboBox::DrawControlView(CDC * pDC)
 	//»æ»­°´Å¥
 	CSize SizeButton;
 	SizeButton.SetSize(ImageButton.GetWidth()/5L,ImageButton.GetHeight());
-	ImageButton.StretchBlt(pDC->m_hDC,rcClient.Width()-m_uButtonWidth-1,0,m_uButtonWidth,rcClient.Height(),
+	ImageButton.StretchBlt(pDC->m_hDC,rcClient.Width()-m_uButtonWidth-1,(rcClient.Height()-SizeButton.cy)/2,m_uButtonWidth,ImageButton.GetHeight(),
 		nImageIndex*SizeButton.cx,0,SizeButton.cx,SizeButton.cy);
 
 	return;
@@ -394,7 +394,7 @@ VOID CSkinComboBox::SetButtonImage(HINSTANCE hResInstance, UINT uResourceID, CSi
 
 	//ÉèÖÃ¿Ø¼þ
 	m_uButtonWidth=SizeButton.cx;
-	SetItemHeight(LB_ERR,SizeButton.cy);
+	SetItemHeight(LB_ERR,21);//SizeButton.cy);
 
 	//ÅäÖÃ¿Ø¼þ
 	RectifyControl(rcClient.Width(),rcClient.Height());
@@ -422,7 +422,7 @@ VOID CSkinComboBox::Initialization()
 		if (ComboBoxInfo.hwndItem!=NULL) m_SkinComboBoxEdit.SubclassWindow(ComboBoxInfo.hwndItem);
 		if (ComboBoxInfo.hwndList!=NULL) m_SkinComboBoxList.SubclassWindow(ComboBoxInfo.hwndList);
 
-		m_SkinComboBoxEdit.SetEnableColor(RGB(0,0,0),RGB(250,243,227),RGB(250,243,227));
+		m_SkinComboBoxEdit.SetEnableColor(RGB(0,0,0),RGB(241,233,255),RGB(241,233,255));
 	}
 
 	return;

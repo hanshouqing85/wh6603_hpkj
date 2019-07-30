@@ -28,11 +28,12 @@ protected:
 protected:
 	virtual BOOL OnInitDialog();
 	void AdjustLingjiang();
-	CImageButton m_btnQianDao[9];
+	CImageButton				m_btnQianDao[9];
 private:
-	Bitmap* m_bmpBk;
-	CFont m_font;
-	int   m_nToday;
+	Bitmap*						m_bmpBk;
+	CFont						m_font;
+	int							m_nToday;
+	bool						m_bInit;
 	//重载函数
 public:
 	//读取事件

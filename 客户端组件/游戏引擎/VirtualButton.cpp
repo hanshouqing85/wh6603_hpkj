@@ -22,14 +22,14 @@ CVirtualButton::CVirtualButton()
 	m_bMouseDown = false;;				
 	m_bMouseMove = false;;					
 	m_rcButtonRect.SetRect(0,0,0,0);				
-
-	m_pD3DTextureButton = NULL;
+	m_D3DTextureButton.Destory();
 
 	m_wImageIndex = 0;				
 }
 
 CVirtualButton::~CVirtualButton()
 {
+	m_D3DTextureButton.Destory();
 	DeleteWindow();
 }
 
@@ -58,26 +58,24 @@ VOID CVirtualButton::OnWindowCreate( CD3DDevice * pD3DDevice )
 
 VOID CVirtualButton::OnWindowDestory( CD3DDevice * pD3DDevice )
 {
+	if(!m_D3DTextureButton.IsNull())m_D3DTextureButton.Destory();
 }
 
-BOOL CVirtualButton::OnEventMouse( UINT uMessage, UINT nFlags, INT nXMousePos, INT nYMousePos )
+VOID CVirtualButton::OnEventMouse(UINT uMessage, UINT nFlags, INT nXMousePos, INT nYMousePos)
 {
-	if( !m_bEnable || !m_bVisible ) return false;
-
-	bool bReturn = false;
+	if( !m_bEnable || !m_bVisible ) return;
 
 	switch( uMessage )
 	{
 	case WM_LBUTTONDOWN:
 	case WM_LBUTTONDBLCLK:
 		{
-			if ( ContainsPoint(CPoint(nXMousePos,nYMousePos)) )
+			CRect rcControl;
+			GetWindowRect(rcControl);
+			if ( rcControl.PtInRect(CPoint(nXMousePos,nYMousePos)) )
 			{
-				SetFocus();
 				m_bMouseDown = true;
-				bReturn = true;
 			}
-
 			break;
 		}
 	case WM_LBUTTONUP:
@@ -86,15 +84,15 @@ BOOL CVirtualButton::OnEventMouse( UINT uMessage, UINT nFlags, INT nXMousePos, I
 			{
 				m_wImageIndex = 0;
 				m_bMouseDown = false;
-
-				if ( GetSafeHwnd() != NULL )
-					::PostMessage(GetSafeHwnd(),WM_COMMAND,GetWindowID(),0);
-
-				OnEventClicked();
-
-				bReturn = true;
+				if (GetParentWindow()!=NULL)
+				{
+					GetParentWindow()->OnEventButton(GetWindowID(),uMessage,nXMousePos,nYMousePos);
+				}else
+				{
+					HWND hWnd=m_pVirtualEngine->GetD3DDevice()->GetWndDevice();
+					if ( hWnd != NULL )	::PostMessage(hWnd,WM_COMMAND,GetWindowID(),0);
+				}
 			}
-
 			break;
 		}
 	case WM_MOUSEMOVE:
@@ -103,9 +101,7 @@ BOOL CVirtualButton::OnEventMouse( UINT uMessage, UINT nFlags, INT nXMousePos, I
 			{
 				m_bMouseMove = true;
 				m_wImageIndex = 1;
-				bReturn = true;
 			}
-			
 			break;
 		}
 	case WM_MOUSELEAVE:
@@ -113,39 +109,33 @@ BOOL CVirtualButton::OnEventMouse( UINT uMessage, UINT nFlags, INT nXMousePos, I
 			m_bMouseMove = false;
 			m_bMouseDown = false;
 			m_wImageIndex = 0;
-			bReturn = true;
-			
 			break;
 		}
 	case WM_MOUSEHOVER:
 		{
 			m_bMouseMove = false;
 			m_bMouseDown = false;
-			
 			m_wImageIndex = 0;
-			bReturn = true;
-
 			break;
 		}
 	}
 
-	return bReturn;
+	return ;
 }
 
-BOOL CVirtualButton::OnEventKeyboard( UINT uMessage, WPARAM wParam, LPARAM lParam )
+VOID CVirtualButton::OnEventButton(UINT uButtonID, UINT uMessage, INT nXMousePos, INT nYMousePos)
 {
-	return FALSE;
 }
 
 VOID CVirtualButton::OnEventDrawWindow( CD3DDevice * pD3DDevice, INT nXOriginPos, INT nYOriginPos )
 {
 	//绘画界面
-	if ( Check_Image(m_pD3DTextureButton) )
+	if (!m_D3DTextureButton.IsNull() )
 	{
 		//变量定义
 		INT nImagePos=0;
-		INT nPartWidth=m_pD3DTextureButton->GetWidth()/FRAME_COUNT;
-	
+		INT nPartWidth=m_D3DTextureButton.GetWidth()/FRAME_COUNT;
+
 		//按钮状态
 		bool bDisable=!m_bEnable;
 		bool bButtonDown=m_bMouseDown;
@@ -166,22 +156,20 @@ VOID CVirtualButton::OnEventDrawWindow( CD3DDevice * pD3DDevice, INT nXOriginPos
 			//绘画底图
 			if (m_wImageIndex<MAX_TRANSITION_INDEX)
 			{
-				if ((m_rcButtonRect.Width()==nPartWidth)&&(m_rcButtonRect.Height()==m_pD3DTextureButton->GetHeight()))
+				if ((m_rcButtonRect.Width()==nPartWidth)&&(m_rcButtonRect.Height()==m_D3DTextureButton.GetHeight()))
 				{
-					m_pD3DTextureButton->DrawImage(pD3DDevice,nXOriginPos,nYOriginPos,m_rcButtonRect.Width(),m_rcButtonRect.Height(),0,0);
+					m_D3DTextureButton.DrawImage(pD3DDevice,nXOriginPos,nYOriginPos,m_rcButtonRect.Width(),m_rcButtonRect.Height(),0,0);
 				}
 				else
 				{
-					m_pD3DTextureButton->DrawImage(pD3DDevice,nXOriginPos,nYOriginPos,m_rcButtonRect.Width(),m_rcButtonRect.Height(),0,0,nPartWidth,m_pD3DTextureButton->GetHeight());
+					m_D3DTextureButton.DrawImage(pD3DDevice,nXOriginPos,nYOriginPos,m_rcButtonRect.Width(),m_rcButtonRect.Height(),0,0,nPartWidth,m_D3DTextureButton.GetHeight());
 				}
 			}
 
 			//绘画过渡
 			if (m_wImageIndex>MIN_TRANSITION_INDEX)
 			{
-				m_pD3DTextureButton->DrawImage(pD3DDevice,nXOriginPos,nYOriginPos,m_rcButtonRect.Width(),m_rcButtonRect.Height(),
-						nPartWidth,0,nPartWidth,m_pD3DTextureButton->GetHeight(),(BYTE)(m_wImageIndex*255/MAX_TRANSITION_INDEX));
-				
+				m_D3DTextureButton.DrawImage(pD3DDevice,nXOriginPos,nYOriginPos,m_rcButtonRect.Width(),m_rcButtonRect.Height(),nPartWidth,0,nPartWidth,m_D3DTextureButton.GetHeight(),(BYTE)(m_wImageIndex*255/MAX_TRANSITION_INDEX));
 			}
 
 			return;
@@ -189,15 +177,19 @@ VOID CVirtualButton::OnEventDrawWindow( CD3DDevice * pD3DDevice, INT nXOriginPos
 		else
 		{
 			//普通模式
-			if ((m_rcButtonRect.Width()==nPartWidth)&&(m_rcButtonRect.Height()==m_pD3DTextureButton->GetHeight()))
+			if ((m_rcButtonRect.Width()==nPartWidth)&&(m_rcButtonRect.Height()==m_D3DTextureButton.GetHeight()))
 			{
-				m_pD3DTextureButton->DrawImage(pD3DDevice,nXOriginPos,nYOriginPos,m_rcButtonRect.Width(),m_rcButtonRect.Height(),nImagePos,0);
+				m_D3DTextureButton.DrawImage(pD3DDevice,nXOriginPos,nYOriginPos,m_rcButtonRect.Width(),m_rcButtonRect.Height(),nImagePos,0);
 			}
 			else
 			{
-				m_pD3DTextureButton->DrawImage(pD3DDevice,nXOriginPos,nYOriginPos,m_rcButtonRect.Width(),m_rcButtonRect.Height(),nImagePos,0,nPartWidth,m_pD3DTextureButton->GetHeight());
+				m_D3DTextureButton.DrawImage(pD3DDevice,nXOriginPos,nYOriginPos,m_rcButtonRect.Width(),m_rcButtonRect.Height(),nImagePos,0,nPartWidth,m_D3DTextureButton.GetHeight());
 			}
 		}
+	}
+	else
+	{
+		pD3DDevice->DrawRect(CRect(m_BenchmarkPos.x,m_BenchmarkPos.y,m_BenchmarkPos.x+m_WindowSize.cx,m_BenchmarkPos.y+m_WindowSize.cy),D3DCOLOR_XRGB(255,255,255));
 	}
 }
 
@@ -206,18 +198,30 @@ VOID CVirtualButton::SetButtonRect( CRect rcButtonRect )
 	m_rcButtonRect.CopyRect(&rcButtonRect);
 }
 
-VOID CVirtualButton::SetButtonImage( CD3DTexture *pD3DTextureButton )
+VOID CVirtualButton::SetButtonImage(CD3DDevice * pD3DDevice, LPCTSTR pszResource, LPCTSTR pszTypeName, HINSTANCE hResInstance)
 {
-	if( !Check_Image(pD3DTextureButton)) return;
-	
-	m_pD3DTextureButton = pD3DTextureButton;
+	if( m_D3DTextureButton.IsNull() == false ) return;
 
-	m_rcButtonRect.SetRect(m_BenchmarkPos.x,m_BenchmarkPos.y,m_BenchmarkPos.x+m_pD3DTextureButton->GetWidth()/FRAME_COUNT,m_BenchmarkPos.y+m_pD3DTextureButton->GetHeight());
+	m_D3DTextureButton.LoadImage(pD3DDevice,hResInstance,pszResource,pszTypeName);
 
-	SetWindowPos(m_rcButtonRect.left,m_rcButtonRect.top,m_rcButtonRect.Width(),m_rcButtonRect.Height(),0);
+	m_rcButtonRect.SetRect(m_BenchmarkPos.x,m_BenchmarkPos.y,m_BenchmarkPos.x+m_D3DTextureButton.GetWidth()/FRAME_COUNT,m_BenchmarkPos.y+m_D3DTextureButton.GetHeight());
+
+	SetWindowPos(m_rcButtonRect.left,m_rcButtonRect.top,m_rcButtonRect.Width(),m_rcButtonRect.Height(),SWP_DRAWFRAME);
+}
+
+VOID CVirtualButton::SetButtonImage(CD3DDevice * pD3DDevice, LPCTSTR pszModule,LPCTSTR pszResource)
+{
+	if( m_D3DTextureButton.IsNull() == false ) return;
+
+	CString strPath;
+	strPath.Format(TEXT("%s\\%s"),pszModule,pszResource);
+	m_D3DTextureButton.LoadImage(pD3DDevice,strPath);
+	m_rcButtonRect.SetRect(m_BenchmarkPos.x,m_BenchmarkPos.y,m_BenchmarkPos.x+m_D3DTextureButton.GetWidth()/FRAME_COUNT,m_BenchmarkPos.y+m_D3DTextureButton.GetHeight());
+
+	SetWindowPos(m_rcButtonRect.left,m_rcButtonRect.top,m_rcButtonRect.Width(),m_rcButtonRect.Height(),SWP_DRAWFRAME);
 }
 
 VOID CVirtualButton::RectifyControl( CD3DDevice * pD3DDevice )
 {
-}
 
+}

@@ -3,15 +3,16 @@
 #include "HuodongDlg.h"
 #include "BmpUtil.h"
 
-const static int dalibao_x = 8;
-const static int dalibao_y = 34;
+const static int dalibao_x = 25;
+const static int dalibao_y = 100;
 
 const static int zajindan_x = 30;
-const static int zajindan_y = 80;
+const static int zajindan_y = 160;
 
-//子窗口数据
-static const int bk_zhanghu_x = 11;
-static const int bk_zhanghu_y = 67;
+//子窗口坐标
+static const int bk_zhanghu_x = 0;
+static const int bk_zhanghu_y = 194;
+
 static const int bk_zhanghu_width = 1003;
 static const int bk_zhanghu_height = 515;
 IMPLEMENT_DYNAMIC(CHuoDongDlg, CDialog)
@@ -19,7 +20,7 @@ IMPLEMENT_DYNAMIC(CHuoDongDlg, CDialog)
 CHuoDongDlg::CHuoDongDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CHuoDongDlg::IDD, pParent)
 	, m_bmpBk(NULL)
-	, m_bmpTip(NULL)
+	//, m_bmpTip(NULL)
 {
 	
 }
@@ -32,11 +33,11 @@ CHuoDongDlg::~CHuoDongDlg()
 		delete m_bmpBk;
 		m_bmpBk = NULL;
 	}
-	if (m_bmpTip != NULL)
-	{
-		delete m_bmpTip;
-		m_bmpTip = NULL;
-	}
+// 	if (m_bmpTip != NULL)
+// 	{
+// 		delete m_bmpTip;
+// 		m_bmpTip = NULL;
+// 	}
 }
 //判断是否能够参加活动
 void CHuoDongDlg::OnShowWindow(BOOL bShow, UINT nStatus)
@@ -90,7 +91,16 @@ BEGIN_MESSAGE_MAP(CHuoDongDlg, CDialog)
 	ON_BN_CLICKED(IDC_BTN_ZHUANZHUAN, &CHuoDongDlg::OnBnClickedBtnZhuanzhuan)
 	ON_BN_CLICKED(IDC_BTN_CLOSE, &CHuoDongDlg::OnBnClickedBtnClose)
 	ON_BN_CLICKED(IDC_BTN_DAILI, &CHuoDongDlg::OnBnClickedBtnDaili)
+	ON_WM_LBUTTONDOWN()
+
 END_MESSAGE_MAP()
+
+void CHuoDongDlg::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	PostMessage(WM_NCLBUTTONDOWN,HTCAPTION,MAKELPARAM(point.x,   point.y));
+
+	CDialog::OnLButtonDown(nFlags, point);
+}
 
 
 // CHuodongDlg 消息处理程序
@@ -99,15 +109,19 @@ BOOL CHuoDongDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	// TODO:  在此添加额外的初始化
-	m_bmpBk = new Bitmap(CBmpUtil::GetExePath() + _T("skin\\n_bg.png"));
-	m_bmpTip = new Bitmap(CBmpUtil::GetExePath() + _T("skin\\hdzx.png"));
+	if(m_bmpBk == NULL)
+	{
+		m_bmpBk = new Bitmap(CBmpUtil::GetExePath() + _T("skin\\n_bg.png"));
+		m_ImgTitle.LoadImage(CBmpUtil::GetExePath() + _T("skin\\BTzhgl_06.png"));
+
+	}
+	//m_bmpTip = new Bitmap(CBmpUtil::GetExePath() + _T("skin\\hdzx.png"));
 
 	m_btnDalibao.SetImage(CBmpUtil::GetExePath() + _T("skin\\hd\\btn_hd_1.png"));
 	m_btnZaJinDan.SetImage(CBmpUtil::GetExePath() + _T("skin\\hd\\btn_hd_2.png"));
 	m_btnHuanlesong.SetImage(CBmpUtil::GetExePath() + _T("skin\\hd\\btn_hd_3.png"));
 	m_btnZhuanZhuan.SetImage(CBmpUtil::GetExePath() + _T("skin\\hd\\btn_hd_4.png"));
-	m_btnDaili.SetImage(CBmpUtil::GetExePath() + _T("skin\\hd\\btn_hd_5.png"));
+	m_btnDaili.SetImage(CBmpUtil::GetExePath() + _T("skin\\hd\\btn_hd_4.png"));
 
 	m_huanlesong.Create(CHuoDongHuanLeSongDlg::IDD, this);
 	m_dalibao.Create(CHuoDongDaliBaoDlg::IDD, this);
@@ -118,19 +132,20 @@ BOOL CHuoDongDlg::OnInitDialog()
 
 // 	m_btnDalibao.ShowWindow(SW_HIDE);
 // 	m_btnZaJinDan.ShowWindow(SW_HIDE);
-	
+	SetWindowPos(NULL,0,0,m_bmpBk->GetWidth(),m_bmpBk->GetHeight(),SWP_NOMOVE|SWP_NOACTIVATE|SWP_NOZORDER);
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 异常: OCX 属性页应返回 FALSE
 }
 // CZhanghuDlg 消息处理程序
 void CHuoDongDlg::OnBnClickedBtnClose()
 {
-	CWnd* pParent = GetParent();
-	if(pParent!=NULL)
-	{
-		pParent->PostMessage(IDM_RETURN_GAME,1,0);
-	}
-
+// 	CWnd* pParent = GetParent();
+// 	if(pParent!=NULL)
+// 	{
+// 		pParent->PostMessage(IDM_RETURN_GAME,1,0);
+// 	}
+	CDialog::OnCancel();
 	return;
 }
 
@@ -144,7 +159,9 @@ void CHuoDongDlg::OnPaint()
 	Graphics graphics(dc.m_hDC);
 
 	graphics.DrawImage(m_bmpBk, Rect(0, 0, m_bmpBk->GetWidth(), m_bmpBk->GetHeight()), 0, 0, m_bmpBk->GetWidth(), m_bmpBk->GetHeight(), UnitPixel);
-	graphics.DrawImage(m_bmpTip, Rect(16, 5, m_bmpTip->GetWidth(), m_bmpTip->GetHeight()), 0, 0, m_bmpTip->GetWidth(), m_bmpTip->GetHeight(), UnitPixel);
+	//graphics.DrawImage(m_bmpTip, Rect(16, 5, m_bmpTip->GetWidth(), m_bmpTip->GetHeight()), 0, 0, m_bmpTip->GetWidth(), m_bmpTip->GetHeight(), UnitPixel);
+	int nX = (rect.Width()-m_ImgTitle.GetWidth())/2+5;
+	m_ImgTitle.DrawImage(&dc,nX,30);
 
 	//dc.TextOut(300, 300, _T("活动专区"));
 	// 不为绘图消息调用 CDialog::OnPaint()
@@ -166,7 +183,7 @@ void CHuoDongDlg::OnSize(UINT nType, int cx, int cy)
 	}
 	if(m_btnClose.GetSafeHwnd() != NULL)
 	{
-		m_btnClose.SetWindowPos(NULL, cx - m_btnClose.Width() - 7, -1, m_btnClose.Width(), m_btnClose.Height(), SWP_NOZORDER);
+		m_btnClose.SetWindowPos(NULL, cx - m_btnClose.Width() - 9-15, 24, m_btnClose.Width(), m_btnClose.Height(), SWP_NOZORDER);
 	}
 
 	AdjustCtrls();
@@ -265,27 +282,6 @@ void CHuoDongDlg::OnOK()
 
 void CHuoDongDlg::AdjustCtrls()
 {
-	// 4个按钮
-	if (m_btnDalibao.GetSafeHwnd())
-	{
-		m_btnDalibao.SetWindowPos(NULL, dalibao_x, dalibao_y, m_btnDalibao.Width(), m_btnDalibao.Height(), SWP_NOZORDER);
-	}
-
-	if (m_btnZaJinDan.GetSafeHwnd())
-	{
-		m_btnZaJinDan.SetWindowPos(NULL, dalibao_x+90, dalibao_y, m_btnZaJinDan.Width(), m_btnZaJinDan.Height(), SWP_NOZORDER);
-	}
-
-	if(m_btnHuanlesong.GetSafeHwnd())
-		m_btnHuanlesong.SetWindowPos(NULL, dalibao_x+180, dalibao_y, m_btnHuanlesong.Width(), m_btnHuanlesong.Height(), SWP_NOZORDER);
-
-	if(m_btnZhuanZhuan.GetSafeHwnd())
-	{
-		m_btnZhuanZhuan.SetWindowPos(NULL, dalibao_x+270, dalibao_y, m_btnZhuanZhuan.Width(), m_btnZhuanZhuan.Height(), SWP_NOZORDER);
-		m_btnZhuanZhuan.ShowWindow(SW_HIDE);
-	}
-	if(m_btnDaili.GetSafeHwnd())
-		m_btnDaili.SetWindowPos(NULL, dalibao_x+270, dalibao_y, m_btnDaili.Width(), m_btnDaili.Height(), SWP_NOZORDER);
 
 	//4个对话框
 	if (m_dalibao.GetSafeHwnd())
@@ -310,4 +306,28 @@ void CHuoDongDlg::AdjustCtrls()
 		m_daili.SetWindowPos(NULL, bk_zhanghu_x, bk_zhanghu_y, bk_zhanghu_width, bk_zhanghu_height, SWP_NOZORDER);
 	}
 	
+
+
+		// 4个按钮
+	if (m_btnDalibao.GetSafeHwnd())
+	{
+		m_btnDalibao.SetWindowPos(NULL, dalibao_x, dalibao_y, m_btnDalibao.Width(), m_btnDalibao.Height(), SWP_NOZORDER);
+	}
+
+	if (m_btnZaJinDan.GetSafeHwnd())
+	{
+		m_btnZaJinDan.SetWindowPos(NULL, dalibao_x+90, dalibao_y, m_btnZaJinDan.Width(), m_btnZaJinDan.Height(), SWP_NOZORDER);
+	}
+
+	if(m_btnHuanlesong.GetSafeHwnd())
+		m_btnHuanlesong.SetWindowPos(NULL, dalibao_x+180, dalibao_y, m_btnHuanlesong.Width(), m_btnHuanlesong.Height(), SWP_NOZORDER);
+
+	if(m_btnZhuanZhuan.GetSafeHwnd())
+	{
+		m_btnZhuanZhuan.SetWindowPos(NULL, dalibao_x+270, dalibao_y, m_btnZhuanZhuan.Width(), m_btnZhuanZhuan.Height(), SWP_NOZORDER);
+		m_btnZhuanZhuan.ShowWindow(SW_HIDE);
+	}
+	if(m_btnDaili.GetSafeHwnd())
+		m_btnDaili.SetWindowPos(NULL, dalibao_x+270, dalibao_y, m_btnDaili.Width(), m_btnDaili.Height(), SWP_NOZORDER);
+
 }

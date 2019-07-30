@@ -11,7 +11,31 @@ BEGIN_MESSAGE_MAP(CGamePlazaApp, CWinApp)
 END_MESSAGE_MAP()
 
 //////////////////////////////////////////////////////////////////////////////////
-
+void AutoHideTaskBar(BOOL bHide)
+{
+	//这三句视情况加于不加
+#ifndef   ABM_SETSTATE 
+#define   ABM_SETSTATE             0x0000000a 
+#endif
+	LPARAM lParam;
+	if(bHide == TRUE)
+	{
+		lParam = ABS_AUTOHIDE;//自动隐藏
+	}
+	else
+	{
+		lParam = ABS_ALWAYSONTOP;//取消自动隐藏
+	}
+	APPBARDATA apBar; 
+	memset(&apBar,0,sizeof(apBar)); 
+	apBar.cbSize = sizeof(apBar); 
+	apBar.hWnd = ::FindWindow(L"Shell_TrayWnd", NULL);
+	if(apBar.hWnd != NULL) 
+	{ 
+		apBar.lParam   =   lParam; 
+		SHAppBarMessage(ABM_SETSTATE,&apBar); //设置任务栏自动隐藏
+	}   
+}
 //构造函数
 CGamePlazaApp::CGamePlazaApp()
 {
@@ -29,6 +53,14 @@ BOOL CGamePlazaApp::InitInstance()
 
 #ifndef _DEBUG
 #ifndef RELEASE_MANAGER
+	int height= GetSystemMetrics ( SM_CYSCREEN ); 
+	if(height<800)
+	{
+		// 		HWND hWnd = ::FindWindow(_T("Shell_TrayWnd"),NULL);
+		// 		::ShowWindow(hWnd,SW_HIDE);
+		AutoHideTaskBar(TRUE);
+	}
+
 
 	//存在判断
 	bool bPlazaExist=false;
@@ -269,7 +301,7 @@ BOOL CGamePlazaApp::CheckVersionUpdate(CString& strUpdateURL)
 	{
 		CString strError;
 		strError.Format(_T("Error code:%d\nMessage:%s\nDescrption:%s"), (int)e.WCode(), e.ErrorMessage(), (TCHAR*)e.Description());
-		MessageBox(strError, _T("提示"), MB_OK|MB_ICONWARNING);
+		MessageBox(NULL, strError, _T("提示"), MB_OK|MB_ICONWARNING);
 		return FALSE;
 	}
 #endif
@@ -295,10 +327,16 @@ void CGamePlazaApp::InitCaiZhong()
 	theGameType[CZ_TianJinSSC] = _T("天津时时彩");
 
 	theGameType[CZChongQingSSC] = _T("重庆时时彩");
-	theGameType[CZ_FENFEN_CAI] = _T("吉利分分彩");
-	theGameType[CZ_WUFEN_CAI] = _T("吉利五分彩");
+	theGameType[CZ_FENFEN_CAI] = _T("台湾分分彩");
+	theGameType[CZ_ErFenCai] = _T("印尼二分彩");
+	theGameType[CZ_WUFEN_CAI] = _T("东京五分彩");
+
+	theGameType[CZ_TXfenfencai] = _T("腾讯分分彩");
+	theGameType[CZ_QQfenfencai] = _T("QQ分分彩");
+	theGameType[CZ_BJ5FC] = _T("北京5分彩");
 	theGameType[CZXinJiangSSC] = _T("新疆时时彩");
 	theGameType[CZ_HGYDWFC] = _T("韩国1.5分彩");
+	theGameType[CZ_JiaNaDaSSC] = _T("加拿大3.5分彩");
 	theGameType[CZ3D] = _T("3D彩");
 	theGameType[CZGD11Xuan5]=_T("广东11选5");
 	theGameType[CZCQ11Xuan5]=_T("重庆11选5");
@@ -311,6 +349,7 @@ void CGamePlazaApp::InitCaiZhong()
 	theGameType[CZPaiLie3] = _T("排列三");
 	theGameType[CZ_PK10] = _T("北京PK10");
 	theGameType[CZXingYun28] = _T("幸运28");
+	theGameType[CZ_CaiZhangdie] = _T("上证指数");
 
 }
 
@@ -323,7 +362,7 @@ INT CGamePlazaApp::ExitInstance()
 	//删除对象
 	SafeDelete(m_pIDispatch);
 	SafeDelete(m_pCustomOccManager);
-
+	AutoHideTaskBar(FALSE);
 	return __super::ExitInstance();
 }
 
@@ -342,4 +381,13 @@ CMap<int, int, CString, CString&> theGameKind;
 //系统时间
 CTime theTime;
 BaseUser theAccount;
+int theCanadaQihao;
+CTime theCanadaStartTime;
+
+struct tagMapLottery
+{
+	CMD_GP_QueryStatusLotteryRet MapLottery;
+};
+map<int,tagMapLottery*> mapLotteryStatus;
+
 //////////////////////////////////////////////////////////////////////////////////

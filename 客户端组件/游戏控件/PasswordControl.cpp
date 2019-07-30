@@ -165,11 +165,11 @@ VOID CPasswordControl::OnPaint()
 	//»æ»­±³¾°
 	if (IsWindowEnabled()==TRUE)
 	{
-		dc.FillSolidRect(rcClient,RGB(40,29,27));
+		dc.FillSolidRect(rcClient,RGB(41,51,97));
 	}
 	else
 	{
-		dc.FillSolidRect(rcClient,RGB(40,29,27));
+		dc.FillSolidRect(rcClient,RGB(41,51,97));
 	}
 
 	return;

@@ -3,11 +3,6 @@
 // but are changed infrequently
 
 #pragma once
-// add by hxh 20160801
-#define POINTER_64 __ptr64
-
-typedef void *PVOID;
-typedef void * POINTER_64 PVOID64;
 
 #ifndef _SECURE_ATL
 #define _SECURE_ATL 1

@@ -214,6 +214,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories=".\QRCODE"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_UNICODE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
@@ -239,7 +240,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../../../运行/Debug/Unicode/GamePlaza.exe"
+				OutputFile="../../运行/Debug/Unicode/GamePlaza.exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				GenerateMapFile="true"
@@ -269,7 +270,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="mkdir ..\..\..\发布组件\客户端组件\Debug\Unicode&#x0D;&#x0A;copy /y ..\..\..\运行\Debug\Unicode\$(TargetFileName) ..\..\..\发布组件\客户端组件\Debug\Unicode\$(TargetFileName)&#x0D;&#x0A;"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
@@ -301,7 +302,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=""
+				AdditionalIncludeDirectories="&quot;D:\Program Files\Dx9 SDK\Include&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_UNICODE"
 				StringPooling="false"
 				MinimalRebuild="false"
@@ -532,19 +533,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\DlgService.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\DlgServiceIndividual.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\DlgServiceItem.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\DlgServicePassword.cpp"
+				RelativePath=".\DlgShowQPServer.cpp"
 				>
 			</File>
 			<File
@@ -565,10 +554,6 @@
 			</File>
 			<File
 				RelativePath=".\GameRule.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Other\GfxGroupEdit.cpp"
 				>
 			</File>
 			<File
@@ -740,7 +725,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PlatformInbox.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PlatformMessage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PlatformOutbox.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\PlatformPublicize.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PlatformSendMessage.cpp"
 				>
 			</File>
 			<File
@@ -756,11 +757,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\QMTab.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\QrTzhDlg.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\QuKuanDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ScrollBarEx.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SelectRevAccount.cpp"
 				>
 			</File>
 			<File
@@ -852,11 +865,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\XDate.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\XgfdDlg.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\XingYun28.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\YanZhengMa.cpp"
 				>
 			</File>
 			<File
@@ -901,6 +922,10 @@
 			</File>
 			<File
 				RelativePath=".\ZhangHuZhhbhDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ZhanNeiXinXX.cpp"
 				>
 			</File>
 			<File
@@ -990,23 +1015,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\DlgService.h"
-				>
-			</File>
-			<File
-				RelativePath=".\DlgServiceIndividual.h"
-				>
-			</File>
-			<File
-				RelativePath=".\DlgServiceItem.h"
+				RelativePath=".\DlgShowQPServer.h"
 				>
 			</File>
 			<File
 				RelativePath=".\DlgStatus.h"
-				>
-			</File>
-			<File
-				RelativePath=".\DlgTablePassword.h"
 				>
 			</File>
 			<File
@@ -1206,7 +1219,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PlatformInbox.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PlatformMessage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PlatformOutbox.h"
+				>
+			</File>
+			<File
 				RelativePath=".\PlatformPublicize.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PlatformSendMessage.h"
 				>
 			</File>
 			<File
@@ -1222,6 +1251,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\QMTab.h"
+				>
+			</File>
+			<File
 				RelativePath=".\QrTzhDlg.h"
 				>
 			</File>
@@ -1231,6 +1264,14 @@
 			</File>
 			<File
 				RelativePath=".\Resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ScrollBarEx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SelectRevAccount.h"
 				>
 			</File>
 			<File
@@ -1286,11 +1327,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\XDate.h"
+				>
+			</File>
+			<File
 				RelativePath=".\XgfdDlg.h"
 				>
 			</File>
 			<File
 				RelativePath=".\XingYun28.h"
+				>
+			</File>
+			<File
+				RelativePath=".\YanZhengMa.h"
 				>
 			</File>
 			<File
@@ -1335,6 +1384,10 @@
 			</File>
 			<File
 				RelativePath=".\ZhangHuZhhbhDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ZhanNeiXinXX.h"
 				>
 			</File>
 			<File
@@ -1396,6 +1449,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Res\tab\arrow.bmp"
+				>
+			</File>
+			<File
 				RelativePath=".\Res\GAME_SSC\ARROW_CONTROL.png"
 				>
 			</File>
@@ -1404,7 +1461,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Res\tab\barimage.bmp"
+				>
+			</File>
+			<File
 				RelativePath=".\Res\PLATFORM_FRAME\bg_fandian.png"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\PLAZA_LOGON\bgkefu.png"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\ITEM_FRAME\bj01.png"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\ITEM_FRAME\bj02.png"
 				>
 			</File>
 			<File
@@ -1816,6 +1889,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Res\FRAME_PLAZA\BT_QP_BACK.bmp"
+				>
+			</File>
+			<File
 				RelativePath=".\Res\Server_table\BT_QUIT_SERVER.bmp"
 				>
 			</File>
@@ -1876,11 +1953,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Item_frame\BT_SERVER_ITEM_VIEW.bmp"
+				RelativePath=".\Res\Frame_plaza\BT_SERVER_ITEM_VIEW.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Frame_plaza\BT_SERVER_ITEM_VIEW.bmp"
+				RelativePath=".\Res\Item_frame\BT_SERVER_ITEM_VIEW.bmp"
 				>
 			</File>
 			<File
@@ -2076,6 +2153,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Res\FRAME_PLAZA\BTN_ENTER_SERVER.bmp"
+				>
+			</File>
+			<File
 				RelativePath=".\Res\LiuHeCai\btn_fandian.bmp"
 				>
 			</File>
@@ -2208,6 +2289,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Res\tab\fl_01.png"
+				>
+			</File>
+			<File
 				RelativePath=".\Res\USER_INFO\flash.bmp"
 				>
 			</File>
@@ -2245,6 +2330,10 @@
 			</File>
 			<File
 				RelativePath=".\Res\PLAZA_LOGON\FORGET_PASS_back.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\tab\frame.png"
 				>
 			</File>
 			<File
@@ -2420,6 +2509,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Res\PLAZA_LOGON\IDB_KAIJIANG.bmp"
+				>
+			</File>
+			<File
 				RelativePath=".\Res\Frame_plaza\IMAGE_COMPART_LINE.png"
 				>
 			</File>
@@ -2552,11 +2645,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Res\CHECK_BTN\logon_check.png"
+				>
+			</File>
+			<File
 				RelativePath=".\Res\Plaza_logon\Logon_titile.png"
 				>
 			</File>
 			<File
 				RelativePath=".\Res\GAME_SSC\LotteryBack.png"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\GameCaiPiao\man.png"
 				>
 			</File>
 			<File
@@ -2596,7 +2697,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Frame_plaza\PLAZA_GROUND.bmp"
+				RelativePath=".\Res\FRAME_PLAZA\PLAZA_GAME_QP.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\FRAME_PLAZA\PLAZA_GAME_QP.png"
 				>
 			</File>
 			<File
@@ -2604,11 +2709,27 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Res\Frame_plaza\PLAZA_GROUND.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\FRAME_PLAZA\PLAZA_GROUND.png"
+				>
+			</File>
+			<File
 				RelativePath=".\Res\FRAME_PLAZA\PLAZA_GROUND1.bmp"
 				>
 			</File>
 			<File
+				RelativePath=".\Res\FRAME_PLAZA\PLAZA_GROUND_UPPER.bmp"
+				>
+			</File>
+			<File
 				RelativePath=".\Res\LiuHeCai\pngCenter.png"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\PLATFORM_FRAME\ptgg_btn.bmp"
 				>
 			</File>
 			<File
@@ -2756,6 +2877,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Res\CHECK_BTN\stock_check.png"
+				>
+			</File>
+			<File
 				RelativePath=".\Res\Server_table\TABLE_BL.bmp"
 				>
 			</File>
@@ -2813,6 +2938,14 @@
 			</File>
 			<File
 				RelativePath=".\Res\Server_table\TABLE_TR.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\PLATFORM_FRAME\top10.png"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\CHECK_BTN\transfer_check.png"
 				>
 			</File>
 			<File
@@ -2960,11 +3093,43 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Res\GameCaiPiao\woman.png"
+				>
+			</File>
+			<File
 				RelativePath=".\Res\FRAME_AFFICHE\XWGG.png"
 				>
 			</File>
 			<File
 				RelativePath=".\Res\FRAME_AFFICHE\XWGG_b.png"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\GameCaiPiao\xy28_08_1.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\GameCaiPiao\xy28_08_2.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\GameCaiPiao\xy28_08_3.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\GameCaiPiao\xy28_08_4.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\GameCaiPiao\xy28_08_5.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\PLATFORM_FRAME\znxx2_btn.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\PLATFORM_FRAME\znxx_btn.bmp"
 				>
 			</File>
 		</Filter>

@@ -7,24 +7,25 @@
 #include "PlatformFrame.h"
 //EWIN网络密码房间
 #include "DlgServerPassWork.h"
-
+#include "DlgShowQPServer.h"
 //////////////////////////////////////////////////////////////////////////////////
+
 
 //控件标识
 #define IDC_PLAZA_BROWSER			100									//浏览控件
 
 //图片位置
-#define GAME_TITLE_CY				81									//标题高度
 #define GAME_TITLE_CX				786									//标题宽度
+#define GAME_TITLE_CY				148									//标题高度
 
 //类型位置
-#define GAME_KIND_ITEM_PX			20									//类型间隔
-#define GAME_KIND_ITEM_PY			10									//类型间隔
-#define GAME_KIND_ITEM_CX			99									//类型宽度
-#define GAME_KIND_ITEM_CY			153									//类型高度
+#define GAME_KIND_ITEM_PX			2									//类型间隔
+#define GAME_KIND_ITEM_PY			4									//类型间隔
+#define GAME_KIND_ITEM_CX			103									//类型宽度
+#define GAME_KIND_ITEM_CY			104									//类型高度
 
 //类型位置
-#define GAME_SERVER_ITEM_PX			2									//房间间隔
+#define GAME_SERVER_ITEM_PX			5									//房间间隔
 #define GAME_SERVER_ITEM_PY			3									//房间间隔
 #define GAME_SERVER_ITEM_CX			190									//房间宽度
 #define GAME_SERVER_ITEM_CY			225									//房间高度
@@ -36,12 +37,14 @@
 CPlazaViewItem * CPlazaViewItem::m_pPlazaViewItem=NULL;					//广场指针
 
 static int game_cx = 791;
-static int game_cy = 558;
+static int game_cy = 564;
 //////////////////////////////////////////////////////////////////////////////////
 #define  IDC_RETURN 100250
 #define  IDC_FRAME_ADD	100251
 
 BEGIN_MESSAGE_MAP(CPlazaViewItem, CDialog)
+	ON_WM_VSCROLL()
+	ON_WM_MOUSEWHEEL()  
 
 	//系统消息
 	ON_WM_SIZE()
@@ -51,9 +54,6 @@ BEGIN_MESSAGE_MAP(CPlazaViewItem, CDialog)
 	ON_WM_SHOWWINDOW()
 	ON_WM_LBUTTONDOWN()
 	ON_MESSAGE(WM_MOUSELEAVE,OnMouseLeave)
-	ON_MESSAGE(IDM_LUCKY_NUM_SSC,SendQueryGameResult)
-	ON_MESSAGE(IDM_SHOW_MENU_SSC,OnShowMenu)
-	ON_MESSAGE(IDM_CLICKED_TYPE_SSC, OnBnClickedGameType)	
 	ON_MESSAGE(IDM_UPDATE_ACCOUNT, OnUpdateAccount)	
 	ON_MESSAGE(IDM_TANCHUANG, OnTanChuang)	
 	ON_MESSAGE(IDM_SHOW_XGMM, OnShowXgmm)	
@@ -88,7 +88,8 @@ CPlazaViewItem::CPlazaViewItem() : CDialog(IDD_GAME_PLAZA)
 	m_wKindPageCount=0;
 	m_wKindPageCurrent=0;
 	m_wKindTypeCurrentID=0;
-
+	m_nScrollX = 0;
+	m_nScrollXQp = 0;
 	m_wGameHoverItem=INVALID_WORD;
 	//位置变量
 	m_wServerXCount=0;
@@ -111,7 +112,8 @@ CPlazaViewItem::CPlazaViewItem() : CDialog(IDD_GAME_PLAZA)
 
 	//设置对象
 	ASSERT(m_pPlazaViewItem==NULL);
-	if (m_pPlazaViewItem==NULL) m_pPlazaViewItem=this;
+	if (m_pPlazaViewItem==NULL) 
+		m_pPlazaViewItem=this;
 
 	m_bCreate = 0;
 	return;
@@ -169,6 +171,212 @@ VOID * CPlazaViewItem::QueryInterface(REFGUID Guid, DWORD dwQueryVer)
 	return NULL;
 }
 
+
+void CPlazaViewItem::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 
+{
+	CScrollBarEx* pBar = (CScrollBarEx*)pScrollBar;
+	int iPos = pBar->GetScrollPos();
+	int nVCount = 0;
+	int nCtrlID = pBar->GetDlgCtrlID();
+	if(nCtrlID == 9001)
+	{
+		nVCount = m_GameKindInfoActive.GetCount()/m_wKindXCount;
+		if(m_GameKindInfoActive.GetCount()%m_wKindXCount != 0)
+			nVCount++;
+	}
+	else if(nCtrlID == 9002)
+	{
+		nVCount = m_GameKindInfoActiveMenu.GetCount()/3;
+		if(m_GameKindInfoActiveMenu.GetCount()%3 != 0)
+			nVCount++;
+	}
+	int nAllHeight = (nVCount-1)*(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY);
+
+// 	CString strLog;
+// 	strLog.Format(L"VSCROLL ipos*30:%d,nAllHeight:%d",iPos*50,nAllHeight);
+// 	OutputDebugString(strLog);
+	if( iPos*GAME_KIND_ITEM_CY>=nAllHeight)
+	{
+		CDialog::OnVScroll(nSBCode, nPos, pScrollBar);
+		return ;
+	}
+
+
+	if(nCtrlID == 9001)
+	{
+		m_nScrollX = iPos*GAME_KIND_ITEM_CY;
+	}
+	else if(nCtrlID == 9002)
+	{
+		m_nScrollXQp = iPos*GAME_KIND_ITEM_CY;
+	}
+
+	//窗口位置
+	CRect rcClient;
+	GetClientRect(&rcClient);
+
+	CRect rcRedraw;
+	rcRedraw.CopyRect(rcClient);
+	rcRedraw.top+= 125;
+	//更新界面
+	RedrawWindow(&rcRedraw,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ERASENOW);
+
+	CDialog::OnVScroll(nSBCode, nPos, pScrollBar);
+}
+
+
+BOOL  CPlazaViewItem:: OnMouseWheel(   UINT   nFlags,   short   zDelta,   CPoint   pt   )
+{
+	if(m_cbShowItemMode != VIEW_MODE_KIND&&m_cbShowItemMode != VIEW_MODE_TYPE)
+		return CDialog::OnMouseWheel(nFlags,zDelta,pt);
+	CRect rcClient;
+	GetClientRect(&rcClient);
+
+	ClientToScreen(rcClient);
+
+	CRect rcCaipiao(rcClient.left+3,rcClient.top+326,436,211);
+	CRect rcQiPai;
+	rcCaipiao.CopyRect(rcClient);
+
+	rcCaipiao.top+=326;
+	rcCaipiao.right -= 352;
+	rcQiPai.CopyRect(rcClient);
+	rcQiPai.left += 456;
+	rcQiPai.top+=326;
+	if(!rcCaipiao.PtInRect(pt)&&rcQiPai.PtInRect(pt))
+	{
+		if(zDelta == 120)
+		{
+			if(m_nScrollXQp<=0)
+				return CDialog::OnMouseWheel(nFlags,zDelta,pt);
+			m_nScrollXQp -= GAME_KIND_ITEM_CY;
+			int nVCount = m_GameKindInfoActiveMenu.GetCount()/3;
+			if(m_GameKindInfoActiveMenu.GetCount()%3 != 0)
+				nVCount++;
+
+			int nAllHeight = (nVCount-1)*(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY);
+			SCROLLINFO si;
+			m_VerticalScrollBarQp.GetScrollInfo(&si);
+			si.nMin = 0;
+			si.nMax = nAllHeight/GAME_KIND_ITEM_CY;
+			si.nPage = m_wKindPageCount;
+			si.nPos = m_nScrollXQp/(GAME_KIND_ITEM_CY);
+			m_VerticalScrollBarQp.SetScrollInfo(&si);
+
+
+			//窗口位置
+			CRect rcClient;
+			GetClientRect(&rcClient);
+
+			CRect rcRedraw;
+			rcRedraw.CopyRect(rcClient);
+			rcRedraw.top+= 125;
+			//更新界面
+			RedrawWindow(&rcRedraw,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ERASENOW);
+		}
+		else if(zDelta == -120)
+		{
+			int nVCount = m_GameKindInfoActiveMenu.GetCount()/3;
+			if(m_GameKindInfoActiveMenu.GetCount()%3 != 0)
+				nVCount++;
+
+			int nAllHeight = (nVCount-1)*(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY);
+			CString strLog;
+			strLog.Format(L"VSCROLL si.nPos:%d,si.nMax:%d,page:%d \n",m_nScrollXQp/(GAME_KIND_ITEM_CY+10),nAllHeight/GAME_KIND_ITEM_CY,m_wKindPageCount);
+			OutputDebugString(strLog);
+			if((m_nScrollXQp+ GAME_KIND_ITEM_CY)>nAllHeight)
+				return CDialog::OnMouseWheel(nFlags,zDelta,pt);
+			m_nScrollXQp += GAME_KIND_ITEM_CY;
+
+			SCROLLINFO si;
+			m_VerticalScrollBarQp.GetScrollInfo(&si);
+			si.nMin = 0;
+			si.nMax = nAllHeight/GAME_KIND_ITEM_CY;
+			si.nPage = m_wKindPageCount;
+			si.nPos = m_nScrollXQp/(GAME_KIND_ITEM_CY);
+
+			m_VerticalScrollBarQp.SetScrollInfo(&si);
+
+
+			//窗口位置
+			CRect rcClient;
+			GetClientRect(&rcClient);
+
+			CRect rcRedraw;
+			rcRedraw.CopyRect(rcClient);
+			rcRedraw.top+= 125;
+			//更新界面
+			RedrawWindow(&rcRedraw,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ERASENOW);
+		}
+
+		return CDialog::OnMouseWheel(nFlags,zDelta,pt);
+	}
+	else if(!rcCaipiao.PtInRect(pt)&&!rcQiPai.PtInRect(pt))
+		return CDialog::OnMouseWheel(nFlags,zDelta,pt);
+
+
+	if(zDelta == 120)
+	{
+		if(m_nScrollX<=0)
+			return CDialog::OnMouseWheel(nFlags,zDelta,pt);
+		m_nScrollX -= 106/2;
+		int nVCount = m_GameKindInfoActive.GetCount()/m_wKindXCount;
+		if(m_GameKindInfoActive.GetCount()%m_wKindXCount != 0)
+			nVCount++;
+
+		int nAllHeight = (nVCount-2)*(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY);
+		SCROLLINFO si;
+		m_VerticalScrollBar2.GetScrollInfo(&si);
+		si.nMin = 0;
+		si.nMax = nAllHeight/106;
+		si.nPage = m_wKindPageCount;
+		si.nPos = m_nScrollX/116;
+		m_VerticalScrollBar2.SetScrollInfo(&si);
+
+
+		//窗口位置
+		CRect rcClient;
+		GetClientRect(&rcClient);
+
+		CRect rcRedraw;
+		rcRedraw.CopyRect(rcClient);
+		rcRedraw.top+= 125;
+		//更新界面
+		RedrawWindow(&rcRedraw,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ERASENOW);
+	}
+	else if(zDelta == -120)
+	{
+		int nVCount = m_GameKindInfoActive.GetCount()/m_wKindXCount;
+		if(m_GameKindInfoActive.GetCount()%m_wKindXCount != 0)
+			nVCount++;
+
+		int nAllHeight = (nVCount-2)*(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY);
+		if(m_nScrollX>=nAllHeight)
+			return CDialog::OnMouseWheel(nFlags,zDelta,pt);
+		m_nScrollX += 106/2;
+
+		SCROLLINFO si;
+		m_VerticalScrollBar2.GetScrollInfo(&si);
+		si.nMin = 0;
+		si.nMax = nAllHeight/106;
+		si.nPage = m_wKindPageCount;
+		si.nPos = m_nScrollX/116;
+		m_VerticalScrollBar2.SetScrollInfo(&si);
+
+
+		//窗口位置
+		CRect rcClient;
+		GetClientRect(&rcClient);
+
+		CRect rcRedraw;
+		rcRedraw.CopyRect(rcClient);
+		rcRedraw.top+= 125;
+		//更新界面
+		RedrawWindow(&rcRedraw,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ERASENOW);
+	}
+
+	return CDialog::OnMouseWheel(nFlags,zDelta,pt);
+}
 //创建函数
 BOOL CPlazaViewItem::OnInitDialog()
 {
@@ -186,7 +394,8 @@ BOOL CPlazaViewItem::OnInitDialog()
 
 
 	m_logo.Create(NULL,NULL,WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN,rcCreate,this,IDC_FRAME_ADD);
-
+//	m_logo.Create(NULL,NULL,WS_CHILD|WS_CLIPCHILDREN,rcCreate,this,IDC_FRAME_ADD);
+	m_logo.ShowWindow(SW_HIDE);
 
 	m_btnReturn.Create(NULL,WS_CHILD|WS_VISIBLE,rcCreate,this,IDC_RETURN);
 	m_btnReturn.SetImage(CBmpUtil::GetExePath() + _T("skin\\return_bt.png"));
@@ -200,6 +409,30 @@ BOOL CPlazaViewItem::OnInitDialog()
 		m_rcTypeRect[i].SetRect(11+i*(nTypeWidth+7),290,11+i*(nTypeWidth+7)+nTypeWidth+7,290+nTypeHeight);
 	}
 	m_cbShowItemMode = VIEW_MODE_GAME;
+	
+	//滚动条的创建
+	VERIFY(m_VerticalScrollBar2.CreateFromRect(
+		SBS_VERT | WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+		this, CRect(310, 0, 325, 300), 9001));
+	SCROLLINFO si;
+	m_VerticalScrollBar2.GetScrollInfo(&si);
+	si.nMin = 50;
+	si.nMax = 30;
+	si.nPage = m_wKindPageCount;
+	si.nPos = m_nScrollX/30;
+	m_VerticalScrollBar2.SetScrollInfo(&si);
+
+	//滚动条的创建
+	VERIFY(m_VerticalScrollBarQp.CreateFromRect(
+		SBS_VERT | WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+		this, CRect(310, 0, 325, 300), 9002));
+	// si;
+	m_VerticalScrollBar2.GetScrollInfo(&si);
+	si.nMin = 50;
+	si.nMax = 30;
+	si.nPage = m_wKindPageCount;
+	si.nPos = m_nScrollX/30;
+	m_VerticalScrollBarQp.SetScrollInfo(&si);
 
 	m_nRecordTypeID = 1000;
 	m_nRecordKindID = 1000;
@@ -215,16 +448,13 @@ void CPlazaViewItem::CreateDlgCaipiao(int nType)
 	if(nType == 0)
 	{
 		m_dlgChongQingSSC.Create(CChongQingSSC::IDD, this);
-		m_dlgChongQingSSC.ConnectMainDlg(this);
 		m_bCreate = 0;
 
 	}
 	else if(nType == 1)
 	{
 		m_dlgGuangdong11x5.Create(CGuangDong11X5::IDD, this);
-		m_dlgGuangdong11x5.ConnectMainDlg(this);
 		m_dlgBjKuai8.Create(CBeiJingKuai8::IDD, this);
-		m_dlgBjKuai8.ConnectMainDlg(this);
 		m_bCreate = 1;
 
 	}
@@ -232,7 +462,6 @@ void CPlazaViewItem::CreateDlgCaipiao(int nType)
 	{
 
 		m_dlgPaiLie3.Create(CPaiLie3::IDD, this);//
-		m_dlgPaiLie3.ConnectMainDlg(this);
 		m_bCreate = 2;
 
 
@@ -240,26 +469,27 @@ void CPlazaViewItem::CreateDlgCaipiao(int nType)
 	else if(nType == 3)
 	{
 		m_dlgQiXingCai.Create(CQiXingCai::IDD, this);//--lly
-		m_dlgQiXingCai.ConnectMainDlg(this);
 		m_dlg3D.Create(C3D::IDD, this);//
-		m_dlg3D.ConnectMainDlg(this);
-
+		m_dlgXingYun28.Create(CXingYun28::IDD, this);
+		m_dlgLiuHeCai.Create(CLiuHeCai::IDD, this);
+		m_dlgBjPK10.Create(CBeiJingPK10::IDD, this);
 		m_bCreate = 3;
 	}
 	else 
 	{
-		m_dlgXingYun28.Create(CXingYun28::IDD, this);
-		m_dlgXingYun28.ConnectMainDlg(this);
-		m_dlgLiuHeCai.Create(CLiuHeCai::IDD, this);
-		m_dlgBjPK10.Create(CBeiJingPK10::IDD, this);
-		m_dlgBjPK10.ConnectMainDlg(this);
 		m_bCreate = 4;
 
 	}
 
 
 	RectifyDlg();
-	RedrawWindow();
+	CRect rcClient;
+	GetClientRect(rcClient);
+	CRect rcRedraw;
+	rcRedraw.CopyRect(rcClient);
+	rcRedraw.top+= 30;
+	//更新界面
+	RedrawWindow(&rcRedraw,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ERASENOW);
 	return;
 }
 void CPlazaViewItem::OnShowWindow(BOOL bShow, UINT nStatus)
@@ -269,66 +499,98 @@ void CPlazaViewItem::OnShowWindow(BOOL bShow, UINT nStatus)
 
 	if(!bShow)
 	{
-		m_dlgChongQingSSC.ShowWindow(SW_HIDE);
-		m_dlgJiangXiSSC.ShowWindow(SW_HIDE);
-		m_dlgXinjiangSSC.ShowWindow(SW_HIDE);
-		m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
-		m_dlgChongQing11x5.ShowWindow(SW_HIDE);
-		m_dlgHeiLongJiang11X5.ShowWindow(SW_HIDE);
-		m_dlgJiangXi11x5.ShowWindow(SW_HIDE);
-		m_dlgShanDong11x5.ShowWindow(SW_HIDE);
-		m_dlgFenFenCai.ShowWindow(SW_HIDE);
-		m_dlgWuFenCai.ShowWindow(SW_HIDE);
-		m_dlgLiuHeCai.ShowWindow(SW_HIDE);
-		m_dlgQiXingCai.ShowWindow(SW_HIDE);//--lly
-		m_dlgPaiLie3.ShowWindow(SW_HIDE);
-		m_dlg3D.ShowWindow(SW_HIDE);
-		m_dlgBjPK10.ShowWindow(SW_HIDE);
-		m_dlgBjKuai8.ShowWindow(SW_HIDE);
-		m_dlgXingYun28.ShowWindow(SW_HIDE);
+		if(m_dlgChongQingSSC.GetSafeHwnd()!=NULL)
+			m_dlgChongQingSSC.ShowWindow(SW_HIDE);
+		if(m_dlgGuangdong11x5.GetSafeHwnd()!=NULL)
+			m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
+		if(m_dlgLiuHeCai.GetSafeHwnd()!=NULL)
+			m_dlgLiuHeCai.ShowWindow(SW_HIDE);
+		if(m_dlgQiXingCai.GetSafeHwnd()!=NULL)
+			m_dlgQiXingCai.ShowWindow(SW_HIDE);//--lly
+		if(m_dlgPaiLie3.GetSafeHwnd()!=NULL)
+			m_dlgPaiLie3.ShowWindow(SW_HIDE);
+		if(m_dlg3D.GetSafeHwnd()!=NULL)
+			m_dlg3D.ShowWindow(SW_HIDE);
+		if(m_dlgBjPK10.GetSafeHwnd()!=NULL)
+			m_dlgBjPK10.ShowWindow(SW_HIDE);
+		if(m_dlgBjKuai8.GetSafeHwnd()!=NULL)
+			m_dlgBjKuai8.ShowWindow(SW_HIDE);
+		if(m_dlgXingYun28.GetSafeHwnd()!=NULL)
+			m_dlgXingYun28.ShowWindow(SW_HIDE);
 	}
 	else if(bShow)
 	{
 		if(theAccount.user_id <= 100)
-			m_dlgChongQingSSC.ShowWindow(SW_HIDE);
+		{
+			if(m_dlgChongQingSSC.GetSafeHwnd())
+				m_dlgChongQingSSC.ShowWindow(SW_HIDE);
+		}
 		else
 		{
 			m_nNowTypeID = CZChongQingSSC;
-			m_dlgChongQingSSC.SetTypeID(CZChongQingSSC);
-			m_dlgChongQingSSC.ShowWindow(SW_SHOW);
+			if(m_dlgChongQingSSC.GetSafeHwnd()!=NULL)
+			{
+				m_dlgChongQingSSC.SetTypeID(CZChongQingSSC);
+				m_dlgChongQingSSC.ShowWindow(SW_SHOW);
+
+			}
 		}
 
-
-		m_logo.Navigate(m_strWebUrl,NULL,NULL,NULL,NULL);
-		m_logo.EnableWindow(false);
-
+		//大厅WEB URL
+		CString strURL = m_strWebUrl;
+		if(!strURL.IsEmpty())
+		{
+			m_logo.Navigate(m_strWebUrl,NULL,NULL,NULL,NULL);
+			m_logo.EnableWindow(false);
+		}
 	}
 	return;
 }
 VOID CPlazaViewItem::ShowTypeItemView()
 {
 	m_cbShowItemMode = VIEW_MODE_TYPE;
-	m_dlgChongQingSSC.ShowWindow(SW_HIDE);
+	if(m_dlgChongQingSSC.GetSafeHwnd()!=NULL)
+		m_dlgChongQingSSC.ShowWindow(SW_HIDE);
 // 	m_dlgJiangXiSSC.ShowWindow(SW_HIDE);
 // 	m_dlgXinjiangSSC.ShowWindow(SW_HIDE);
-	m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
+	if(m_dlgGuangdong11x5.GetSafeHwnd()!=NULL)
+		m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
 // 	m_dlgChongQing11x5.ShowWindow(SW_HIDE);
 // 	m_dlgHeiLongJiang11X5.ShowWindow(SW_HIDE);
 // 	m_dlgJiangXi11x5.ShowWindow(SW_HIDE);
 // 	m_dlgShanDong11x5.ShowWindow(SW_HIDE);
 // 	m_dlgFenFenCai.ShowWindow(SW_HIDE);
 // 	m_dlgWuFenCai.ShowWindow(SW_HIDE);
-	m_dlgLiuHeCai.ShowWindow(SW_HIDE);
-	m_dlgQiXingCai.ShowWindow(SW_HIDE);//--lly
-	m_dlgPaiLie3.ShowWindow(SW_HIDE);
-	m_dlg3D.ShowWindow(SW_HIDE);
-	m_dlgBjPK10.ShowWindow(SW_HIDE);
-	m_dlgBjKuai8.ShowWindow(SW_HIDE);
-	m_dlgXingYun28.ShowWindow(SW_HIDE);
-
-	m_btnReturn.ShowWindow(SW_HIDE);
+	if(m_dlgQiXingCai.GetSafeHwnd()!=NULL)
+		m_dlgQiXingCai.ShowWindow(SW_HIDE);//--lly
+	if(m_dlgPaiLie3.GetSafeHwnd()!=NULL)
+		m_dlgPaiLie3.ShowWindow(SW_HIDE);
+	if(m_dlg3D.GetSafeHwnd()!=NULL)
+		m_dlg3D.ShowWindow(SW_HIDE);
+	if(m_dlgBjPK10.GetSafeHwnd()!=NULL)
+		m_dlgBjPK10.ShowWindow(SW_HIDE);
+	if(m_dlgBjKuai8.GetSafeHwnd()!=NULL)
+		m_dlgBjKuai8.ShowWindow(SW_HIDE);
+	if(m_dlgXingYun28.GetSafeHwnd()!=NULL)
+		m_dlgXingYun28.ShowWindow(SW_HIDE);
+	if(m_dlgLiuHeCai.GetSafeHwnd()!=NULL)
+		m_dlgLiuHeCai.ShowWindow(SW_HIDE);
+	if(m_dlgBjPK10.GetSafeHwnd()!=NULL)
+		m_dlgBjPK10.ShowWindow(SW_HIDE);
+	
+	//ShowGameMenu(1);
+	if(m_btnReturn.GetSafeHwnd()!=NULL)
+		m_btnReturn.ShowWindow(SW_HIDE);
 	//更新界面
-	RedrawWindow(NULL,NULL,RDW_INVALIDATE|RDW_ERASE);
+	//RedrawWindow(NULL,NULL,RDW_INVALIDATE|RDW_ERASE);
+	CRect rcClient;
+	GetClientRect(rcClient);
+
+	CRect rcRedraw;
+	rcRedraw.CopyRect(rcClient);
+	rcRedraw.top+= 128;
+	//更新界面
+	RedrawWindow(&rcRedraw,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ERASENOW);
 
 	//CreateDlgCaipiao(1);
 }
@@ -341,72 +603,40 @@ VOID CPlazaViewItem::ShowKindItemView(WORD wTypeID,BOOL bResetPageIndex)
 		CreateDlgCaipiao(4);
 	}
 
-	m_btnReturn.ShowWindow(SW_SHOW);
-	if (m_dlgChongQingSSC.IsWindowVisible())
+	m_btnReturn.ShowWindow(SW_HIDE);
+	if (m_dlgChongQingSSC.GetSafeHwnd())
 	{
 		m_dlgChongQingSSC.ShowWindow(SW_HIDE);
 	}
-// 	else if (m_dlgJiangXiSSC.IsWindowVisible())
-// 	{
-// 		m_dlgJiangXiSSC.ShowWindow(SW_HIDE);
-// 	}
-// 	else if (m_dlgXinjiangSSC.IsWindowVisible())
-// 	{
-// 		m_dlgXinjiangSSC.ShowWindow(SW_HIDE);
-// 	}
-// 	else if (m_dlgWuFenCai.IsWindowVisible())
-// 	{
-// 		m_dlgWuFenCai.ShowWindow(SW_HIDE);
-// 	}
-// 	else if (m_dlgFenFenCai.IsWindowVisible())
-// 	{
-// 		m_dlgFenFenCai.ShowWindow(SW_HIDE);
-// 	}
-	else if (m_dlgGuangdong11x5.IsWindowVisible())
+	if (m_dlgGuangdong11x5.GetSafeHwnd())
 	{
 		m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
 	}
-// 	else if (m_dlgChongQing11x5.IsWindowVisible())
-// 	{
-// 		m_dlgChongQing11x5.ShowWindow(SW_HIDE);
-// 	}
-// 	else if (m_dlgJiangXi11x5.IsWindowVisible())
-// 	{
-// 		m_dlgJiangXi11x5.ShowWindow(SW_HIDE);
-// 	}
-// 	else if (m_dlgShanDong11x5.IsWindowVisible())
-// 	{
-// 		m_dlgShanDong11x5.ShowWindow(SW_HIDE);
-// 	}
-// 	else if (m_dlgHeiLongJiang11X5.IsWindowVisible())
-// 	{
-// 		m_dlgHeiLongJiang11X5.ShowWindow(SW_HIDE);
-// 	}
-	else if (m_dlgLiuHeCai.IsWindowVisible())
+	 if (m_dlgLiuHeCai.GetSafeHwnd())
 	{
 		m_dlgLiuHeCai.ShowWindow(SW_HIDE);
 	}
-	else if (m_dlg3D.IsWindowVisible())
+	 if (m_dlg3D.GetSafeHwnd())
 	{
 		m_dlg3D.ShowWindow(SW_HIDE);
 	}
-	else if (m_dlgPaiLie3.IsWindowVisible())
+	 if (m_dlgPaiLie3.GetSafeHwnd())
 	{
 		m_dlgPaiLie3.ShowWindow(SW_HIDE);
 	}
-	else if (m_dlgQiXingCai.IsWindowVisible())
+	 if (m_dlgQiXingCai.GetSafeHwnd())
 	{
 		m_dlgQiXingCai.ShowWindow(SW_HIDE);
 	}
-	else if (m_dlgBjPK10.IsWindowVisible())
+	 if (m_dlgBjPK10.GetSafeHwnd())
 	{
 		m_dlgBjPK10.ShowWindow(SW_HIDE);
 	}
-	else if (m_dlgBjKuai8.IsWindowVisible())
+	 if (m_dlgBjKuai8.GetSafeHwnd())
 	{
 		m_dlgBjKuai8.ShowWindow(SW_HIDE);
 	}
-	else if (m_dlgXingYun28.IsWindowVisible())
+	 if (m_dlgXingYun28.GetSafeHwnd())
 	{
 		m_dlgXingYun28.ShowWindow(SW_HIDE);
 	}
@@ -544,7 +774,7 @@ VOID CPlazaViewItem::ShowKindItemView(WORD wTypeID,BOOL bResetPageIndex)
 	m_wKindTypeCurrentID=wTypeID;
 	m_wViewItemDown=INVALID_WORD;
 	m_wViewItemHover=INVALID_WORD;
-	m_cbShowItemMode=VIEW_MODE_KIND;
+//	m_cbShowItemMode=VIEW_MODE_KIND;
 
 	//设置索引
 	if(bResetPageIndex==TRUE) m_wKindPageCurrent=0;
@@ -554,6 +784,193 @@ VOID CPlazaViewItem::ShowKindItemView(WORD wTypeID,BOOL bResetPageIndex)
 	GetClientRect(&rcClient);
 	RectifyControl(rcClient.Width(),rcClient.Height());
 
+	int nVCount = m_GameKindInfoActive.GetCount()/4;
+	if(m_GameKindInfoActive.GetCount()%4 != 0)
+		nVCount++;
+
+
+	int nAllHeight = (nVCount-2)*(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY);
+	SCROLLINFO si;
+	m_VerticalScrollBar2.GetScrollInfo(&si);
+	si.nMin = 0;
+	si.nMax = nAllHeight/50;
+	si.nPage = m_wKindPageCount;
+	si.nPos = m_nScrollX/60;
+	m_VerticalScrollBar2.SetScrollInfo(&si);
+
+	CRect rcRedraw;
+	rcRedraw.CopyRect(rcClient);
+	rcRedraw.top+= 128;
+	//更新界面
+	RedrawWindow(&rcRedraw,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ERASENOW);
+
+	//更新界面
+	//RedrawWindow(NULL,NULL,RDW_INVALIDATE|RDW_ERASE);
+
+	return;
+}
+
+//显示类型
+VOID CPlazaViewItem::ShowKindQpItemView(WORD wTypeID,BOOL bResetPageIndex)
+{
+
+	//获取对象
+	ASSERT(CServerListData::GetInstance()!=NULL);
+	CServerListData * pServerListData=CServerListData::GetInstance();
+
+	//工作目录
+	TCHAR szDirectory[MAX_PATH]=TEXT("");
+	CWHService::GetWorkDirectory(szDirectory,CountArray(szDirectory));
+
+	//变量定义
+	POSITION Position=NULL;
+	CGameKindItem * pGameKindItem=NULL;
+	tagGameKindInfo * pGameKindInfo=NULL;
+
+	//删除对象
+	for (INT i=0;i<m_GameKindInfoActiveMenu.GetCount();i++)
+	{
+		//获取对象
+		ASSERT(m_GameKindInfoActiveMenu[i]!=NULL);
+		pGameKindInfo=m_GameKindInfoActiveMenu[i];
+
+		//设置变量
+		pGameKindInfo->wSortID=0;
+		pGameKindInfo->pGameKindItem=NULL;
+
+		//清理对象
+		if (pGameKindInfo->ImageKindItem.IsNull()==false)
+		{
+			pGameKindInfo->ImageKindItem.DestroyImage();
+		}
+	}
+
+	//删除对象
+	m_GameKindInfoBuffer.Append(m_GameKindInfoActiveMenu);
+	m_GameKindInfoActiveMenu.RemoveAll();
+
+	//插入对象
+	while (true)
+	{
+		//获取对象
+		pGameKindItem=pServerListData->EmunGameKindItem(Position);
+
+		//对象判断
+		if (pGameKindItem==NULL) break;
+
+		//类型判断
+		if ((wTypeID!=0)&&(pGameKindItem->m_GameKind.wTypeID!=wTypeID))
+		{
+			if (Position==NULL) break;
+			if (Position!=NULL) continue;
+		}
+
+		//获取对象
+		if (m_GameKindInfoBuffer.GetCount()>0L)
+		{
+			//获取对象
+			INT_PTR nCount=m_GameKindInfoBuffer.GetCount();
+			pGameKindInfo=m_GameKindInfoBuffer[nCount-1L];
+
+			//删除对象
+			ASSERT(pGameKindInfo!=NULL);
+			m_GameKindInfoBuffer.RemoveAt(nCount-1L);
+		}
+		else
+		{
+			try
+			{
+				pGameKindInfo=new tagGameKindInfo;
+				if (pGameKindInfo==NULL) throw TEXT("创建对象失败");
+			}
+			catch (...)
+			{
+				ASSERT(FALSE);
+				break;
+			}
+		}
+
+		//设置对象
+		pGameKindInfo->pGameKindItem=pGameKindItem;
+		pGameKindInfo->wSortID=pGameKindItem->m_GameKind.wSortID;
+
+		//获取目录
+		TCHAR szGameDirectory[LEN_PROCESS]=TEXT("");
+		GetGameDirectory(szGameDirectory,CountArray(szGameDirectory),pGameKindItem->m_GameKind);
+
+		//构造路径
+		TCHAR szImagePath[MAX_PATH]=TEXT("");
+		_sntprintf(szImagePath,CountArray(szImagePath),TEXT("%s\\ADImage\\GameKind\\GameKind_%s.PNG"),szDirectory,szGameDirectory);
+
+		//加载图片
+		if (pGameKindInfo->ImageKindItem.LoadImage(szImagePath)==false)
+		{
+			HINSTANCE hInstance=AfxGetInstanceHandle();
+			pGameKindInfo->ImageKindItem.LoadImage(hInstance,TEXT("UNKNOWN_KIND"));
+		}
+
+		//插入对象
+		INT nItem=0;
+		for (nItem=0;nItem<m_GameKindInfoActiveMenu.GetCount();nItem++)
+		{
+			//获取对象
+			ASSERT(m_GameKindInfoActiveMenu[nItem]!=NULL);
+			tagGameKindInfo * pGameKindTemp=m_GameKindInfoActiveMenu[nItem];
+
+			//排序判断
+			if (pGameKindInfo->wSortID<pGameKindTemp->wSortID)
+			{
+				m_GameKindInfoActiveMenu.InsertAt(nItem,pGameKindInfo);
+				break;
+			}
+		}
+
+		//默认插入
+		if (nItem==m_GameKindInfoActiveMenu.GetCount())
+		{
+			m_GameKindInfoActiveMenu.Add(pGameKindInfo);
+		}
+
+
+		//结束判断
+		if (Position==NULL)
+		{
+			break;
+		}
+	}
+
+
+
+	//设置变量
+	m_cbButtonDown=0;
+	m_cbButtonHover=0;
+	m_wKindTypeCurrentID=wTypeID;
+	m_wViewItemDown=INVALID_WORD;
+	m_wViewItemHover=INVALID_WORD;
+//	m_cbShowItemMode=VIEW_MODE_KIND;
+
+	//设置索引
+	if(bResetPageIndex==TRUE) m_wKindPageCurrent=0;
+
+	//调整界面
+	CRect rcClient;
+	GetClientRect(&rcClient);
+	RectifyControl(rcClient.Width(),rcClient.Height());
+
+ 	int nVCount = m_GameKindInfoActiveMenu.GetCount()/4;
+ 	if(m_GameKindInfoActiveMenu.GetCount()%4 != 0)
+ 		nVCount++;
+
+
+ 	int nAllHeight = (nVCount-2)*(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY);
+ 	SCROLLINFO si;
+ 	m_VerticalScrollBarQp.GetScrollInfo(&si);
+ 	si.nMin = 0;
+ 	si.nMax = nAllHeight/50;
+ 	si.nPage = m_wKindPageCount;
+ 	si.nPos = m_nScrollX/60;
+ 	m_VerticalScrollBarQp.SetScrollInfo(&si);
+ 
 	//更新界面
 	RedrawWindow(NULL,NULL,RDW_INVALIDATE|RDW_ERASE);
 
@@ -561,19 +978,12 @@ VOID CPlazaViewItem::ShowKindItemView(WORD wTypeID,BOOL bResetPageIndex)
 }
 
 //显示房间
-VOID CPlazaViewItem::ShowServerItemView(WORD wKindID,BOOL bResetPageIndex)
+VOID CPlazaViewItem::ShowServerItemView(WORD wKindID,BOOL bResetPageIndex, bool Invalidate)
 {
 	m_dlgChongQingSSC.ShowWindow(SW_HIDE);
-	m_dlgJiangXiSSC.ShowWindow(SW_HIDE);
-	m_dlgXinjiangSSC.ShowWindow(SW_HIDE);
-	m_dlgFenFenCai.ShowWindow(SW_HIDE);
-	m_dlgLiuHeCai.ShowWindow(SW_HIDE);
-	m_dlgWuFenCai.ShowWindow(SW_HIDE);
+	if (m_dlgLiuHeCai.GetSafeHwnd())
+		m_dlgLiuHeCai.ShowWindow(SW_HIDE);
 	m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
-	m_dlgChongQing11x5.ShowWindow(SW_HIDE);
-	m_dlgJiangXi11x5.ShowWindow(SW_HIDE);
-	m_dlgShanDong11x5.ShowWindow(SW_HIDE);
-	m_dlgHeiLongJiang11X5.ShowWindow(SW_HIDE);
 	m_dlgQiXingCai.ShowWindow(SW_HIDE);//--lly
 	m_dlgPaiLie3.ShowWindow(SW_HIDE);
 	m_dlg3D.ShowWindow(SW_HIDE);
@@ -620,11 +1030,47 @@ VOID CPlazaViewItem::ShowServerItemView(WORD wKindID,BOOL bResetPageIndex)
 		m_cbShowItemMode = VIEW_MODE_GAME;
 		return;
 	}
+	else if(wKindID == CZ_TXfenfencai)
+	{
+		m_nNowTypeID = CZ_TXfenfencai;
+
+		m_dlgChongQingSSC.SetTypeID(CZ_TXfenfencai);
+		m_dlgChongQingSSC.ShowWindow(SW_SHOW);
+		m_cbShowItemMode = VIEW_MODE_GAME;
+		return;
+	}
+	else if(wKindID == CZ_QQfenfencai)
+	{
+		m_nNowTypeID = CZ_QQfenfencai;
+
+		m_dlgChongQingSSC.SetTypeID(CZ_QQfenfencai);
+		m_dlgChongQingSSC.ShowWindow(SW_SHOW);
+		m_cbShowItemMode = VIEW_MODE_GAME;
+		return;
+	}
+	else if(wKindID == CZ_ErFenCai)
+	{
+		m_nNowTypeID = CZ_ErFenCai;
+
+		m_dlgChongQingSSC.SetTypeID(CZ_ErFenCai);
+		m_dlgChongQingSSC.ShowWindow(SW_SHOW);
+		m_cbShowItemMode = VIEW_MODE_GAME;
+		return;
+	}
 	else if(wKindID == CZ_WUFEN_CAI)
 	{
 		m_nNowTypeID = CZ_WUFEN_CAI;
 
 		m_dlgChongQingSSC.SetTypeID(CZ_WUFEN_CAI);
+		m_dlgChongQingSSC.ShowWindow(SW_SHOW);
+		m_cbShowItemMode = VIEW_MODE_GAME;
+		return;
+	}
+	else if(wKindID == CZ_BJ5FC)
+	{
+		m_nNowTypeID = CZ_BJ5FC;
+
+		m_dlgChongQingSSC.SetTypeID(CZ_BJ5FC);
 		m_dlgChongQingSSC.ShowWindow(SW_SHOW);
 		m_cbShowItemMode = VIEW_MODE_GAME;
 		return;
@@ -638,6 +1084,15 @@ VOID CPlazaViewItem::ShowServerItemView(WORD wKindID,BOOL bResetPageIndex)
 		m_cbShowItemMode = VIEW_MODE_GAME;
 		return;
 	}
+	else if(wKindID == CZ_JiaNaDaSSC)
+	{
+		m_nNowTypeID = CZ_JiaNaDaSSC;
+
+		m_dlgChongQingSSC.SetTypeID(CZ_JiaNaDaSSC);
+		m_dlgChongQingSSC.ShowWindow(SW_SHOW);
+		m_cbShowItemMode = VIEW_MODE_GAME;
+		return;
+	}
 	else if(wKindID == CZGD11Xuan5)
 	{
 		m_nNowTypeID = CZGD11Xuan5;
@@ -647,20 +1102,12 @@ VOID CPlazaViewItem::ShowServerItemView(WORD wKindID,BOOL bResetPageIndex)
 		m_cbShowItemMode = VIEW_MODE_GAME;
 		return;
 	}
-	else if(wKindID == CZCQ11Xuan5)
-	{
-		m_nNowTypeID = CZCQ11Xuan5;
-
-		m_dlgChongQing11x5.ShowWindow(SW_SHOW);
-		m_cbShowItemMode = VIEW_MODE_GAME;
-		return;
-	}
 	else if(wKindID == CZJX11Xuan5)
 	{
 		m_nNowTypeID = CZJX11Xuan5;
 
-		m_dlgJiangXi11x5.SetTypeID(CZJX11Xuan5);
-		m_dlgJiangXi11x5.ShowWindow(SW_SHOW);
+		m_dlgGuangdong11x5.SetTypeID(CZJX11Xuan5);
+		m_dlgGuangdong11x5.ShowWindow(SW_SHOW);
 		m_cbShowItemMode = VIEW_MODE_GAME;
 		return;
 	}
@@ -668,8 +1115,8 @@ VOID CPlazaViewItem::ShowServerItemView(WORD wKindID,BOOL bResetPageIndex)
 	{
 		m_nNowTypeID = CZSD11Xuan5;
 
-		m_dlgShanDong11x5.SetTypeID(CZSD11Xuan5);
-		m_dlgShanDong11x5.ShowWindow(SW_SHOW);
+		m_dlgGuangdong11x5.SetTypeID(CZSD11Xuan5);
+		m_dlgGuangdong11x5.ShowWindow(SW_SHOW);
 		m_cbShowItemMode = VIEW_MODE_GAME;
 		return;
 	}
@@ -701,8 +1148,8 @@ VOID CPlazaViewItem::ShowServerItemView(WORD wKindID,BOOL bResetPageIndex)
 	{
 		m_nNowTypeID = CZHLJ11Xuan5;
 
-		m_dlgHeiLongJiang11X5.SetTypeID(CZHLJ11Xuan5);
-		m_dlgHeiLongJiang11X5.ShowWindow(SW_SHOW);
+		m_dlgGuangdong11x5.SetTypeID(CZHLJ11Xuan5);
+		m_dlgGuangdong11x5.ShowWindow(SW_SHOW);
 		m_cbShowItemMode = VIEW_MODE_GAME;
 		return;
 	}
@@ -710,8 +1157,9 @@ VOID CPlazaViewItem::ShowServerItemView(WORD wKindID,BOOL bResetPageIndex)
 	{
 		m_nNowTypeID = CZ_LIUHECAI;
 
-		m_dlgLiuHeCai.ShowWindow(SW_SHOW);
-		m_btnReturn.ShowWindow(SW_HIDE);
+		if (m_dlgLiuHeCai.GetSafeHwnd())
+			m_dlgLiuHeCai.ShowWindow(SW_SHOW);
+		//m_btnReturn.ShowWindow(SW_HIDE);
 		m_cbShowItemMode = VIEW_MODE_GAME;
 		return;
 	}
@@ -740,7 +1188,8 @@ VOID CPlazaViewItem::ShowServerItemView(WORD wKindID,BOOL bResetPageIndex)
 		return;
 	}
 
-	m_cbShowItemMode = VIEW_MODE_SERVER;
+	if(Invalidate)
+		m_cbShowItemMode = VIEW_MODE_SERVER;
 	//获取对象
 	ASSERT(CServerListData::GetInstance()!=NULL);
 	CServerListData * pServerListData=CServerListData::GetInstance();
@@ -878,6 +1327,9 @@ VOID CPlazaViewItem::ShowServerItemView(WORD wKindID,BOOL bResetPageIndex)
 		}
 	}
 
+	if(!Invalidate)
+		return;
+
 	//无效判断
 	if (m_GameServerInfoActive.GetCount()==0)
 	{
@@ -933,12 +1385,6 @@ WORD CPlazaViewItem::GetGameHoverIndex(CPoint MousePoint)
 	}
 	WORD wHoverItem = INVALID_WORD;
 
-// 	wHoverItem = MousePoint.y/m_ImageItemBackMid.GetHeight();
-// 	if(MousePoint.y%m_ImageItemBackMid.GetHeight()>0)
-// 	{
-// 		wHoverItem+=1;
-// 	}
-// 	wHoverItem-=1;
 	return wHoverItem;
 }
 //对象索引
@@ -948,13 +1394,90 @@ WORD CPlazaViewItem::GetHoverIndex(CPoint MousePoint)
 	{
 	case VIEW_MODE_TYPE:
 		{
-			for (BYTE i = 0;i<3;i++)
+// 			for (BYTE i = 0;i<3;i++)
+// 			{
+// 				if(m_rcTypeRect[i].PtInRect(MousePoint))
+// 				{
+// 					return i;
+// 				}
+// 			}
+
+			//无效判断
+			MousePoint.y-=40;
+			MousePoint.y -= m_nScrollX;
+			if (MousePoint.x<4) return INVALID_WORD;
+			if (MousePoint.y+m_nScrollX*2<(GAME_KIND_ITEM_PY+326)) return INVALID_WORD;
+
+			if(MousePoint.x < 450)
 			{
-				if(m_rcTypeRect[i].PtInRect(MousePoint))
+				//位置计算
+				INT nXItem=(MousePoint.x-m_wKindExcursion)/(GAME_KIND_ITEM_CX+GAME_KIND_ITEM_PX);
+				INT nYItem=(MousePoint.y+m_nScrollX*2-GAME_KIND_ITEM_PY-326)/(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY);
+
+				//溢出判断
+				if ((MousePoint.x-m_wKindExcursion-(nXItem*(GAME_KIND_ITEM_CX+GAME_KIND_ITEM_PX)))>GAME_KIND_ITEM_CX) return INVALID_WORD;
+				if ((MousePoint.y+m_nScrollX*2-GAME_KIND_ITEM_PY-326-(nYItem*(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY)))>GAME_KIND_ITEM_CY) return INVALID_WORD;
+				int nAllCount = m_GameKindInfoActive.GetCount()/m_wKindXCount;
+
+				//结果判断
+				if ((nYItem>=0)&&(nXItem>=0)&&(nYItem<=nAllCount)&&(nXItem<m_wKindXCount))
 				{
-					return i;
+					WORD wViewCount=m_wKindXCount*m_wKindYCount;
+					WORD wResultItem=nYItem*m_wKindXCount+nXItem;
+					if ((m_wKindPageCurrent*wViewCount+wResultItem)<m_GameKindInfoActive.GetCount())
+					{
+
+						return wResultItem;
+					}
 				}
+
 			}
+			else
+			{
+				WORD wViewCount = m_GameKindInfoActive.GetCount();
+				int nCaiCount = 0;
+				for(int i = 0;i <wViewCount;i++)
+				{
+					//绘画对象
+					tagGameKindInfo * pGameKindInfo=m_GameKindInfoActive[i];
+
+					if (pGameKindInfo==NULL)
+						continue;
+					if(pGameKindInfo->pGameKindItem->m_GameKind.wTypeID==1)
+					{
+						nCaiCount++;
+					}
+				}
+
+				//位置计算
+				INT nXItem=(MousePoint.x-m_wKindExcursion-456)/(GAME_KIND_ITEM_CX+GAME_KIND_ITEM_PX);
+				INT nYItem=(MousePoint.y+m_nScrollXQp*2-GAME_KIND_ITEM_PY-326)/(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY);
+
+				//溢出判断
+				if ((MousePoint.x-m_wKindExcursion-456-(nXItem*(GAME_KIND_ITEM_CX+GAME_KIND_ITEM_PX)))>GAME_KIND_ITEM_CX) return INVALID_WORD;
+				if ((MousePoint.y+m_nScrollXQp*2-GAME_KIND_ITEM_PY-326-(nYItem*(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY)))>GAME_KIND_ITEM_CY) return INVALID_WORD;
+				int nAllCount = m_GameKindInfoActive.GetCount()/4;
+				nAllCount+=m_GameKindInfoActiveMenu.GetCount()/3;
+
+				//结果判断
+				if ((nYItem>=0)&&(nXItem>=0)&&(nYItem<=nAllCount)&&(nXItem<m_wKindXCount+3))
+				{
+					WORD wYCount = m_GameKindInfoActiveMenu.GetCount()/3;
+					if((m_GameKindInfoActiveMenu.GetCount()%3)>0)
+						wYCount++;
+					WORD wViewCount=3*wYCount;
+					WORD wResultItem=nYItem*3+nXItem;
+					if ((m_wKindPageCurrent*wViewCount+wResultItem)<m_GameKindInfoActiveMenu.GetCount())
+					{
+ 						CString strLog;
+ 						strLog.Format(L"HOVERINDEX nYItem:%d,nXItem:%d,nAllCount:%d,m_wKindXCount:%d,wResultItem:%d\n",nYItem,nXItem,nAllCount,m_wKindXCount,wResultItem+nCaiCount);
+ 						OutputDebugString(strLog);
+						return wResultItem+nCaiCount;
+					}
+				}
+
+			}
+
 			return INVALID_WORD;
 		}
 		//游戏模式，只要不返回INVALID_WORD就好
@@ -967,19 +1490,21 @@ WORD CPlazaViewItem::GetHoverIndex(CPoint MousePoint)
 		{
 			//无效判断
 			MousePoint.y-=40;
+			MousePoint.y -= m_nScrollX;
 			if (MousePoint.x<m_wKindExcursion) return INVALID_WORD;
-			if (MousePoint.y<GAME_KIND_ITEM_PY) return INVALID_WORD;
+			if (MousePoint.y+m_nScrollX*2<GAME_KIND_ITEM_PY) return INVALID_WORD;
 
 			//位置计算
 			INT nXItem=(MousePoint.x-m_wKindExcursion)/(GAME_KIND_ITEM_CX+GAME_KIND_ITEM_PX);
-			INT nYItem=(MousePoint.y-GAME_KIND_ITEM_PY)/(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY);
+			INT nYItem=(MousePoint.y+m_nScrollX*2-GAME_KIND_ITEM_PY)/(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY);
 
 			//溢出判断
 			if ((MousePoint.x-m_wKindExcursion-(nXItem*(GAME_KIND_ITEM_CX+GAME_KIND_ITEM_PX)))>GAME_KIND_ITEM_CX) return INVALID_WORD;
-			if ((MousePoint.y-GAME_KIND_ITEM_PY-(nYItem*(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY)))>GAME_KIND_ITEM_CY) return INVALID_WORD;
+			if ((MousePoint.y+m_nScrollX*2-GAME_KIND_ITEM_PY-(nYItem*(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY)))>GAME_KIND_ITEM_CY) return INVALID_WORD;
 
+			int nAllCount = m_GameKindInfoActive.GetCount()/m_wKindXCount;
 			//结果判断
-			if ((nYItem>=0)&&(nXItem>=0)&&(nYItem<m_wKindYCount)&&(nXItem<m_wKindXCount))
+			if ((nYItem>=0)&&(nXItem>=0)&&(nYItem<=nAllCount)&&(nXItem<m_wKindXCount))
 			{
 				WORD wViewCount=m_wKindXCount*m_wKindYCount;
 				WORD wResultItem=nYItem*m_wKindXCount+nXItem;
@@ -1028,13 +1553,59 @@ BYTE CPlazaViewItem::GetHoverButton(WORD wViewIndex, CPoint MousePoint)
 	{
 	case VIEW_MODE_TYPE:
 		{
-			for (BYTE i = 0;i<3;i++)
+// 			for (BYTE i = 0;i<3;i++)
+// 			{
+// 				if(m_rcTypeRect[i].PtInRect(MousePoint))
+// 				{
+// 					return i;
+// 				}
+// 			}
+
+			if(MousePoint.x <= 456)
 			{
-				if(m_rcTypeRect[i].PtInRect(MousePoint))
-				{
-					return i;
-				}
+				MousePoint.x-=(m_wKindExcursion+(wViewIndex%m_wKindXCount)*(GAME_KIND_ITEM_CX+GAME_KIND_ITEM_PX));
+				MousePoint.y-=(GAME_SERVER_ITEM_PY+326+(wViewIndex/m_wKindXCount)*(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY));
+
+				MousePoint.y-=40;
+				MousePoint.y += m_nScrollX;
+				//进入房间
+				CRect rcEnterKind(0,0,GAME_KIND_ITEM_CX,GAME_KIND_ITEM_CY);
+				if (rcEnterKind.PtInRect(MousePoint)==TRUE) return BT_ENTER_KIND;
+
 			}
+			else
+			{
+
+				WORD wViewCount = m_GameKindInfoActive.GetCount();
+				int nCaiCount = 0;
+				for(int i = 0;i <wViewCount;i++)
+				{
+					//绘画对象
+					tagGameKindInfo * pGameKindInfo=m_GameKindInfoActive[i];
+
+					if (pGameKindInfo==NULL)
+						continue;
+					if(pGameKindInfo->pGameKindItem->m_GameKind.wTypeID==1)
+					{
+						nCaiCount++;
+					}
+				}
+
+				MousePoint.x-=(m_wKindExcursion+456+((wViewIndex-nCaiCount)%3)*(GAME_KIND_ITEM_CX+GAME_KIND_ITEM_PX));
+				MousePoint.y-=(GAME_SERVER_ITEM_PY+326+((wViewIndex-nCaiCount)/3)*(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY));
+
+				MousePoint.y-=40;
+				MousePoint.y += m_nScrollXQp;
+// 				CString strLog;
+// 				strLog.Format(L"HOVERBUTTON x:%d,y:%d",MousePoint.x,MousePoint.y);
+// 				OutputDebugString(strLog);
+				//进入房间
+				CRect rcEnterKind(0,0,GAME_KIND_ITEM_CX,GAME_KIND_ITEM_CY);
+				if (rcEnterKind.PtInRect(MousePoint)==TRUE) return BT_ENTER_KIND;
+
+			}
+
+
 			return INVALID_WORD;
 		}
 	case VIEW_MODE_GAME:
@@ -1056,6 +1627,7 @@ BYTE CPlazaViewItem::GetHoverButton(WORD wViewIndex, CPoint MousePoint)
 			MousePoint.y-=(GAME_SERVER_ITEM_PY+(wViewIndex/m_wKindXCount)*(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY));
 
 			MousePoint.y-=40;
+			MousePoint.y += m_nScrollX;
 			//进入房间
 			CRect rcEnterKind(0,0,GAME_KIND_ITEM_CX,GAME_KIND_ITEM_CY);
 			if (rcEnterKind.PtInRect(MousePoint)==TRUE) return BT_ENTER_KIND;
@@ -1070,7 +1642,8 @@ BYTE CPlazaViewItem::GetHoverButton(WORD wViewIndex, CPoint MousePoint)
 
 			//进入房间
 			CRect rcEnterServer(7,179,178,219);
-			if (rcEnterServer.PtInRect(MousePoint)==TRUE) return BT_ENTER_SERVER;
+			if (rcEnterServer.PtInRect(MousePoint)==TRUE) 
+				return BT_ENTER_SERVER;
 
 			break;
 		}
@@ -1095,11 +1668,34 @@ VOID CPlazaViewItem::OnButtonViewRule(WORD wKindID)
 //进入类型
 VOID CPlazaViewItem::OnButtonEnterKind(WORD wKindID)
 {
+	CWnd *pParent = GetParent();
+	if(pParent!=NULL)
+	{
+		pParent->SendMessage(45678,1,0);
+	}
+	m_logo.ShowWindow(SW_HIDE);
+	int nAllHeight = (0)*(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY);
+	SCROLLINFO si;
+	m_VerticalScrollBar2.GetScrollInfo(&si);
+	si.nMin = 0;
+	si.nMax = nAllHeight/50;
+	si.nPage = m_wKindPageCount;
+	si.nPos = m_nScrollX/60;
+	m_VerticalScrollBar2.SetScrollInfo(&si);
+
+	//					SCROLLINFO si;
+	m_VerticalScrollBarQp.GetScrollInfo(&si);
+	si.nMin = 0;
+	si.nMax = nAllHeight/50;
+	si.nPage = m_wKindPageCount;
+	si.nPos = m_nScrollX/60;
+	m_VerticalScrollBarQp.SetScrollInfo(&si);
+
 	//查找对象
 	CServerListData * pServerListData=CServerListData::GetInstance();
 	CGameKindItem * pGameKindItem=pServerListData->SearchGameKind(wKindID);
 
-	m_btnReturn.ShowWindow(SW_SHOW);
+	m_btnReturn.ShowWindow(SW_HIDE);
 	BringWindowToTop();
 
 	m_nNowTypeID = wKindID;
@@ -1107,300 +1703,123 @@ VOID CPlazaViewItem::OnButtonEnterKind(WORD wKindID)
 	if (pGameKindItem!=NULL)
 	{
 		CaiZhong wKindID = (CaiZhong)pGameKindItem->m_GameKind.wKindID;
-		if(wKindID == CZChongQingSSC||wKindID == CZ_TianJinSSC||wKindID == CZXinJiangSSC||wKindID == CZ_FENFEN_CAI||wKindID == CZ_WUFEN_CAI||wKindID == CZ_HGYDWFC)
+		if(wKindID == CZChongQingSSC||wKindID == CZ_TianJinSSC||wKindID == CZXinJiangSSC||wKindID == CZ_TXfenfencai||wKindID == CZ_QQfenfencai||wKindID == CZ_FENFEN_CAI||wKindID == CZ_WUFEN_CAI||wKindID == CZ_HGYDWFC||wKindID == CZ_JiaNaDaSSC||wKindID == CZ_ErFenCai||wKindID == CZ_BJ5FC)
 		{
-			m_dlgChongQingSSC.SetTypeID(wKindID);
-			m_dlgChongQingSSC.ShowWindow(SW_SHOW);
-// 			m_dlgJiangXiSSC.ShowWindow(SW_HIDE);
-// 			m_dlgXinjiangSSC.ShowWindow(SW_HIDE);
-			m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
-			m_dlgChongQing11x5.ShowWindow(SW_HIDE);
-			m_dlgJiangXi11x5.ShowWindow(SW_HIDE);
-			m_dlgShanDong11x5.ShowWindow(SW_HIDE);
-			m_dlgHeiLongJiang11X5.ShowWindow(SW_HIDE);
-// 			m_dlgFenFenCai.ShowWindow(SW_HIDE);
-// 			m_dlgWuFenCai.ShowWindow(SW_HIDE);
-			m_dlgLiuHeCai.ShowWindow(SW_HIDE);
-			m_dlgQiXingCai.ShowWindow(SW_HIDE);//lly
-			m_dlgPaiLie3.ShowWindow(SW_HIDE);
-			m_dlg3D.ShowWindow(SW_HIDE);
-			m_dlgBjPK10.ShowWindow(SW_HIDE);
-			m_dlgBjKuai8.ShowWindow(SW_HIDE);
-			m_dlgXingYun28.ShowWindow(SW_HIDE);
+			if(m_dlgChongQingSSC.GetSafeHwnd()!=NULL)
+			{
+				m_dlgChongQingSSC.SetTypeID(wKindID);
+				m_dlgChongQingSSC.ShowWindow(SW_SHOW);
+
+			}
+			if (m_dlgGuangdong11x5.GetSafeHwnd())
+				m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
+			if (m_dlgLiuHeCai.GetSafeHwnd())
+				m_dlgLiuHeCai.ShowWindow(SW_HIDE);
+			if (m_dlgQiXingCai.GetSafeHwnd())
+				m_dlgQiXingCai.ShowWindow(SW_HIDE);//lly
+			if (m_dlgPaiLie3.GetSafeHwnd())
+				m_dlgPaiLie3.ShowWindow(SW_HIDE);
+			if (m_dlg3D.GetSafeHwnd())
+				m_dlg3D.ShowWindow(SW_HIDE);
+			if (m_dlgBjPK10.GetSafeHwnd())
+				m_dlgBjPK10.ShowWindow(SW_HIDE);
+			if (m_dlgBjKuai8.GetSafeHwnd())
+				m_dlgBjKuai8.ShowWindow(SW_HIDE);
+			if (m_dlgXingYun28.GetSafeHwnd())
+				m_dlgXingYun28.ShowWindow(SW_HIDE);
 
 			m_cbShowItemMode = VIEW_MODE_GAME;
 		}
-// 		else if(pGameKindItem->m_GameKind.wKindID == CZ_TianJinSSC)
-// 		{
-// 			m_dlgChongQingSSC.SetTypeID(CZ_TianJinSSC);
-// 			m_dlgChongQingSSC.ShowWindow(SW_SHOW);
-// 			//m_dlgChongQingSSC.ShowWindow(SW_HIDE);
-// 			m_dlgXinjiangSSC.ShowWindow(SW_HIDE);
-// 			m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
-// 			m_dlgChongQing11x5.ShowWindow(SW_HIDE);
-// 			m_dlgJiangXi11x5.ShowWindow(SW_HIDE);
-// 			m_dlgShanDong11x5.ShowWindow(SW_HIDE);
-// 			m_dlgHeiLongJiang11X5.ShowWindow(SW_HIDE);
-// 			m_dlgFenFenCai.ShowWindow(SW_HIDE);
-// 			m_dlgWuFenCai.ShowWindow(SW_HIDE);
-// 			m_dlgLiuHeCai.ShowWindow(SW_HIDE);
-// 			m_dlgQiXingCai.ShowWindow(SW_HIDE);//lly
-// 			m_dlgPaiLie3.ShowWindow(SW_HIDE);
-// 			m_dlg3D.ShowWindow(SW_HIDE);
-// 			m_dlgBjPK10.ShowWindow(SW_HIDE);
-// 			m_dlgBjKuai8.ShowWindow(SW_HIDE);
-// 			m_dlgXingYun28.ShowWindow(SW_HIDE);
-// 
-// 			m_cbShowItemMode = VIEW_MODE_GAME;
-// 		}
-// 		else if(pGameKindItem->m_GameKind.wKindID == CZXinJiangSSC)
-// 		{
-// 			m_dlgXinjiangSSC.SetTypeID(CZXinJiangSSC);
-// 			m_dlgXinjiangSSC.ShowWindow(SW_SHOW);
-// 			m_dlgChongQingSSC.ShowWindow(SW_HIDE);
-// 			m_dlgJiangXiSSC.ShowWindow(SW_HIDE);
-// 			m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
-// 			m_dlgChongQing11x5.ShowWindow(SW_HIDE);
-// 			m_dlgJiangXi11x5.ShowWindow(SW_HIDE);
-// 			m_dlgShanDong11x5.ShowWindow(SW_HIDE);
-// 			m_dlgHeiLongJiang11X5.ShowWindow(SW_HIDE);
-// 			m_dlgFenFenCai.ShowWindow(SW_HIDE);
-// 			m_dlgWuFenCai.ShowWindow(SW_HIDE);
-// 			m_dlgLiuHeCai.ShowWindow(SW_HIDE);
-// 			m_dlgQiXingCai.ShowWindow(SW_HIDE);//lly
-// 			m_dlgPaiLie3.ShowWindow(SW_HIDE);
-// 			m_dlg3D.ShowWindow(SW_HIDE);
-// 			m_dlgBjPK10.ShowWindow(SW_HIDE);
-// 			m_dlgBjKuai8.ShowWindow(SW_HIDE);
-// 			m_dlgXingYun28.ShowWindow(SW_HIDE);
-// 
-// 			m_cbShowItemMode = VIEW_MODE_GAME;
-// 		}
-// 		else if(pGameKindItem->m_GameKind.wKindID == CZ_FENFEN_CAI)
-// 		{
-// 			m_dlgXinjiangSSC.ShowWindow(SW_HIDE);
-// 			m_dlgChongQingSSC.ShowWindow(SW_HIDE);
-// 			m_dlgJiangXiSSC.ShowWindow(SW_HIDE);
-// 			m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
-// 			m_dlgChongQing11x5.ShowWindow(SW_HIDE);
-// 			m_dlgJiangXi11x5.ShowWindow(SW_HIDE);
-// 			m_dlgShanDong11x5.ShowWindow(SW_HIDE);
-// 			m_dlgHeiLongJiang11X5.ShowWindow(SW_HIDE);
-// 			m_dlgFenFenCai.SetTypeID(CZ_FENFEN_CAI);
-// 			m_dlgFenFenCai.ShowWindow(SW_SHOW);
-// 			m_dlgWuFenCai.ShowWindow(SW_HIDE);
-// 			m_dlgLiuHeCai.ShowWindow(SW_HIDE);
-// 			m_dlgQiXingCai.ShowWindow(SW_HIDE);//lly
-// 			m_dlgPaiLie3.ShowWindow(SW_HIDE);
-// 			m_dlg3D.ShowWindow(SW_HIDE);
-// 			m_dlgBjPK10.ShowWindow(SW_HIDE);
-// 			m_dlgBjKuai8.ShowWindow(SW_HIDE);
-// 			m_dlgXingYun28.ShowWindow(SW_HIDE);
-// 
-// 			m_cbShowItemMode = VIEW_MODE_GAME;
-// 		}
-// 		else if(pGameKindItem->m_GameKind.wKindID == CZ_WUFEN_CAI)
-// 		{
-// 			m_dlgXinjiangSSC.ShowWindow(SW_HIDE);
-// 			m_dlgChongQingSSC.ShowWindow(SW_HIDE);
-// 			m_dlgJiangXiSSC.ShowWindow(SW_HIDE);
-// 			m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
-// 			m_dlgChongQing11x5.ShowWindow(SW_HIDE);
-// 			m_dlgJiangXi11x5.ShowWindow(SW_HIDE);
-// 			m_dlgShanDong11x5.ShowWindow(SW_HIDE);
-// 			m_dlgHeiLongJiang11X5.ShowWindow(SW_HIDE);
-// 			m_dlgFenFenCai.ShowWindow(SW_HIDE);
-// 			m_dlgWuFenCai.SetTypeID(CZ_WUFEN_CAI);
-// 			m_dlgWuFenCai.ShowWindow(SW_SHOW);
-// 			m_dlgLiuHeCai.ShowWindow(SW_HIDE);
-// 			m_dlgQiXingCai.ShowWindow(SW_HIDE);//lly
-// 			m_dlgPaiLie3.ShowWindow(SW_HIDE);
-// 			m_dlg3D.ShowWindow(SW_HIDE);
-// 			m_dlgBjPK10.ShowWindow(SW_HIDE);
-// 			m_dlgBjKuai8.ShowWindow(SW_HIDE);
-// 			m_dlgXingYun28.ShowWindow(SW_HIDE);
-// 
-// 			m_cbShowItemMode = VIEW_MODE_GAME;
-// 		}
 		else if(wKindID == CZGD11Xuan5||wKindID == CZJX11Xuan5||wKindID == CZSD11Xuan5||wKindID == CZHLJ11Xuan5)
 		{
-//			m_dlgXinjiangSSC.ShowWindow(SW_HIDE);
+			if (m_dlgChongQingSSC.GetSafeHwnd())
 			m_dlgChongQingSSC.ShowWindow(SW_HIDE);
-// 			m_dlgJiangXiSSC.ShowWindow(SW_HIDE);
 			m_dlgGuangdong11x5.SetTypeID(wKindID);
+			if (m_dlgGuangdong11x5.GetSafeHwnd())
 			m_dlgGuangdong11x5.ShowWindow(SW_SHOW);
-// 			m_dlgChongQing11x5.ShowWindow(SW_HIDE);
-// 			m_dlgJiangXi11x5.ShowWindow(SW_HIDE);
-// 			m_dlgShanDong11x5.ShowWindow(SW_HIDE);
-// 			m_dlgHeiLongJiang11X5.ShowWindow(SW_HIDE);
-// 			m_dlgFenFenCai.ShowWindow(SW_HIDE);
-// 			m_dlgWuFenCai.ShowWindow(SW_HIDE);
-			m_dlgLiuHeCai.ShowWindow(SW_HIDE);
+			if (m_dlgLiuHeCai.GetSafeHwnd())
+				m_dlgLiuHeCai.ShowWindow(SW_HIDE);
+			if (m_dlgQiXingCai.GetSafeHwnd())
 			m_dlgQiXingCai.ShowWindow(SW_HIDE);//lly
+			if (m_dlgPaiLie3.GetSafeHwnd())
 			m_dlgPaiLie3.ShowWindow(SW_HIDE);
+			if (m_dlg3D.GetSafeHwnd())
 			m_dlg3D.ShowWindow(SW_HIDE);
+			if (m_dlgBjPK10.GetSafeHwnd())
 			m_dlgBjPK10.ShowWindow(SW_HIDE);
+			if (m_dlgBjKuai8.GetSafeHwnd())
 			m_dlgBjKuai8.ShowWindow(SW_HIDE);
+			if (m_dlgXingYun28.GetSafeHwnd())
 			m_dlgXingYun28.ShowWindow(SW_HIDE);
 
 			m_cbShowItemMode = VIEW_MODE_GAME;
 		}
-// 		else if(pGameKindItem->m_GameKind.wKindID == CZCQ11Xuan5)
-// 		{
-// 			m_dlgXinjiangSSC.ShowWindow(SW_HIDE);
-// 			m_dlgChongQingSSC.ShowWindow(SW_HIDE);
-// 			m_dlgJiangXiSSC.ShowWindow(SW_HIDE);
-// 			m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
-// 			m_dlgChongQing11x5.ShowWindow(SW_SHOW);
-// 			m_dlgJiangXi11x5.ShowWindow(SW_HIDE);
-// 			m_dlgShanDong11x5.ShowWindow(SW_HIDE);
-// 			m_dlgHeiLongJiang11X5.ShowWindow(SW_HIDE);
-// 			m_dlgFenFenCai.ShowWindow(SW_HIDE);
-// 			m_dlgWuFenCai.ShowWindow(SW_HIDE);
-// 			m_dlgLiuHeCai.ShowWindow(SW_HIDE);
-// 			m_dlgQiXingCai.ShowWindow(SW_HIDE);//lly
-// 			m_dlgPaiLie3.ShowWindow(SW_HIDE);
-// 			m_dlg3D.ShowWindow(SW_HIDE);
-// 			m_dlgBjPK10.ShowWindow(SW_HIDE);
-// 			m_dlgBjKuai8.ShowWindow(SW_HIDE);
-// 			m_dlgXingYun28.ShowWindow(SW_HIDE);
-// 
-// 			m_cbShowItemMode = VIEW_MODE_GAME;
-// 		}
-// 		else if(pGameKindItem->m_GameKind.wKindID == CZJX11Xuan5)
-// 		{
-// 			m_dlgXinjiangSSC.ShowWindow(SW_HIDE);
-// 			m_dlgChongQingSSC.ShowWindow(SW_HIDE);
-// 			m_dlgJiangXiSSC.ShowWindow(SW_HIDE);
-// 			m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
-// 			m_dlgChongQing11x5.ShowWindow(SW_HIDE);
-// 			m_dlgJiangXi11x5.SetTypeID(CZJX11Xuan5);
-// 			m_dlgJiangXi11x5.ShowWindow(SW_SHOW);
-// 			m_dlgShanDong11x5.ShowWindow(SW_HIDE);
-// 			m_dlgHeiLongJiang11X5.ShowWindow(SW_HIDE);
-// 			m_dlgFenFenCai.ShowWindow(SW_HIDE);
-// 			m_dlgWuFenCai.ShowWindow(SW_HIDE);
-// 			m_dlgLiuHeCai.ShowWindow(SW_HIDE);
-// 			m_dlgQiXingCai.ShowWindow(SW_HIDE);//lly
-// 			m_dlgPaiLie3.ShowWindow(SW_HIDE);
-// 			m_dlg3D.ShowWindow(SW_HIDE);
-// 			m_dlgBjPK10.ShowWindow(SW_HIDE);
-// 			m_dlgBjKuai8.ShowWindow(SW_HIDE);
-// 			m_dlgXingYun28.ShowWindow(SW_HIDE);
-// 
-// 			m_cbShowItemMode = VIEW_MODE_GAME;
-// 		}
-// 		else if(pGameKindItem->m_GameKind.wKindID == CZSD11Xuan5)
-// 		{
-// 			m_dlgXinjiangSSC.ShowWindow(SW_HIDE);
-// 			m_dlgChongQingSSC.ShowWindow(SW_HIDE);
-// 			m_dlgJiangXiSSC.ShowWindow(SW_HIDE);
-// 			m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
-// 			m_dlgChongQing11x5.ShowWindow(SW_HIDE);
-// 			m_dlgJiangXi11x5.ShowWindow(SW_HIDE);
-// 			m_dlgShanDong11x5.SetTypeID(CZSD11Xuan5);
-// 			m_dlgShanDong11x5.ShowWindow(SW_SHOW);
-// 			m_dlgHeiLongJiang11X5.ShowWindow(SW_HIDE);
-// 			m_dlgFenFenCai.ShowWindow(SW_HIDE);
-// 			m_dlgLiuHeCai.ShowWindow(SW_HIDE);
-// 			m_dlgWuFenCai.ShowWindow(SW_HIDE);
-// 			m_dlgQiXingCai.ShowWindow(SW_HIDE);//lly
-// 			m_dlgPaiLie3.ShowWindow(SW_HIDE);
-// 			m_dlg3D.ShowWindow(SW_HIDE);
-// 			m_dlgBjPK10.ShowWindow(SW_HIDE);
-// 			m_dlgBjKuai8.ShowWindow(SW_HIDE);
-// 			m_dlgXingYun28.ShowWindow(SW_HIDE);
-// 
-// 			m_cbShowItemMode = VIEW_MODE_GAME;
-// 		}
 		else if(pGameKindItem->m_GameKind.wKindID == CZ_PK10)
 		{
-			m_dlgXinjiangSSC.ShowWindow(SW_HIDE);
+			if (m_dlgChongQingSSC.GetSafeHwnd())
 			m_dlgChongQingSSC.ShowWindow(SW_HIDE);
-			m_dlgJiangXiSSC.ShowWindow(SW_HIDE);
+			if (m_dlgGuangdong11x5.GetSafeHwnd())
 			m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
-			m_dlgChongQing11x5.ShowWindow(SW_HIDE);
-			m_dlgJiangXi11x5.ShowWindow(SW_HIDE);
-			m_dlgShanDong11x5.ShowWindow(SW_HIDE);
-			m_dlgHeiLongJiang11X5.ShowWindow(SW_HIDE);
-			m_dlgFenFenCai.ShowWindow(SW_HIDE);
-			m_dlgLiuHeCai.ShowWindow(SW_HIDE);
-			m_dlgWuFenCai.ShowWindow(SW_HIDE);
+			if (m_dlgLiuHeCai.GetSafeHwnd())
+				m_dlgLiuHeCai.ShowWindow(SW_HIDE);
+			if (m_dlgQiXingCai.GetSafeHwnd())
 			m_dlgQiXingCai.ShowWindow(SW_HIDE);//lly
+			if (m_dlgPaiLie3.GetSafeHwnd())
 			m_dlgPaiLie3.ShowWindow(SW_HIDE);
+			if (m_dlg3D.GetSafeHwnd())
 			m_dlg3D.ShowWindow(SW_HIDE);
-			m_dlg3D.ShowWindow(SW_HIDE);
+			if (m_dlgBjPK10.GetSafeHwnd())
 			m_dlgBjPK10.ShowWindow(SW_SHOW);
+			if (m_dlgBjKuai8.GetSafeHwnd())
 			m_dlgBjKuai8.ShowWindow(SW_HIDE);
+			if (m_dlgXingYun28.GetSafeHwnd())
 			m_dlgXingYun28.ShowWindow(SW_HIDE);
 
 			m_cbShowItemMode = VIEW_MODE_GAME;
 		}
 		else if(pGameKindItem->m_GameKind.wKindID == CZ_LIUHECAI)
 		{
-			m_dlgChongQingSSC.ShowWindow(SW_HIDE);
-			m_dlgJiangXiSSC.ShowWindow(SW_HIDE);
-			m_dlgXinjiangSSC.ShowWindow(SW_HIDE);
-			m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
-			m_dlgChongQing11x5.ShowWindow(SW_HIDE);
-			m_dlgJiangXi11x5.ShowWindow(SW_HIDE);
-			m_dlgShanDong11x5.ShowWindow(SW_HIDE);
-			m_dlgHeiLongJiang11X5.ShowWindow(SW_HIDE);
-			m_dlgFenFenCai.ShowWindow(SW_HIDE);
-			m_dlgWuFenCai.ShowWindow(SW_HIDE);
-			m_dlgLiuHeCai.ShowWindow(SW_SHOW);
-			m_dlgQiXingCai.ShowWindow(SW_HIDE);//lly
-			m_dlgPaiLie3.ShowWindow(SW_HIDE);
-			m_dlg3D.ShowWindow(SW_HIDE);
-			m_dlgBjPK10.ShowWindow(SW_HIDE);
-			m_dlgBjKuai8.ShowWindow(SW_HIDE);
-			m_dlgXingYun28.ShowWindow(SW_HIDE);
-			//m_btnReturn.ShowWindow(SW_HIDE);
+			if (m_dlgChongQingSSC.GetSafeHwnd())
+				m_dlgChongQingSSC.ShowWindow(SW_HIDE);
+			if (m_dlgGuangdong11x5.GetSafeHwnd())
+				m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
+			if (m_dlgLiuHeCai.GetSafeHwnd())
+				m_dlgLiuHeCai.ShowWindow(SW_SHOW);
+			if (m_dlgQiXingCai.GetSafeHwnd())
+				m_dlgQiXingCai.ShowWindow(SW_HIDE);//lly
+			if (m_dlgPaiLie3.GetSafeHwnd())
+				m_dlgPaiLie3.ShowWindow(SW_HIDE);
+			if (m_dlg3D.GetSafeHwnd())
+				m_dlg3D.ShowWindow(SW_HIDE);
+			if (m_dlgBjPK10.GetSafeHwnd())
+				m_dlgBjPK10.ShowWindow(SW_HIDE);
+			if (m_dlgBjKuai8.GetSafeHwnd())
+				m_dlgBjKuai8.ShowWindow(SW_HIDE);
+			if (m_dlgXingYun28.GetSafeHwnd())
+				m_dlgXingYun28.ShowWindow(SW_HIDE);
+				//m_btnReturn.ShowWindow(SW_HIDE);
 			m_cbShowItemMode = VIEW_MODE_GAME;
 
 		}
-// 		else if(pGameKindItem->m_GameKind.wKindID == CZHLJ11Xuan5)
-// 		{
-// 			m_dlgChongQingSSC.ShowWindow(SW_HIDE);
-// 			m_dlgJiangXiSSC.ShowWindow(SW_HIDE);
-// 			m_dlgXinjiangSSC.ShowWindow(SW_HIDE);
-// 			m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
-// 			m_dlgChongQing11x5.ShowWindow(SW_HIDE);
-// 			m_dlgJiangXi11x5.ShowWindow(SW_HIDE);
-// 			m_dlgShanDong11x5.ShowWindow(SW_HIDE);
-// 			m_dlgHeiLongJiang11X5.SetTypeID(CZHLJ11Xuan5);
-// 			m_dlgHeiLongJiang11X5.ShowWindow(SW_SHOW);
-// 			m_dlgFenFenCai.ShowWindow(SW_HIDE);
-// 			m_dlgWuFenCai.ShowWindow(SW_HIDE);
-// 			m_dlgLiuHeCai.ShowWindow(SW_HIDE);
-// 			m_dlgQiXingCai.ShowWindow(SW_HIDE);//lly
-// 			m_dlgPaiLie3.ShowWindow(SW_HIDE);
-// 			m_dlg3D.ShowWindow(SW_HIDE);
-// 			m_dlgBjPK10.ShowWindow(SW_HIDE);
-// 			m_dlgBjKuai8.ShowWindow(SW_HIDE);
-// 			m_dlgXingYun28.ShowWindow(SW_HIDE);
-// 
-// 			m_cbShowItemMode = VIEW_MODE_GAME;
-// 
-// 		}
 		else if(pGameKindItem->m_GameKind.wKindID == CZ_QiXingCai)
 		{
+			if (m_dlgChongQingSSC.GetSafeHwnd())
 			m_dlgChongQingSSC.ShowWindow(SW_HIDE);
-			m_dlgJiangXiSSC.ShowWindow(SW_HIDE);
-			m_dlgXinjiangSSC.ShowWindow(SW_HIDE);
+			if (m_dlgGuangdong11x5.GetSafeHwnd())
 			m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
-			m_dlgChongQing11x5.ShowWindow(SW_HIDE);
-			m_dlgJiangXi11x5.ShowWindow(SW_HIDE);
-			m_dlgShanDong11x5.ShowWindow(SW_HIDE);
-			m_dlgHeiLongJiang11X5.ShowWindow(SW_HIDE);
-			m_dlgFenFenCai.ShowWindow(SW_HIDE);
-			m_dlgWuFenCai.ShowWindow(SW_HIDE);
-			m_dlgLiuHeCai.ShowWindow(SW_HIDE);
+			if (m_dlgLiuHeCai.GetSafeHwnd())
+				m_dlgLiuHeCai.ShowWindow(SW_HIDE);
+			if (m_dlgQiXingCai.GetSafeHwnd())
 			m_dlgQiXingCai.ShowWindow(SW_SHOW);//lly
+			if (m_dlgPaiLie3.GetSafeHwnd())
 			m_dlgPaiLie3.ShowWindow(SW_HIDE);
+			if (m_dlg3D.GetSafeHwnd())
 			m_dlg3D.ShowWindow(SW_HIDE);
+			if (m_dlgBjPK10.GetSafeHwnd())
 			m_dlgBjPK10.ShowWindow(SW_HIDE);
+			if (m_dlgBjKuai8.GetSafeHwnd())
 			m_dlgBjKuai8.ShowWindow(SW_HIDE);
+			if (m_dlgXingYun28.GetSafeHwnd())
 			m_dlgXingYun28.ShowWindow(SW_HIDE);
 
 			m_cbShowItemMode = VIEW_MODE_GAME;
@@ -1408,101 +1827,120 @@ VOID CPlazaViewItem::OnButtonEnterKind(WORD wKindID)
 		}
 		else if(pGameKindItem->m_GameKind.wKindID == CZPaiLie3)
 		{
-			m_dlgChongQingSSC.ShowWindow(SW_HIDE);
-			m_dlgJiangXiSSC.ShowWindow(SW_HIDE);
-			m_dlgXinjiangSSC.ShowWindow(SW_HIDE);
-			m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
-			m_dlgChongQing11x5.ShowWindow(SW_HIDE);
-			m_dlgJiangXi11x5.ShowWindow(SW_HIDE);
-			m_dlgShanDong11x5.ShowWindow(SW_HIDE);
-			m_dlgHeiLongJiang11X5.ShowWindow(SW_HIDE);
-			m_dlgFenFenCai.ShowWindow(SW_HIDE);
-			m_dlgWuFenCai.ShowWindow(SW_HIDE);
-			m_dlgLiuHeCai.ShowWindow(SW_HIDE);
-			m_dlgQiXingCai.ShowWindow(SW_HIDE);//lly
-			m_dlgPaiLie3.ShowWindow(SW_SHOW);
-			m_dlg3D.ShowWindow(SW_HIDE);
-			m_dlgBjPK10.ShowWindow(SW_HIDE);
-			m_dlgBjKuai8.ShowWindow(SW_HIDE);
-			m_dlgXingYun28.ShowWindow(SW_HIDE);
+			if (m_dlgChongQingSSC.GetSafeHwnd())
+				m_dlgChongQingSSC.ShowWindow(SW_HIDE);
+			if (m_dlgGuangdong11x5.GetSafeHwnd())
+				m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
+			if (m_dlgLiuHeCai.GetSafeHwnd())
+				m_dlgLiuHeCai.ShowWindow(SW_HIDE);
+			if (m_dlgQiXingCai.GetSafeHwnd())
+				m_dlgQiXingCai.ShowWindow(SW_HIDE);//lly
+			if (m_dlgPaiLie3.GetSafeHwnd())
+				m_dlgPaiLie3.ShowWindow(SW_SHOW);
+			if (m_dlg3D.GetSafeHwnd())
+				m_dlg3D.ShowWindow(SW_HIDE);
+			if (m_dlgBjPK10.GetSafeHwnd())
+				m_dlgBjPK10.ShowWindow(SW_HIDE);
+			if (m_dlgBjKuai8.GetSafeHwnd())
+				m_dlgBjKuai8.ShowWindow(SW_HIDE);
+			if (m_dlgXingYun28.GetSafeHwnd())
+				m_dlgXingYun28.ShowWindow(SW_HIDE);
 
 			m_cbShowItemMode = VIEW_MODE_GAME;
 
 		}
 		else if(pGameKindItem->m_GameKind.wKindID == CZ3D)
 		{
-			m_dlgChongQingSSC.ShowWindow(SW_HIDE);
-			m_dlgJiangXiSSC.ShowWindow(SW_HIDE);
-			m_dlgXinjiangSSC.ShowWindow(SW_HIDE);
-			m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
-			m_dlgChongQing11x5.ShowWindow(SW_HIDE);
-			m_dlgJiangXi11x5.ShowWindow(SW_HIDE);
-			m_dlgShanDong11x5.ShowWindow(SW_HIDE);
-			m_dlgHeiLongJiang11X5.ShowWindow(SW_HIDE);
-			m_dlgFenFenCai.ShowWindow(SW_HIDE);
-			m_dlgWuFenCai.ShowWindow(SW_HIDE);
-			m_dlgLiuHeCai.ShowWindow(SW_HIDE);
-			m_dlgQiXingCai.ShowWindow(SW_HIDE);//lly
-			m_dlgPaiLie3.ShowWindow(SW_HIDE);
-			m_dlg3D.ShowWindow(SW_SHOW);
-			m_dlgBjPK10.ShowWindow(SW_HIDE);
-			m_dlgBjKuai8.ShowWindow(SW_HIDE);
-			m_dlgXingYun28.ShowWindow(SW_HIDE);
+			if (m_dlgChongQingSSC.GetSafeHwnd())
+				m_dlgChongQingSSC.ShowWindow(SW_HIDE);
+			if (m_dlgGuangdong11x5.GetSafeHwnd())
+				m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
+			if (m_dlgLiuHeCai.GetSafeHwnd())
+				m_dlgLiuHeCai.ShowWindow(SW_HIDE);
+			if (m_dlgQiXingCai.GetSafeHwnd())
+				m_dlgQiXingCai.ShowWindow(SW_HIDE);//lly
+			if (m_dlgPaiLie3.GetSafeHwnd())
+				m_dlgPaiLie3.ShowWindow(SW_HIDE);
+			if (m_dlg3D.GetSafeHwnd())
+				m_dlg3D.ShowWindow(SW_SHOW);
+			if (m_dlgBjPK10.GetSafeHwnd())
+				m_dlgBjPK10.ShowWindow(SW_HIDE);
+			if (m_dlgBjKuai8.GetSafeHwnd())
+				m_dlgBjKuai8.ShowWindow(SW_HIDE);
+			if (m_dlgXingYun28.GetSafeHwnd())
+				m_dlgXingYun28.ShowWindow(SW_HIDE);
+
 
 			m_cbShowItemMode = VIEW_MODE_GAME;
 
 		}
 		else if(pGameKindItem->m_GameKind.wKindID == CZKUAILE8)
 		{
-			m_dlgChongQingSSC.ShowWindow(SW_HIDE);
-			m_dlgJiangXiSSC.ShowWindow(SW_HIDE);
-			m_dlgXinjiangSSC.ShowWindow(SW_HIDE);
-			m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
-			m_dlgChongQing11x5.ShowWindow(SW_HIDE);
-			m_dlgJiangXi11x5.ShowWindow(SW_HIDE);
-			m_dlgShanDong11x5.ShowWindow(SW_HIDE);
-			m_dlgHeiLongJiang11X5.ShowWindow(SW_HIDE);
-			m_dlgFenFenCai.ShowWindow(SW_HIDE);
-			m_dlgWuFenCai.ShowWindow(SW_HIDE);
-			m_dlgLiuHeCai.ShowWindow(SW_HIDE);
-			m_dlgQiXingCai.ShowWindow(SW_HIDE);//lly
-			m_dlgPaiLie3.ShowWindow(SW_HIDE);
-			m_dlg3D.ShowWindow(SW_HIDE);
-			m_dlgBjPK10.ShowWindow(SW_HIDE);
-			m_dlgBjKuai8.ShowWindow(SW_SHOW);
-			m_dlgXingYun28.ShowWindow(SW_HIDE);
+			if (m_dlgChongQingSSC.GetSafeHwnd())
+				m_dlgChongQingSSC.ShowWindow(SW_HIDE);
+			if (m_dlgGuangdong11x5.GetSafeHwnd())
+				m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
+			if (m_dlgLiuHeCai.GetSafeHwnd())
+				m_dlgLiuHeCai.ShowWindow(SW_HIDE);
+			if (m_dlgQiXingCai.GetSafeHwnd())
+				m_dlgQiXingCai.ShowWindow(SW_HIDE);//lly
+			if (m_dlgPaiLie3.GetSafeHwnd())
+				m_dlgPaiLie3.ShowWindow(SW_HIDE);
+			if (m_dlg3D.GetSafeHwnd())
+				m_dlg3D.ShowWindow(SW_HIDE);
+			if (m_dlgBjPK10.GetSafeHwnd())
+				m_dlgBjPK10.ShowWindow(SW_HIDE);
+			if (m_dlgBjKuai8.GetSafeHwnd())
+				m_dlgBjKuai8.ShowWindow(SW_SHOW);
+			if (m_dlgXingYun28.GetSafeHwnd())
+				m_dlgXingYun28.ShowWindow(SW_HIDE);
+
 
 			m_cbShowItemMode = VIEW_MODE_GAME;
 
 		}
 		else if(pGameKindItem->m_GameKind.wKindID == CZXingYun28)
 		{
-			m_dlgChongQingSSC.ShowWindow(SW_HIDE);
-			m_dlgJiangXiSSC.ShowWindow(SW_HIDE);
-			m_dlgXinjiangSSC.ShowWindow(SW_HIDE);
-			m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
-			m_dlgChongQing11x5.ShowWindow(SW_HIDE);
-			m_dlgJiangXi11x5.ShowWindow(SW_HIDE);
-			m_dlgShanDong11x5.ShowWindow(SW_HIDE);
-			m_dlgHeiLongJiang11X5.ShowWindow(SW_HIDE);
-			m_dlgFenFenCai.ShowWindow(SW_HIDE);
-			m_dlgWuFenCai.ShowWindow(SW_HIDE);
-			m_dlgLiuHeCai.ShowWindow(SW_HIDE);
-			m_dlgQiXingCai.ShowWindow(SW_HIDE);//lly
-			m_dlgPaiLie3.ShowWindow(SW_HIDE);
-			m_dlg3D.ShowWindow(SW_HIDE);
-			m_dlgBjPK10.ShowWindow(SW_HIDE);
-			m_dlgBjKuai8.ShowWindow(SW_HIDE);
-			m_dlgXingYun28.ShowWindow(SW_SHOW);
+			if (m_dlgChongQingSSC.GetSafeHwnd())
+				m_dlgChongQingSSC.ShowWindow(SW_HIDE);
+			if (m_dlgGuangdong11x5.GetSafeHwnd())
+				m_dlgGuangdong11x5.ShowWindow(SW_HIDE);
+			if (m_dlgLiuHeCai.GetSafeHwnd())
+				m_dlgLiuHeCai.ShowWindow(SW_HIDE);
+			if (m_dlgQiXingCai.GetSafeHwnd())
+				m_dlgQiXingCai.ShowWindow(SW_HIDE);//lly
+			if (m_dlgPaiLie3.GetSafeHwnd())
+				m_dlgPaiLie3.ShowWindow(SW_HIDE);
+			if (m_dlg3D.GetSafeHwnd())
+				m_dlg3D.ShowWindow(SW_HIDE);
+			if (m_dlgBjPK10.GetSafeHwnd())
+				m_dlgBjPK10.ShowWindow(SW_HIDE);
+			if (m_dlgBjKuai8.GetSafeHwnd())
+				m_dlgBjKuai8.ShowWindow(SW_HIDE);
+			if (m_dlgXingYun28.GetSafeHwnd())
+				m_dlgXingYun28.ShowWindow(SW_SHOW);
 
 			m_cbShowItemMode = VIEW_MODE_GAME;
 
 		}
 		else if (pGameKindItem->m_dwProcessVersion==0L && pGameKindItem->m_GameKind.wKindID>100)
 		{
-			//安装游戏
+			m_nNowTypeID=0;			//认为是没有选中;或者是需要下载游戏
+			//安装棋牌游戏
 			CGlobalUnits * pGlobalUnits=CGlobalUnits::GetInstance();
 			pGlobalUnits->DownLoadClient(pGameKindItem->m_GameKind.szKindName,wKindID,0);
+		}
+		else if(pGameKindItem->m_GameKind.wKindID>100)
+		{
+			//显示棋牌游戏的房间，提供选择以及进入房间
+			ShowServerItemView(wKindID, false, false);
+			CDlgShowQPServer	qpServer;
+			int wViewCount = m_wServerXCount*m_wServerYCount;
+			qpServer.SetDataPrt(m_GameServerInfoActive, wViewCount, wViewCount*m_wServerPageCurrent, m_wServerXCount);
+			qpServer.DoModal();
+			DWORD dwServerID = qpServer.GetSelServerID();
+			OnButtonEnterServer(dwServerID);
+			m_nNowTypeID=0;
 		}
 		else
 		{
@@ -1510,6 +1948,14 @@ VOID CPlazaViewItem::OnButtonEnterKind(WORD wKindID)
 			ShowServerItemView(wKindID);
 		}
 	}
+	CRect rcClient;
+	GetClientRect(&rcClient);
+
+	CRect rcRedraw;
+	rcRedraw.CopyRect(rcClient);
+	rcRedraw.top+= 30;
+	//更新界面
+	RedrawWindow(&rcRedraw,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ERASENOW);
 
 	return;
 }
@@ -1520,8 +1966,11 @@ VOID CPlazaViewItem::OnButtonEnterServer(WORD wServerID)
 	//获取对象
 	CPlatformFrame * pPlatformFrame=CPlatformFrame::GetInstance();
 	CServerListData * pServerListData=CServerListData::GetInstance();
+	if(pPlatformFrame==NULL)
+		return;
 
-	m_cbShowItemMode = VIEW_MODE_SERVER;
+	//2018.9.3  针对弹出窗口
+//	m_cbShowItemMode = VIEW_MODE_SERVER;
 	//进入房间
 	CGameServerItem * pGameServerItem=pServerListData->SearchGameServer(wServerID);
 	if (pGameServerItem!=NULL) pPlatformFrame->EntranceServerItem(pGameServerItem);
@@ -1579,6 +2028,14 @@ VOID CPlazaViewItem::OnBnClickedReturnHall()
 }
  void CPlazaViewItem::OnBnClickedReturnUppage()
  {
+	 SCROLLINFO si;
+	 m_VerticalScrollBar2.GetScrollInfo(&si);
+	 si.nMin = 50;
+	 si.nMax = 30;
+	 si.nPage = m_wKindPageCount;
+	 si.nPos = m_nScrollX/30;
+	 m_VerticalScrollBar2.SetScrollInfo(&si);
+
 	 if(m_nRecordKindID == 1000 && m_nRecordTypeID != 1000)
 	 {
 		 CWnd* pParent = GetParent();
@@ -1663,72 +2120,131 @@ BOOL CPlazaViewItem::OnEraseBkgnd(CDC * pDC)
 	CImageDC BufferDC(ImageBuffer);
 	CDC * pBufferDC=CDC::FromHandle(BufferDC);
 
+	bool	bQiPaiStyle = false;
+	if(m_nNowTypeID >= 100)
+		bQiPaiStyle = true;
+
 	//绘画背景
-	CBitImage ImageGround;
-	ImageGround.LoadFromResource(AfxGetInstanceHandle(),IDB_PLAZA_GROUND1);
-	ImageGround.DrawImageTile(pBufferDC,0,-3,ImageGround.GetWidth(),ImageGround.GetHeight()/*rcClient.Width(),rcClient.Height()*/);
+	CPngImage ImageGround;
+	if(bQiPaiStyle)
+	{
+		ImageGround.LoadImage(AfxGetInstanceHandle(),TEXT("PNG_PLAZA_QP_GAME"));
+		ImageGround.DrawImage(pBufferDC,0,0);
+	}
+	else
+	{
+		ImageGround.LoadImage(AfxGetInstanceHandle(),TEXT("PNG_PLAZA_GROUND"));
+		ImageGround.DrawImage(pBufferDC,0,0);
+	}
 
 	//绘画界面
 	switch (m_cbShowItemMode)
 	{
 	case VIEW_MODE_TYPE:
 		{
-			//绘画背景
-			CBitImage ImageGround;
-			ImageGround.LoadFromResource(AfxGetInstanceHandle(),IDB_PLAZA_GROUND);
-			ImageGround.DrawImageTile(pBufferDC,0,0,ImageGround.GetWidth(),ImageGround.GetHeight()/*rcClient.Width(),rcClient.Height()*/);
-
 			if(!m_logo.IsWindowVisible())
 				m_logo.ShowWindow(SW_SHOW);
-			CPngImage ImageTypeCP;
-			ImageTypeCP.LoadImage(AfxGetInstanceHandle(),TEXT("TYPE_CP"));
+			//BY 8.23  注释之后，导致上下混轮的华东范围变化。！！！
+			
+			//变量定义
+			WORD wViewCount=m_GameKindInfoActive.GetCount();
+			WORD wStartIndex=wViewCount*m_wKindPageCurrent;
 
-			//获取大小
-			CSize SizeEnterType;
-			SizeEnterType.SetSize(ImageTypeCP.GetWidth()/5L,ImageTypeCP.GetHeight());
+			int nCaiCount = 0;
+			for(int i = 0;i <wViewCount;i++)
+			{
+				//绘画对象
+				tagGameKindInfo * pGameKindInfo=m_GameKindInfoActive[wStartIndex+i];
+
+				if (pGameKindInfo==NULL)
+					continue;
+				if(pGameKindInfo->pGameKindItem->m_GameKind.wTypeID==1)
+				{
+					nCaiCount++;
+				}
+			}
+			int nIndexC =0;			//C彩。
+			int nIndexQ = 0;		//棋牌
+			//绘画类型
+			for (WORD i=0;i<wViewCount;i++)
+			{
+				//完成判断
+				if ((wStartIndex+i)>=m_GameKindInfoActive.GetCount())
+				{
+					break;
+				}
+				//绘画对象
+				tagGameKindInfo * pGameKindInfo=m_GameKindInfoActive[wStartIndex+i];
+
+				if (pGameKindInfo==NULL)
+					continue;
+				int nTypeID = pGameKindInfo->pGameKindItem->m_GameKind.wTypeID;
+				int nSortID = pGameKindInfo->pGameKindItem->m_GameKind.wSortID;
+
+				INT nXDrawPos=m_wKindExcursion+(nIndexC%m_wKindXCount)*(GAME_KIND_ITEM_CX+GAME_KIND_ITEM_PX);
+				INT nYDrawPos=GAME_KIND_ITEM_PY+(nIndexC/m_wKindXCount)*(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY)+326;
+
+				nYDrawPos+=40;
+				nYDrawPos -= m_nScrollX;
+				int nItem = (nTypeID-1)*m_wKindXCount+(nSortID-1);
 
 
-			//进入游戏
-			INT nXEnterIndexCp=0;
-			bool bEnterButtonDownCp=((m_wViewItemDown==0)&&(m_cbButtonDown==0));
-			bool bEnterButtonHoverCp=((m_wViewItemHover==0)&&(m_cbButtonHover==0));
+				DrawKindItem(pBufferDC,nIndexC,nXDrawPos,nYDrawPos,pGameKindInfo);
+				nIndexC++;
+			}
 
-			//进入游戏
-			if ((bEnterButtonHoverCp==true)&&(bEnterButtonDownCp==true)) nXEnterIndexCp=1;
-			if ((bEnterButtonHoverCp==true)&&(bEnterButtonDownCp==false)) nXEnterIndexCp=2;
+			wViewCount=m_GameKindInfoActiveMenu.GetCount();
+
+			//绘画类型
+			for (WORD i=0;i<wViewCount;i++)
+			{
+				//完成判断
+				if ((wStartIndex+i)>=wViewCount)
+				{
+					break;
+				}
+				//绘画对象
+				tagGameKindInfo * pGameKindInfo=m_GameKindInfoActiveMenu[wStartIndex+i];
+
+				if (pGameKindInfo==NULL)
+					continue;
+				int nTypeID = pGameKindInfo->pGameKindItem->m_GameKind.wTypeID;
+				int nSortID = pGameKindInfo->pGameKindItem->m_GameKind.wSortID;
+
+				INT nXDrawPos=m_wKindExcursion+448+((nIndexQ)%3)*(GAME_KIND_ITEM_CX+GAME_KIND_ITEM_PX);
+				INT nYDrawPos=GAME_KIND_ITEM_PY+((nIndexQ)/3)*(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY)+326;
+
+				nYDrawPos+=40;
+				nYDrawPos -= m_nScrollXQp;
+				int nItem = (nTypeID-1)*3+(nSortID-1);
 
 
-		//	ImageEnterKind.DrawImage(pDC,nXPos,nYPos,SizeEnterKind.cx,SizeEnterKind.cy,nXEnterIndex*SizeEnterKind.cx,0);
+// 				CString strLog;
+// 				strLog.Format(L"DRAWKIND m_wViewItemHover:%d,nIndexQ:%d,NAME:%s,m_cbButtonDown:%d",m_wViewItemHover,nIndexQ,pGameKindInfo->pGameKindItem->m_GameKind.szKindName,m_cbButtonDown);
+// 				OutputDebugString(strLog);
 
-			ImageTypeCP.DrawImage(pBufferDC,m_rcTypeRect[0].left,m_rcTypeRect[0].top,SizeEnterType.cx,SizeEnterType.cy,nXEnterIndexCp*SizeEnterType.cx,0);
+				DrawKindItem(pBufferDC,nIndexQ+nCaiCount,nXDrawPos,nYDrawPos,pGameKindInfo);
+				nIndexQ++;
 
-			CPngImage ImageTypeQP;
-			ImageTypeQP.LoadImage(AfxGetInstanceHandle(),TEXT("TYPE_QP"));
+			}
 
-			//进入游戏
-			INT nXEnterIndexQp=0;
-			bool bEnterButtonDownQp=((m_wViewItemDown==1)&&(m_cbButtonDown==1));
-			bool bEnterButtonHoverQp=((m_wViewItemHover==1)&&(m_cbButtonHover==1));
+			CBitImage ImageGameBack;
+			//if(bQiPaiStyle)
+			//{
 
-			//进入游戏
-			if ((bEnterButtonHoverQp==true)&&(bEnterButtonDownQp==true)) nXEnterIndexQp=1;
-			if ((bEnterButtonHoverQp==true)&&(bEnterButtonDownQp==false)) nXEnterIndexQp=2;
+			//}
+			//else
+			//{
+				ImageGameBack.LoadFromResource(AfxGetInstanceHandle(),PLAZA_GROUND_UPPER);
+				ImageGameBack.DrawImageTile(pBufferDC,0,0,ImageGameBack.GetWidth(),ImageGameBack.GetHeight()/*rcClient.Width(),rcClient.Height()*/);
+			//}
 
-			ImageTypeQP.DrawImage(pBufferDC,m_rcTypeRect[1].left,m_rcTypeRect[1].top,SizeEnterType.cx,SizeEnterType.cy,nXEnterIndexQp*SizeEnterType.cx,0);
-			CPngImage ImageTypeTY;
-			ImageTypeTY.LoadImage(AfxGetInstanceHandle(),TEXT("TYPE_TY"));
-
-			//进入游戏
-			INT nXEnterIndexTy=0;
-			bool bEnterButtonDownTy=((m_wViewItemDown==2)&&(m_cbButtonDown==2));
-			bool bEnterButtonHoverTy=((m_wViewItemHover==2)&&(m_cbButtonHover==2));
-
-			//进入游戏
-			if ((bEnterButtonHoverTy==true)&&(bEnterButtonDownTy==true)) nXEnterIndexTy=1;
-			if ((bEnterButtonHoverTy==true)&&(bEnterButtonDownTy==false)) nXEnterIndexTy=2;
-
-			ImageTypeTY.DrawImage(pBufferDC,m_rcTypeRect[2].left,m_rcTypeRect[2].top,SizeEnterType.cx,SizeEnterType.cy,nXEnterIndexTy*SizeEnterType.cx,0);
-
+			//滚动文字
+//			DrawTextString(pBufferDC, m_strTopNewsMsg,m_strTopNewsMsg.GetLength(), 110, 3, );
+			pBufferDC->TextOut(110, 3, m_strTopNewsMsg,m_strTopNewsMsg.GetLength()); 
+			CString strTemp = m_strTopNewsMsg.Left(1);
+			m_strTopNewsMsg.Delete(0, 1);
+			m_strTopNewsMsg += strTemp;
 			break;
 		}
 	case VIEW_MODE_GAME:
@@ -1738,6 +2254,10 @@ BOOL CPlazaViewItem::OnEraseBkgnd(CDC * pDC)
 			//绘画对象
 // 			tagGameKindInfo * pGameKindInfo=m_GameKindInfoActiveMenu[0];
 // 			if (pGameKindInfo!=NULL) DrawGameSsc(pBufferDC,m_wViewItemHover,0,0,pGameKindInfo);
+			pBufferDC->TextOut(110, 3, m_strTopNewsMsg,m_strTopNewsMsg.GetLength()); 
+			CString strTemp = m_strTopNewsMsg.Left(1);
+			m_strTopNewsMsg.Delete(0, 1);
+			m_strTopNewsMsg += strTemp;
 
 			break;
 		}
@@ -1746,7 +2266,7 @@ BOOL CPlazaViewItem::OnEraseBkgnd(CDC * pDC)
 			m_logo.ShowWindow(SW_HIDE);
 
 			//变量定义
-			WORD wViewCount=m_wKindXCount*m_wKindYCount;
+			WORD wViewCount=m_GameKindInfoActive.GetCount();
 			WORD wStartIndex=wViewCount*m_wKindPageCurrent;
 
 			//绘画类型
@@ -1770,10 +2290,11 @@ BOOL CPlazaViewItem::OnEraseBkgnd(CDC * pDC)
 //				INT nXDrawPos=m_wKindExcursion+(nSortID-1)*(GAME_KIND_ITEM_CX+GAME_KIND_ITEM_PX)+4;
 //				INT nYDrawPos=GAME_KIND_ITEM_PY+(nTypeID-1)*(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY)+30;
 
-				INT nXDrawPos=m_wKindExcursion+(i%m_wKindXCount)*(GAME_KIND_ITEM_CX+GAME_KIND_ITEM_PX);
-				INT nYDrawPos=GAME_KIND_ITEM_PY+(i/m_wKindXCount)*(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY);
+				INT nXDrawPos=/*m_wKindExcursion+*/(i%m_wKindXCount)*(GAME_KIND_ITEM_CX+GAME_KIND_ITEM_PX);
+				INT nYDrawPos=GAME_KIND_ITEM_PY+(i/m_wKindXCount)*(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY)+370;
 
 				nYDrawPos+=40;
+				nYDrawPos -= m_nScrollX;
 				int nItem = (nTypeID-1)*m_wKindXCount+(nSortID-1);
 
 // 				if(nTypeID == 4)
@@ -1785,6 +2306,12 @@ BOOL CPlazaViewItem::OnEraseBkgnd(CDC * pDC)
 				DrawKindItem(pBufferDC,i,nXDrawPos,nYDrawPos,pGameKindInfo);
 			}
 
+			CPngImage ImageBk;
+			ImageBk.LoadImage(AfxGetInstanceHandle(),TEXT("GAME_ITEM_BG"));
+			ImageBk.DrawImage(pBufferDC,6,-7);
+			CPngImage ImageBk1;
+			ImageBk1.LoadImage(AfxGetInstanceHandle(),TEXT("GAME_ITEM_BG_B"));
+			ImageBk1.DrawImage(pBufferDC,6,573);
 
 
 			break;
@@ -1815,8 +2342,30 @@ BOOL CPlazaViewItem::OnEraseBkgnd(CDC * pDC)
 
 				//绘画对象
 				tagGameServerInfo * pGameServerInfo=m_GameServerInfoActive[wStartIndex+i];
-				if (pGameServerInfo!=NULL) DrawServerItem(pBufferDC,i,nXDrawPos,nYDrawPos,pGameServerInfo);
+				if (pGameServerInfo!=NULL) 
+					DrawServerItem(pBufferDC,i,nXDrawPos,nYDrawPos,pGameServerInfo);
 			}
+			int nXPos = m_wServerExcursion;
+			int nYPos = GAME_TITLE_CY+GAME_SERVER_ITEM_PY;
+
+			//棋牌界面里显示：用户名  分数   返点
+			CRect rcUserName(nXPos+120, nYPos-50, nXPos+220, nYPos-30);
+			CRect rcUserScore(nXPos+400, nYPos-50, nXPos+500, nYPos-30);
+			CRect rcUserFandian(nXPos+715, nYPos-50, nXPos+780, nYPos-30);
+
+			CDC* pDC = pBufferDC;
+			TCHAR szBuffer[256];
+			_sntprintf(szBuffer,CountArray(szBuffer),TEXT("%s"), theAccount.account);
+			pDC->DrawText(szBuffer,lstrlen(szBuffer),rcUserName,DT_SINGLELINE|DT_VCENTER|DT_CENTER|DT_END_ELLIPSIS);
+
+			CGlobalUserInfo * pGlobalUserInfo=CGlobalUserInfo::GetInstance();
+			tagGlobalUserData * pGlobalUserData=pGlobalUserInfo->GetGlobalUserData();
+			_sntprintf(szBuffer,CountArray(szBuffer),SCORE_STRING, pGlobalUserData->lScore);
+			pDC->DrawText(szBuffer,lstrlen(szBuffer),rcUserScore,DT_SINGLELINE|DT_VCENTER|DT_CENTER|DT_END_ELLIPSIS);
+
+			_sntprintf(szBuffer,CountArray(szBuffer),TEXT("%.0f %%"), theAccount.fandian * 1000*2);
+			pDC->DrawText(szBuffer,lstrlen(szBuffer),rcUserFandian,DT_SINGLELINE|DT_VCENTER|DT_CENTER|DT_END_ELLIPSIS);
+
 
 			break;
 		}
@@ -1840,19 +2389,25 @@ VOID CPlazaViewItem::InValidateWndView(BYTE cbViewType)
 //绘画类型
 VOID CPlazaViewItem::DrawKindItem(CDC * pDC, WORD wViewIndex, INT nXPos, INT nYPos, tagGameKindInfo * pGameKindInfo)
 {
-	if(m_cbShowItemMode != VIEW_MODE_KIND)
+	if(m_cbShowItemMode != VIEW_MODE_KIND&&m_cbShowItemMode != VIEW_MODE_TYPE)
 		return;
 	//效验参数
 	ASSERT(pGameKindInfo!=NULL);
 	if (pGameKindInfo==NULL) return;
 
-	//安装判断
-	bool bInstall=false;
-	if (pGameKindInfo->pGameKindItem->m_dwProcessVersion!=0L) bInstall=true;
+	//安装判断: false=需要安装；true=直接进入
+	bool bEntering=false;
+	if (pGameKindInfo->pGameKindItem!=NULL&&pGameKindInfo->pGameKindItem->m_dwProcessVersion!=0L) 
+		bEntering=true;
+	//跳转到棋牌的背景
+	if(bEntering)
+		m_nNowTypeID=0;
 
 	//加载资源
 	CPngImage ImageEnterKind;
-	ImageEnterKind.LoadImage(AfxGetInstanceHandle(),(bInstall==true)?TEXT("BT_ENTER_KIND"):TEXT("BT_INSTALL_GAME"));
+	//BT_INSTALL_GAME:黄色，提示安装；
+	//BT_ENTER_KIND: 点击进入
+	ImageEnterKind.LoadImage(AfxGetInstanceHandle(),(bEntering==true)?TEXT("BT_ENTER_KIND"):TEXT("BT_INSTALL_GAME"));
 
 	//获取大小
 	CSize SizeEnterKind;
@@ -1868,7 +2423,11 @@ VOID CPlazaViewItem::DrawKindItem(CDC * pDC, WORD wViewIndex, INT nXPos, INT nYP
 	if ((bEnterButtonHover==true)&&(bEnterButtonDown==true)) nXEnterIndex=1;
 	if ((bEnterButtonHover==true)&&(bEnterButtonDown==false)) nXEnterIndex=2;
 
-
+	//2018.8.11  +95
+	if(!bEntering)
+//		;//ImageEnterKind.DrawImage(pDC,nXPos,nYPos+95,SizeEnterKind.cx,SizeEnterKind.cy,nXEnterIndex*SizeEnterKind.cx,0);
+//	else
+		ImageEnterKind.DrawImage(pDC,nXPos,nYPos,SizeEnterKind.cx,SizeEnterKind.cy,nXEnterIndex*SizeEnterKind.cx,0);
 
 	//绘画类型
 	if (pGameKindInfo->ImageKindItem.IsNull()==false)
@@ -1878,7 +2437,6 @@ VOID CPlazaViewItem::DrawKindItem(CDC * pDC, WORD wViewIndex, INT nXPos, INT nYP
 
 		pGameKindInfo->ImageKindItem.DrawImage(pDC,nXPos,nYPos,GAME_KIND_ITEM_CX,GAME_KIND_ITEM_CY,0,0,SizeImage.cx,SizeImage.cy);
 	}
-	ImageEnterKind.DrawImage(pDC,nXPos,nYPos,SizeEnterKind.cx,SizeEnterKind.cy,nXEnterIndex*SizeEnterKind.cx,0);
 	return;
 }
 
@@ -1902,6 +2460,7 @@ VOID CPlazaViewItem::DrawServerItem(CDC * pDC, WORD wViewIndex, INT nXPos, INT n
 	{
 		CSize SizeImage;
 		SizeImage.SetSize(m_ImageServer.GetWidth(),m_ImageServer.GetHeight());
+//		m_ImageServer.DrawImage(pDC,nXPos,nYPos,GAME_SERVER_ITEM_CX,GAME_SERVER_ITEM_CY,0,0,SizeImage.cx,SizeImage.cy);
 		m_ImageServer.DrawImage(pDC,nXPos,nYPos,GAME_SERVER_ITEM_CX,GAME_SERVER_ITEM_CY,0,0,SizeImage.cx,SizeImage.cy);
 	}
 
@@ -1913,6 +2472,7 @@ VOID CPlazaViewItem::DrawServerItem(CDC * pDC, WORD wViewIndex, INT nXPos, INT n
 	//进入游戏
 	if ((bEnterButtonHover==true)&&(bEnterButtonDown==true)) nXEnterIndex=1;
 	if ((bEnterButtonHover==true)&&(bEnterButtonDown==false)) nXEnterIndex=2;
+	//进入游戏的大按钮  27, 228
 	ImageEnterServer.DrawImage(pDC,nXPos+7,nYPos+179,SizeEnterServer.cx,SizeEnterServer.cy,nXEnterIndex*SizeEnterServer.cx,0);
 
 
@@ -1921,7 +2481,7 @@ VOID CPlazaViewItem::DrawServerItem(CDC * pDC, WORD wViewIndex, INT nXPos, INT n
 	//获取全局属性
 	CParameterGlobal * pParameterGlobal=CParameterGlobal::GetInstance();
 
-	//负载信息
+	//负载信息：1 在线人数
 	TCHAR szOnlineCount[32]=TEXT("");
 	if(pParameterGlobal->m_bShowServerStatus)
 	{
@@ -1944,15 +2504,15 @@ VOID CPlazaViewItem::DrawServerItem(CDC * pDC, WORD wViewIndex, INT nXPos, INT n
 
 
 
-	//单元积分
+	//2：单元积分
 	TCHAR szServerScore[32]=TEXT("");
 	_sntprintf(szServerScore,CountArray(szServerScore),SCORE_STRING,pGameServerInfo->pGameServerItem->m_GameServer.lServerScore);
 
-	//需要金币
+	//3：需要金币
 	TCHAR szMinServerScore[32]=TEXT("");
 	_sntprintf(szMinServerScore,CountArray(szMinServerScore),SCORE_STRING,pGameServerInfo->pGameServerItem->m_GameServer.lMinServerScore);
 
-	//房间名字
+	//4：房间名字
 	TCHAR szServerName[LEN_SERVER]=TEXT("");
 	_sntprintf(szServerName,CountArray(szServerName),TEXT("%s"),pGameServerInfo->pGameServerItem->m_GameServer.szServerName);
 
@@ -1962,10 +2522,10 @@ VOID CPlazaViewItem::DrawServerItem(CDC * pDC, WORD wViewIndex, INT nXPos, INT n
 	pDC->SelectObject(CSkinResourceManager::GetInstance()->GetDefaultFont());
 
 	//绘画信息
-	CRect rcOnlineCount(nXPos+78,nYPos+79,nXPos+168,nYPos+100);
-	CRect rcServerName(nXPos+22,nYPos+148,nXPos+168,nYPos+169);
-	CRect rcServerScore(nXPos+78,nYPos+102,nXPos+168,nYPos+123);
-	CRect rcMinServerScore(nXPos+78,nYPos+125,nXPos+168,nYPos+146);
+	CRect rcOnlineCount(nXPos+78,	nYPos+65,nXPos+168,nYPos+85);		//在线人数
+	CRect rcServerScore(nXPos+78,	nYPos+100,nXPos+168,nYPos+120);		//房间底注
+	CRect rcMinServerScore(nXPos+78,nYPos+135,nXPos+168,nYPos+155);		//最小准入分数
+	CRect rcServerName(nXPos+22,	nYPos+165,nXPos+168,nYPos+195);		//房间名字
 	pDC->DrawText(szServerName,lstrlen(szServerName),rcServerName,DT_SINGLELINE|DT_VCENTER|DT_CENTER|DT_END_ELLIPSIS);
 	pDC->DrawText(szOnlineCount,lstrlen(szOnlineCount),rcOnlineCount,DT_SINGLELINE|DT_VCENTER|DT_CENTER|DT_END_ELLIPSIS);
 	pDC->DrawText(szServerScore,lstrlen(szServerScore),rcServerScore,DT_SINGLELINE|DT_VCENTER|DT_CENTER|DT_END_ELLIPSIS);
@@ -1978,73 +2538,41 @@ VOID CPlazaViewItem::RectifyDlg()
 {
 	if (m_dlgChongQingSSC.GetSafeHwnd() != NULL)
 	{
-		m_dlgChongQingSSC.SetWindowPos(NULL, 7,32, game_cx, game_cy, SWP_NOZORDER);
+		m_dlgChongQingSSC.SetWindowPos(NULL, 2,32, game_cx, game_cy, SWP_NOZORDER);
 	}
 
-	if (m_dlgJiangXiSSC.GetSafeHwnd() != NULL)
-	{
-		m_dlgJiangXiSSC.SetWindowPos(NULL,7,32, game_cx, game_cy, SWP_NOZORDER);
-	}
 	if (m_dlgQiXingCai.GetSafeHwnd() != NULL)//---LLY
 	{
-		m_dlgQiXingCai.SetWindowPos(NULL,  7,32, game_cx, game_cy, SWP_NOZORDER);
+		m_dlgQiXingCai.SetWindowPos(NULL,  2,32, game_cx, game_cy, SWP_NOZORDER);
 	}
 	if (m_dlgPaiLie3.GetSafeHwnd() != NULL)//
 	{
-		m_dlgPaiLie3.SetWindowPos(NULL, 7,32, game_cx, game_cy, SWP_NOZORDER);
+		m_dlgPaiLie3.SetWindowPos(NULL, 2,32, game_cx, game_cy, SWP_NOZORDER);
 	}
 	if (m_dlg3D.GetSafeHwnd() != NULL)//
 	{
-		m_dlg3D.SetWindowPos(NULL,  7,32, game_cx, game_cy, SWP_NOZORDER);
+		m_dlg3D.SetWindowPos(NULL,  2,32, game_cx, game_cy, SWP_NOZORDER);
 	}
 
-	if (m_dlgXinjiangSSC.GetSafeHwnd() != NULL)
-	{
-		m_dlgXinjiangSSC.SetWindowPos(NULL,7,32, game_cx, game_cy, SWP_NOZORDER);
-	}
-	if (m_dlgFenFenCai.GetSafeHwnd() != NULL)
-	{
-		m_dlgFenFenCai.SetWindowPos(NULL, 7,32, game_cx, game_cy, SWP_NOZORDER);
-	}
-	if (m_dlgWuFenCai.GetSafeHwnd() != NULL)
-	{
-		m_dlgWuFenCai.SetWindowPos(NULL, 7,32, game_cx, game_cy, SWP_NOZORDER);
-	}
 	if (m_dlgGuangdong11x5.GetSafeHwnd() != NULL)
 	{
-		m_dlgGuangdong11x5.SetWindowPos(NULL, 7,32, game_cx, game_cy, SWP_NOZORDER);
-	}
-	if (m_dlgChongQing11x5.GetSafeHwnd() != NULL)
-	{
-		m_dlgChongQing11x5.SetWindowPos(NULL, 7,32, game_cx, game_cy, SWP_NOZORDER);
-	}
-	if (m_dlgJiangXi11x5.GetSafeHwnd() != NULL)
-	{
-		m_dlgJiangXi11x5.SetWindowPos(NULL, 7,32, game_cx, game_cy, SWP_NOZORDER);
-	}
-	if (m_dlgShanDong11x5.GetSafeHwnd() != NULL)
-	{
-		m_dlgShanDong11x5.SetWindowPos(NULL, 7,32, game_cx, game_cy, SWP_NOZORDER);
+		m_dlgGuangdong11x5.SetWindowPos(NULL, 2,32, game_cx, game_cy, SWP_NOZORDER);
 	}
 	if (m_dlgBjPK10.GetSafeHwnd() != NULL)
 	{
-		m_dlgBjPK10.SetWindowPos(NULL, 7,32, game_cx, game_cy, SWP_NOZORDER);
+		m_dlgBjPK10.SetWindowPos(NULL, 2,32, game_cx, game_cy, SWP_NOZORDER);
 	}
 	if (m_dlgBjKuai8.GetSafeHwnd() != NULL)
 	{
-		m_dlgBjKuai8.SetWindowPos(NULL, 7,32, game_cx, game_cy, SWP_NOZORDER);
+		m_dlgBjKuai8.SetWindowPos(NULL, 2,32, game_cx, game_cy, SWP_NOZORDER);
 	}
 	if (m_dlgXingYun28.GetSafeHwnd() != NULL)
 	{
-		m_dlgXingYun28.SetWindowPos(NULL, 7,32, game_cx, game_cy, SWP_NOZORDER);
-	}
-	if (m_dlgHeiLongJiang11X5.GetSafeHwnd() != NULL)
-	{
-		m_dlgHeiLongJiang11X5.SetWindowPos(NULL, 7,32, game_cx, game_cy, SWP_NOZORDER);
+		m_dlgXingYun28.SetWindowPos(NULL, 2,32, game_cx, game_cy, SWP_NOZORDER);
 	}
 	if (m_dlgLiuHeCai.GetSafeHwnd() != NULL)
 	{
-		m_dlgLiuHeCai.SetWindowPos(NULL,7,32, game_cx, game_cy, SWP_NOZORDER);
+		m_dlgLiuHeCai.SetWindowPos(NULL,2,32, game_cx, game_cy, SWP_NOZORDER);
 	}
 	return;
 }
@@ -2060,11 +2588,11 @@ VOID CPlazaViewItem::RectifyControl(INT nWidth, INT nHeight)
 // 	CRect rcButton;
 // 	m_btLastKind.GetWindowRect(&rcButton);
 // 	//类型位置
-	if(m_cbShowItemMode == VIEW_MODE_KIND)
+	if(m_cbShowItemMode == VIEW_MODE_KIND || m_cbShowItemMode == VIEW_MODE_TYPE)
 	{
- 		m_wKindXCount=(nWidth+GAME_KIND_ITEM_PX)/(GAME_KIND_ITEM_CX+GAME_KIND_ITEM_PX);
+ 		m_wKindXCount=4;//(nWidth+GAME_KIND_ITEM_PX)/(GAME_KIND_ITEM_CX+GAME_KIND_ITEM_PX);
  		m_wKindYCount=(nHeight+GAME_KIND_ITEM_PY)/(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY);
- 		m_wKindExcursion=(nWidth+GAME_KIND_ITEM_PX-m_wKindXCount*(GAME_KIND_ITEM_CX+GAME_KIND_ITEM_PX))/2-3;
+ 		m_wKindExcursion=5;//(nWidth+GAME_KIND_ITEM_PX-m_wKindXCount*(GAME_KIND_ITEM_CX+GAME_KIND_ITEM_PX))/2-3;
 	 
  		//类型页面
  		WORD wViewCountKind=m_wKindXCount*m_wKindYCount;
@@ -2092,47 +2620,15 @@ VOID CPlazaViewItem::RectifyControl(INT nWidth, INT nHeight)
 	if(m_btnReturn.GetSafeHwnd()!=NULL)
 		m_btnReturn.SetWindowPos(NULL,nWidth-m_btnReturn.Width()-14,0,m_btnReturn.Width(),m_btnReturn.Height(),SWP_NOZORDER);
 
-	//m_logo.SetWindowPos(NULL,7,32,785,250,SWP_NOACTIVATE|SWP_NOCOPYBITS|SWP_NOZORDER);
 	//移动准备
 	HDWP hDwp=BeginDeferWindowPos(64);
 	UINT uFlags=SWP_NOACTIVATE|SWP_NOCOPYBITS|SWP_NOZORDER;
+	//两个滚动条的位置
+	DeferWindowPos(hDwp,m_VerticalScrollBar2,NULL,nWidth-382,375,15,210,uFlags);
+	DeferWindowPos(hDwp,m_VerticalScrollBarQp,NULL,nWidth-32,375,15,210,uFlags);
 
-	DeferWindowPos(hDwp,m_logo,NULL,7,32,785,250,uFlags);
+	DeferWindowPos(hDwp,m_logo,NULL,5,30,785,250,uFlags);
 	EndDeferWindowPos(hDwp);
-
-// 	//按钮控制
-// 	m_btLastKind.EnableWindow((m_wKindPageCurrent>0)?TRUE:FALSE);
-// 	m_btNextKind.EnableWindow(((m_wKindPageCurrent+1)<m_wKindPageCount)?TRUE:FALSE);
-// 
-// 
-// 	//按钮控制
-// 	m_btLastServer.EnableWindow((m_wServerPageCurrent>0)?TRUE:FALSE);
-// 	m_btNextServer.EnableWindow(((m_wServerPageCurrent+1)<m_wServerPageCount)?TRUE:FALSE);
-
-// 	//变量定义
-// 	HDWP hDwp=BeginDeferWindowPos(64);
-// 	UINT uFlags=SWP_NOACTIVATE|SWP_NOCOPYBITS|SWP_NOZORDER|SWP_NOSIZE;
-// 
-// 	//类型按钮
-// 	UINT uKindFlags=(m_cbShowItemMode==VIEW_MODE_KIND)?SWP_SHOWWINDOW:SWP_HIDEWINDOW;
-// 	DeferWindowPos(hDwp,m_btLastKind,NULL,m_wKindExcursion,nHeight-rcButton.Height()-2,0,0,uFlags|uKindFlags);
-// 	DeferWindowPos(hDwp,m_btNextKind,NULL,nWidth-rcButton.Width()-m_wKindExcursion,nHeight-rcButton.Height()-2,0,0,uFlags|uKindFlags);
-// 
-// 	//房间按钮
-// 	CRect rcButtonServer;
-// 	m_btLastServer.GetWindowRect(&rcButtonServer);
-// 	UINT uServerFlags=(m_cbShowItemMode==VIEW_MODE_SERVER)?SWP_SHOWWINDOW:SWP_HIDEWINDOW;
-// 	DeferWindowPos(hDwp,m_btReturnHall,NULL,m_wServerExcursion+2,nHeight-rcButton.Height()-2,0,0,uFlags|uServerFlags);
-// 	DeferWindowPos(hDwp,m_btLastServer,NULL,nWidth/2+2,nHeight-rcButtonServer.Height()-2,0,0,uFlags|uServerFlags);
-// 	DeferWindowPos(hDwp,m_btNextServer,NULL,nWidth/2+rcButtonServer.Width()+6,nHeight-rcButtonServer.Height()-2,0,0,uFlags|uServerFlags);
-
-
-// 	m_btLastKind.ShowWindow(SW_HIDE/*(m_wKindTypeCurrentID == 1)?SW_HIDE:SW_SHOW*/);
-// 	m_btNextKind.ShowWindow(SW_HIDE/*(m_wKindTypeCurrentID == 1)?SW_HIDE:SW_SHOW*/);
-// 	m_btLastServer.ShowWindow(SW_HIDE/*(m_wKindTypeCurrentID == 1)?SW_HIDE:SW_SHOW*/);
-// 	m_btNextServer.ShowWindow(SW_HIDE/*(m_wKindTypeCurrentID == 1)?SW_HIDE:SW_SHOW*/);
-	//结束调整
-//	EndDeferWindowPos(hDwp);
 
 	return;
 }
@@ -2163,7 +2659,7 @@ VOID CPlazaViewItem::GetGameDirectory(TCHAR szDirectory[], WORD wBufferCount, ta
 VOID CPlazaViewItem::OnMouseMove(UINT nFlags, CPoint Point)
 {
 	__super::OnMouseMove(nFlags, Point);
-
+	SetFocus();
 	//窗口位置
 	CRect rcClient;
 	GetClientRect(&rcClient);
@@ -2188,7 +2684,7 @@ VOID CPlazaViewItem::OnMouseMove(UINT nFlags, CPoint Point)
 
 		CRect rcRedraw;
 		rcRedraw.CopyRect(rcClient);
-		rcRedraw.top+= 25;
+		rcRedraw.top+= 128;
 		//更新界面
 		RedrawWindow(&rcRedraw,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ERASENOW);
 	}
@@ -2261,43 +2757,66 @@ VOID CPlazaViewItem::OnLButtonUp(UINT nFlags, CPoint Point)
 		//设置变量
 		m_cbButtonDown=0;
 		m_wViewItemDown=INVALID_WORD;
+		CRect rcClient;
+		GetClientRect(rcClient);
 
+		CRect rcRedraw;
+		rcRedraw.CopyRect(rcClient);
+		rcRedraw.top+= 128;
 		//更新界面
-		RedrawWindow(NULL,NULL,RDW_INVALIDATE|RDW_ERASE);
+		RedrawWindow(&rcRedraw,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ERASENOW);
 	}
 
-	if(m_cbShowItemMode == VIEW_MODE_TYPE&&m_wViewItemHover!=INVALID_WORD)
-	{
- 		switch (m_wViewItemHover)
- 		{
- 		case 0:
- 			{
- 				m_nRecordTypeID = 0;
- 				ShowKindItemView(1);
- 
- 				
- 				break;
- 			}
- 		case 1:		//查看规则
- 			{
- 				m_nRecordTypeID = 1;
- 				ShowKindItemView(4);
- 
- 				break;
- 			}
- 		case 2:		//进入类型
- 			{
- 				MyMessageBox(L"努力研发中，敬请期待！");
- 				break;
- 				m_nRecordTypeID = 2;
- 				
- 
- 				break;
- 			}
- 		}
-			
-	}
-	else if ((wViewItemDown!=INVALID_WORD)&&(cbButtonDown!=0))
+	//if(m_cbShowItemMode == VIEW_MODE_TYPE&&m_wViewItemHover!=INVALID_WORD)
+	//{
+ //		switch (m_wViewItemHover)
+ //		{
+ //		case 0:
+ //			{
+	//			SCROLLINFO si;
+	//			m_VerticalScrollBar2.GetScrollInfo(&si);
+	//			si.nMin = 50;
+	//			si.nMax = 30;
+	//			si.nPage = m_wKindPageCount;
+	//			si.nPos = m_nScrollX/30;
+	//			m_VerticalScrollBar2.SetScrollInfo(&si);
+
+ //				m_nRecordTypeID = 0;
+ //				ShowKindItemView(1);
+ //
+ //				
+ //				break;
+ //			}
+ //		case 1:		//查看规则
+ //			{
+	//			
+	//			SCROLLINFO si;
+	//			m_VerticalScrollBar2.GetScrollInfo(&si);
+	//			si.nMin = 50;
+	//			si.nMax = 30;
+	//			si.nPage = m_wKindPageCount;
+	//			si.nPos = m_nScrollX/30;
+	//			m_VerticalScrollBar2.SetScrollInfo(&si);
+
+	//			m_nRecordTypeID = 1;
+ //				ShowKindItemView(4);
+ //
+ //				break;
+ //			}
+ //		case 2:		//进入类型
+ //			{
+ //				MyMessageBox(L"努力研发中，敬请期待！");
+ //				break;
+ //				m_nRecordTypeID = 2;
+ //				
+ //
+ //				break;
+ //			}
+ //		}
+	//		
+	//}
+	//else 
+	if ( (m_cbShowItemMode == VIEW_MODE_TYPE || m_cbShowItemMode == VIEW_MODE_SERVER )&&(wViewItemDown!=INVALID_WORD)&&(cbButtonDown!=0))
 	{
 		switch (cbButtonDown)
 		{
@@ -2309,12 +2828,22 @@ VOID CPlazaViewItem::OnLButtonUp(UINT nFlags, CPoint Point)
 			{
 				//进入类型
 				WORD wViewCount=m_wKindXCount*m_wKindYCount*m_wKindPageCurrent;
-				tagGameKindInfo * pGameKindInfo=m_GameKindInfoActive[wViewCount+wViewItemDown];
-				
+				tagGameKindInfo * pGameKindInfo=NULL;
+				WORD wCountC = m_GameKindInfoActive.GetCount();
+				if(wViewItemDown>=wCountC)
+				{
+					pGameKindInfo=m_GameKindInfoActiveMenu[wViewCount+wViewItemDown-wCountC];
+				}
+				else
+				{
+					pGameKindInfo = m_GameKindInfoActive[wViewCount+wViewItemDown];
+				}
 				if (pGameKindInfo!=NULL)
 				{
+
+
 					m_nRecordKindID = pGameKindInfo->pGameKindItem->m_GameKind.wKindID;
-					m_btnReturn.ShowWindow(SW_SHOW);
+					m_btnReturn.ShowWindow(SW_HIDE);
 					OnButtonEnterKind(pGameKindInfo->pGameKindItem->m_GameKind.wKindID);
 				}
 
@@ -2329,7 +2858,22 @@ VOID CPlazaViewItem::OnLButtonUp(UINT nFlags, CPoint Point)
 				
 				if (pGameServerInfo!=NULL)
 				{
-					
+					int nAllHeight = (3)*(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY);
+					SCROLLINFO si;
+					m_VerticalScrollBar2.GetScrollInfo(&si);
+					si.nMin = 0;
+					si.nMax = nAllHeight/50;
+					si.nPage = m_wKindPageCount;
+					si.nPos = m_nScrollX/60;
+					m_VerticalScrollBar2.SetScrollInfo(&si);
+//					SCROLLINFO si;
+					m_VerticalScrollBarQp.GetScrollInfo(&si);
+					si.nMin = 0;
+					si.nMax = nAllHeight/50;
+					si.nPage = m_wKindPageCount;
+					si.nPos = m_nScrollX/60;
+					m_VerticalScrollBarQp.SetScrollInfo(&si);
+
 					//EWIN网络房间密码 进入房间前判断密码是否正确
 					if(pGameServerInfo->pGameServerItem->m_GameServer.wServerKind==0)
 					{
@@ -2362,6 +2906,16 @@ VOID CPlazaViewItem::OnLButtonUp(UINT nFlags, CPoint Point)
 }
 void CPlazaViewItem::ResetRecordTypeKind()
 {
+
+	int nAllHeight = (5-3)*(GAME_KIND_ITEM_CY+GAME_KIND_ITEM_PY);
+	SCROLLINFO si;
+	m_VerticalScrollBar2.GetScrollInfo(&si);
+	si.nMin = 0;
+	si.nMax = nAllHeight/50;
+	si.nPage = m_wKindPageCount;
+	si.nPos = m_nScrollX/60;
+	m_VerticalScrollBar2.SetScrollInfo(&si);
+
 	m_nRecordKindID = 1000;
 	m_nRecordTypeID = 1000;
 	//m_btnReturn.ShowWindow(SW_HIDE);
@@ -2373,6 +2927,8 @@ void CPlazaViewItem::ReturnTouzhu()
 	if(m_nRecordTypeID > 2)
 	{
 		ShowTypeItemView();
+		ShowKindItemView(1);
+		ShowKindQpItemView(4);
 		return;
 	}
 	if(m_nRecordTypeID == 0)
@@ -2387,7 +2943,7 @@ void CPlazaViewItem::ReturnTouzhu()
 
 		if(m_nRecordKindID != 1000)
 		{
-			m_btnReturn.ShowWindow(SW_SHOW);
+			m_btnReturn.ShowWindow(SW_HIDE);
 			OnButtonEnterKind(m_nRecordKindID);
 		}
 		else
@@ -2399,7 +2955,7 @@ void CPlazaViewItem::ReturnTouzhu()
 	{
 		m_nRecordTypeID = 1;
 		ShowKindItemView(4);
-	//	m_btnReturn.ShowWindow(SW_SHOW);
+	//	m_btnReturn.ShowWindow(SW_HIDE);
 // 		CWnd* pParent = GetParent();
 // 		if(pParent!=NULL)
 // 		{
@@ -2425,9 +2981,15 @@ VOID CPlazaViewItem::OnLButtonDown(UINT nFlags, CPoint Point)
 		//设置变量
 		m_cbButtonDown=m_cbButtonHover;
 		m_wViewItemDown=m_wViewItemHover;
+		CRect rcClient;
+		GetClientRect(rcClient);
 
 		//更新界面
-		RedrawWindow(NULL,NULL,RDW_INVALIDATE|RDW_ERASE);
+		CRect rcRedraw;
+		rcRedraw.CopyRect(rcClient);
+		rcRedraw.top+= 128;
+		//更新界面
+		RedrawWindow(&rcRedraw,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ERASENOW);
 	}
 
 	if(m_GameListRect.PtInRect(Point))
@@ -2456,9 +3018,15 @@ LRESULT CPlazaViewItem::OnMouseLeave(WPARAM wParam, LPARAM lParam)
 		m_cbButtonHover=0;
 		m_wViewItemDown=INVALID_WORD;
 		m_wViewItemHover=INVALID_WORD;
+		CRect rcClient;
+		GetClientRect(rcClient);
 
 		//更新界面
-		RedrawWindow(NULL,NULL,RDW_INVALIDATE|RDW_ERASE);
+		CRect rcRedraw;
+		rcRedraw.CopyRect(rcClient);
+		rcRedraw.top+= 128;
+		//更新界面
+		RedrawWindow(&rcRedraw,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ERASENOW);
 	}
 	m_wGameHoverItem=INVALID_WORD;
 // 	CWnd* pParent = GetParent();
@@ -2471,18 +3039,6 @@ LRESULT CPlazaViewItem::OnMouseLeave(WPARAM wParam, LPARAM lParam)
 //  	RedrawWindow(NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ERASENOW);
 
 	return 0;
-}
-//查询开奖数据
-LRESULT CPlazaViewItem::SendQueryGameResult(WPARAM wParam, LPARAM lParam)
-{
-// 	WORD wKindID = (WORD)wParam;
-// 	CWnd *pParent = GetParent();
-// 	if(pParent!=NULL)
-// 	{
-// 		//目前只查询时时彩开奖 暂用7代替
-// 		pParent->PostMessage(IDM_SEND_QUERY,wKindID,0);
-// 	}
-	return 1;
 }
 //查询开奖数据
 LRESULT CPlazaViewItem::OnUpdateAccount(WPARAM wParam, LPARAM lParam)
@@ -2519,14 +3075,8 @@ LRESULT CPlazaViewItem::OnShowXgmm(WPARAM wParam, LPARAM lParam)
 	}
 	return 1;
 }
-VOID CPlazaViewItem::ShowGameMenu(bool bShowMenu,WORD wMenuType,int nXPos,int nYPos)
+VOID CPlazaViewItem::ShowGameMenu(WORD wTypeID)
 {
-	m_bShowMenu=bShowMenu;
-	m_nMenuXPos=nXPos;
-	m_nMenuYPos=nYPos;
-	m_cbMenuType=wMenuType;
-
-
 
 	//获取对象
 	ASSERT(CServerListData::GetInstance()!=NULL);
@@ -2542,13 +3092,12 @@ VOID CPlazaViewItem::ShowGameMenu(bool bShowMenu,WORD wMenuType,int nXPos,int nY
 	tagGameKindInfo * pGameKindInfo=NULL;
 
 	//删除对象
-	for (INT i=0;i<m_GameKindInfoActiveMenu.GetCount();i++)
+	for (INT i=0;i<m_GameKindInfoActive.GetCount();i++)
 	{
 		//获取对象
-		ASSERT(m_GameKindInfoActiveMenu[i]!=NULL);
-		pGameKindInfo=m_GameKindInfoActiveMenu[i];
-	
-		if(pGameKindInfo == NULL) continue;
+		ASSERT(m_GameKindInfoActive[i]!=NULL);
+		pGameKindInfo=m_GameKindInfoActive[i];
+
 		//设置变量
 		pGameKindInfo->wSortID=0;
 		pGameKindInfo->pGameKindItem=NULL;
@@ -2561,8 +3110,8 @@ VOID CPlazaViewItem::ShowGameMenu(bool bShowMenu,WORD wMenuType,int nXPos,int nY
 	}
 
 	//删除对象
-	m_GameKindInfoBuffer.Append(m_GameKindInfoActiveMenu);
-	m_GameKindInfoActiveMenu.RemoveAll();
+	m_GameKindInfoBuffer.Append(m_GameKindInfoActive);
+	m_GameKindInfoActive.RemoveAll();
 
 	//插入对象
 	while (true)
@@ -2574,7 +3123,7 @@ VOID CPlazaViewItem::ShowGameMenu(bool bShowMenu,WORD wMenuType,int nXPos,int nY
 		if (pGameKindItem==NULL) break;
 
 		//类型判断
-		if ((wMenuType!=0)&&(pGameKindItem->m_GameKind.wTypeID!=wMenuType))
+		if ((wTypeID!=0)&&(pGameKindItem->m_GameKind.wTypeID!=wTypeID))
 		{
 			if (Position==NULL) break;
 			if (Position!=NULL) continue;
@@ -2596,11 +3145,7 @@ VOID CPlazaViewItem::ShowGameMenu(bool bShowMenu,WORD wMenuType,int nXPos,int nY
 			try
 			{
 				pGameKindInfo=new tagGameKindInfo;
-//				if (pGameKindInfo==NULL) throw TEXT("创建对象失败");
-				if (pGameKindInfo == NULL)
-				{
-					throw TEXT("创建对象失败");
-				}
+				if (pGameKindInfo==NULL) throw TEXT("创建对象失败");
 			}
 			catch (...)
 			{
@@ -2617,28 +3162,39 @@ VOID CPlazaViewItem::ShowGameMenu(bool bShowMenu,WORD wMenuType,int nXPos,int nY
 		TCHAR szGameDirectory[LEN_PROCESS]=TEXT("");
 		GetGameDirectory(szGameDirectory,CountArray(szGameDirectory),pGameKindItem->m_GameKind);
 
+		//构造路径
+		TCHAR szImagePath[MAX_PATH]=TEXT("");
+		_sntprintf(szImagePath,CountArray(szImagePath),TEXT("%s\\ADImage\\GameKind\\GameKind_%s.PNG"),szDirectory,szGameDirectory);
+
+		//加载图片
+		if (pGameKindInfo->ImageKindItem.LoadImage(szImagePath)==false)
+		{
+			HINSTANCE hInstance=AfxGetInstanceHandle();
+			pGameKindInfo->ImageKindItem.LoadImage(hInstance,TEXT("UNKNOWN_KIND"));
+		}
 
 		//插入对象
 		INT nItem=0;
-		for (nItem=0;nItem<m_GameKindInfoActiveMenu.GetCount();nItem++)
+		for (nItem=0;nItem<m_GameKindInfoActive.GetCount();nItem++)
 		{
 			//获取对象
-			ASSERT(m_GameKindInfoActiveMenu[nItem]!=NULL);
-			tagGameKindInfo * pGameKindTemp=m_GameKindInfoActiveMenu[nItem];
+			ASSERT(m_GameKindInfoActive[nItem]!=NULL);
+			tagGameKindInfo * pGameKindTemp=m_GameKindInfoActive[nItem];
 
 			//排序判断
 			if (pGameKindInfo->wSortID<pGameKindTemp->wSortID)
 			{
-				m_GameKindInfoActiveMenu.InsertAt(nItem,pGameKindInfo);
+				m_GameKindInfoActive.InsertAt(nItem,pGameKindInfo);
 				break;
 			}
 		}
 
 		//默认插入
-		if (nItem==m_GameKindInfoActiveMenu.GetCount())
+		if (nItem==m_GameKindInfoActive.GetCount())
 		{
-			m_GameKindInfoActiveMenu.Add(pGameKindInfo);
+			m_GameKindInfoActive.Add(pGameKindInfo);
 		}
+
 
 		//结束判断
 		if (Position==NULL)
@@ -2647,8 +3203,7 @@ VOID CPlazaViewItem::ShowGameMenu(bool bShowMenu,WORD wMenuType,int nXPos,int nY
 		}
 	}
 
-		//更新界面
-	RedrawWindow(NULL,NULL,RDW_INVALIDATE|RDW_ERASE);
+
 	return;
 }
 
@@ -2657,290 +3212,116 @@ VOID CPlazaViewItem::AddOpenResult(CMD_GP_QueryLotResult* pData, int nIndex)
 {
 	int nTypeID = pData->wKindID;
 
-	if(nTypeID != m_nNowTypeID)
-		return;
-//	return;
-	if(nTypeID == CZChongQingSSC||nTypeID == CZ_HGYDWFC)
+
+	if((nTypeID == CZChongQingSSC||nTypeID == CZ_HGYDWFC||nTypeID == CZ_JiaNaDaSSC)&&m_dlgChongQingSSC.GetSafeHwnd()!=NULL)
 		m_dlgChongQingSSC.GetTopLuckyNumber(pData,	nIndex,nTypeID);
-	else if (nTypeID == CZ_TianJinSSC)
+	else if( (nTypeID == CZ_TianJinSSC)&&m_dlgChongQingSSC.GetSafeHwnd()!=NULL)
 		m_dlgChongQingSSC.GetTopLuckyNumber(pData,	nIndex,nTypeID);
-	else if (nTypeID == CZXinJiangSSC)
+	else if ((nTypeID == CZXinJiangSSC)&&m_dlgChongQingSSC.GetSafeHwnd()!=NULL)
 		m_dlgChongQingSSC.GetTopLuckyNumber(pData,nIndex,nTypeID);
-	else if (nTypeID == CZ_FENFEN_CAI)
+	else if ((nTypeID == CZ_FENFEN_CAI)&&m_dlgChongQingSSC.GetSafeHwnd()!=NULL)
 		m_dlgChongQingSSC.GetTopLuckyNumber(pData,	nIndex,nTypeID);
-	else if (nTypeID == CZ_WUFEN_CAI)
+	else if ((nTypeID == CZ_TXfenfencai)&&m_dlgChongQingSSC.GetSafeHwnd()!=NULL)
+		m_dlgChongQingSSC.GetTopLuckyNumber(pData,	nIndex,nTypeID);
+	else if ((nTypeID == CZ_QQfenfencai)&&m_dlgChongQingSSC.GetSafeHwnd()!=NULL)
+		m_dlgChongQingSSC.GetTopLuckyNumber(pData,	nIndex,nTypeID);
+	else if ((nTypeID == CZ_ErFenCai)&&m_dlgChongQingSSC.GetSafeHwnd()!=NULL)
+		m_dlgChongQingSSC.GetTopLuckyNumber(pData,	nIndex,nTypeID);
+	else if( (nTypeID == CZ_WUFEN_CAI)&&m_dlgChongQingSSC.GetSafeHwnd()!=NULL)
 		m_dlgChongQingSSC.GetTopLuckyNumber(pData,nIndex,nTypeID);
-	else if (nTypeID == CZGD11Xuan5)
+	else if( (nTypeID == CZ_BJ5FC)&&m_dlgChongQingSSC.GetSafeHwnd()!=NULL)
+		m_dlgChongQingSSC.GetTopLuckyNumber(pData,nIndex,nTypeID);
+	else if( (nTypeID == CZGD11Xuan5)&&m_dlgGuangdong11x5.GetSafeHwnd()!=NULL)
 		m_dlgGuangdong11x5.GetTopLuckyNumber(pData,	nIndex,nTypeID);
-	else if (nTypeID == CZCQ11Xuan5)
-		m_dlgChongQing11x5.GetTopLuckyNumber(pData,nIndex,nTypeID);
-	else if (nTypeID == CZSD11Xuan5)   //暂改 测试用
+	else if ((nTypeID == CZSD11Xuan5) &&m_dlgGuangdong11x5.GetSafeHwnd()!=NULL)
 	{
 		m_dlgGuangdong11x5.GetTopLuckyNumber(pData,	nIndex,nTypeID);
 		//m_dlgHeiLongJiang11X5.GetTopLuckyNumber(pData,	nIndex);
 	}
-	else if(nTypeID == CZ_PK10)
+	else if((nTypeID == CZ_PK10)&&m_dlgBjPK10.GetSafeHwnd()!=NULL)
 		m_dlgBjPK10.GetTopLuckyNumber(pData,	nIndex);
-	else if(nTypeID == CZKUAILE8)
+	else if((nTypeID == CZKUAILE8)&&m_dlgBjKuai8.GetSafeHwnd()!=NULL)
 	{
 		m_dlgBjKuai8.GetTopLuckyNumber(pData,	nIndex);
 	}
-	else if(nTypeID == CZXingYun28)
+	else if((nTypeID == CZXingYun28)&&m_dlgXingYun28.GetSafeHwnd()!=NULL)
 	{
 		m_dlgXingYun28.GetTopLuckyNumber(pData,	nIndex);
 	}
-	else if (nTypeID == CZHLJ11Xuan5)
+	else if ((nTypeID == CZHLJ11Xuan5)&&m_dlgGuangdong11x5.GetSafeHwnd()!=NULL)
 		m_dlgGuangdong11x5.GetTopLuckyNumber(pData,	nIndex,nTypeID);
-	else if (nTypeID == CZJX11Xuan5)
+	else if ((nTypeID == CZJX11Xuan5)&&m_dlgGuangdong11x5.GetSafeHwnd()!=NULL)
 		m_dlgGuangdong11x5.GetTopLuckyNumber(pData,	nIndex,nTypeID);
-	else if (nTypeID == CZ_LIUHECAI)
+	else if( (nTypeID == CZ_LIUHECAI)&&m_dlgLiuHeCai.GetSafeHwnd()!=NULL)
 		m_dlgLiuHeCai.GetTopLuckyNumber(pData,	nIndex);
-	else if (nTypeID == CZ_QiXingCai)//lly
+	else if ((nTypeID == CZ_QiXingCai)&&m_dlgQiXingCai.GetSafeHwnd()!=NULL)
 		m_dlgQiXingCai.GetTopLuckyNumber(pData, nIndex);
-	else if (nTypeID == CZPaiLie3)
+	else if ((nTypeID == CZPaiLie3)&&m_dlgPaiLie3.GetSafeHwnd()!=NULL)
 		m_dlgPaiLie3.GetTopLuckyNumber(pData,	nIndex);
-	else if (nTypeID == CZ3D)
+	else if ((nTypeID == CZ3D)&&m_dlg3D.GetSafeHwnd()!=NULL)
 		m_dlg3D.GetTopLuckyNumber(pData,	nIndex);
 
 	
 	return;
 }
-//显示菜单框
-LRESULT CPlazaViewItem::OnShowMenu(WPARAM wParam, LPARAM lParam)
-{
-	BYTE cbShow = (BYTE)wParam;
-	BYTE cbMenuType = (BYTE)lParam;
-	CWnd* pParent = GetParent();
-	if(pParent!=NULL)
-	{
-		pParent->PostMessage(IDM_SHOW_MENU,cbShow,cbMenuType);
-	}
-
-	return 1;
-}
-//显示菜单框
-LRESULT CPlazaViewItem::OnBnClickedGameType(WPARAM wParam, LPARAM lParam)
-{
-	WORD wViewItemDown = (WORD)wParam;
-	BYTE cbMenuType = (BYTE)lParam;
-
-	CWnd* pParent = GetParent();
-	if(pParent!=NULL)
-	{
-		pParent->PostMessage(IDM_CLICKED_TYPE,cbMenuType,0);
-	}
-
-	//进入类型
-	//WORD wViewCount=m_wKindXCount*m_wKindYCount*m_wKindPageCurrent;
-	tagGameKindInfo * pGameKindInfo=m_GameKindInfoActiveMenu[/*wViewCount+*/wViewItemDown];
-	if (pGameKindInfo!=NULL) OnButtonEnterKind(pGameKindInfo->pGameKindItem->m_GameKind.wKindID);
-
-
-	return 1;
-}
 //////////////////////////////////////////////////////////////////////////////////
 VOID CPlazaViewItem::FreshGame()
 {
-	if(m_dlgChongQingSSC.IsWindowVisible())
+	if(m_dlgChongQingSSC.GetSafeHwnd())
 	{
 		m_dlgChongQingSSC.FlushZongjine();
 	}
-	else if(m_dlgJiangXiSSC.IsWindowVisible())
+	else if(m_dlgJiangXiSSC.GetSafeHwnd())
 	{
 		m_dlgJiangXiSSC.FlushZongjine();
 	}
-	else if(m_dlgXinjiangSSC.IsWindowVisible())
+	else if(m_dlgXinjiangSSC.GetSafeHwnd())
 	{
 		m_dlgJiangXiSSC.FlushZongjine();
 	}
-	else if(m_dlgFenFenCai.IsWindowVisible())
+	else if(m_dlgFenFenCai.GetSafeHwnd())
 	{
 		m_dlgFenFenCai.FlushZongjine();
 	}
-	else if(m_dlgWuFenCai.IsWindowVisible())
+	else if(m_dlgWuFenCai.GetSafeHwnd())
 	{
 		m_dlgWuFenCai.FlushZongjine();
 	}
-	else if(m_dlgGuangdong11x5.IsWindowVisible())
+	else if(m_dlgGuangdong11x5.GetSafeHwnd())
 	{
 		m_dlgGuangdong11x5.FlushZongjine();
 	}
-	else if(m_dlgChongQing11x5.IsWindowVisible())
-	{
-		m_dlgChongQing11x5.FlushZongjine();
-	}
-	else if(m_dlgJiangXi11x5.IsWindowVisible())
-	{
-		m_dlgJiangXi11x5.FlushZongjine();
-	}
-	else if(m_dlgShanDong11x5.IsWindowVisible())
-	{
-		m_dlgShanDong11x5.FlushZongjine();
-	}
-	else if(m_dlgBjPK10.IsWindowVisible())
+	else if(m_dlgBjPK10.GetSafeHwnd())
 	{
 		m_dlgBjPK10.FlushZongjine();
 	}
-	else if(m_dlgBjKuai8.IsWindowVisible())
+	else if(m_dlgBjKuai8.GetSafeHwnd())
 	{
 		m_dlgBjKuai8.FlushZongjine();
 	}
-	else if(m_dlgXingYun28.IsWindowVisible())
+	else if(m_dlgXingYun28.GetSafeHwnd())
 	{
 		m_dlgXingYun28.FlushZongjine();
 	}
-	else if(m_dlgHeiLongJiang11X5.IsWindowVisible())
-	{
-		m_dlgHeiLongJiang11X5.FlushZongjine();
-	}
-	else if(m_dlgLiuHeCai.IsWindowVisible())
+	else if(m_dlgLiuHeCai.GetSafeHwnd())
 	{
 		m_dlgLiuHeCai.FlushZongjine();
 	}
-	else if(m_dlgQiXingCai.IsWindowVisible())//lly
+	else if(m_dlgQiXingCai.GetSafeHwnd())//lly
 	{
 		m_dlgQiXingCai.FlushZongjine();
 	}
-	else if(m_dlgPaiLie3.IsWindowVisible())
+	else if(m_dlgPaiLie3.GetSafeHwnd())
 	{
 		m_dlgPaiLie3.FlushZongjine();
 	}
-	else if(m_dlg3D.IsWindowVisible())
+	else if(m_dlg3D.GetSafeHwnd())
 	{
 		m_dlg3D.FlushZongjine();
 	}
 
 
 }
-VOID CPlazaViewItem::ShowMenu(WORD wMenuType,CGameKindInfoArray& GameKindInfo)
-{
-	CGameKindInfoArray GameKindInfoActiveMenu;
-	//获取对象
-	ASSERT(CServerListData::GetInstance()!=NULL);
-	CServerListData * pServerListData=CServerListData::GetInstance();
-
-	//工作目录
-	TCHAR szDirectory[MAX_PATH]=TEXT("");
-	CWHService::GetWorkDirectory(szDirectory,CountArray(szDirectory));
-
-	//变量定义
-	POSITION Position=NULL;
-	CGameKindItem * pGameKindItem=NULL;
-	tagGameKindInfo * pGameKindInfo=NULL;
-
-	//删除对象
-	for (INT i=0;i<GameKindInfoActiveMenu.GetCount();i++)
-	{
-		//获取对象
-		ASSERT(GameKindInfoActiveMenu[i]!=NULL);
-		pGameKindInfo=GameKindInfoActiveMenu[i];
-	
-		if(pGameKindInfo == NULL) continue;
-		//设置变量
-		pGameKindInfo->wSortID=0;
-		pGameKindInfo->pGameKindItem=NULL;
-
-		//清理对象
-		if (pGameKindInfo->ImageKindItem.IsNull()==false)
-		{
-			pGameKindInfo->ImageKindItem.DestroyImage();
-		}
-	}
-
-	//删除对象
-	m_GameKindInfoBuffer.Append(GameKindInfoActiveMenu);
-	GameKindInfoActiveMenu.RemoveAll();
-
-	//插入对象
-	while (true)
-	{
-		//获取对象
-		pGameKindItem=pServerListData->EmunGameKindItem(Position);
-
-		//对象判断
-		if (pGameKindItem==NULL) break;
-
-		//类型判断
-		if ((wMenuType!=0)&&(pGameKindItem->m_GameKind.wTypeID!=wMenuType))
-		{
-			if (Position==NULL) break;
-			if (Position!=NULL) continue;
-		}
-
-		//获取对象
-		if (m_GameKindInfoBuffer.GetCount()>0L)
-		{
-			//获取对象
-			INT_PTR nCount=m_GameKindInfoBuffer.GetCount();
-			pGameKindInfo=m_GameKindInfoBuffer[nCount-1L];
-
-			//删除对象
-			ASSERT(pGameKindInfo!=NULL);
-			m_GameKindInfoBuffer.RemoveAt(nCount-1L);
-		}
-		else
-		{
-			try
-			{
-				pGameKindInfo=new tagGameKindInfo;
-//				if (pGameKindInfo==NULL) throw TEXT("创建对象失败");
-				if (pGameKindInfo == NULL)
-				{
-					throw TEXT("创建对象失败");
-				}
-			}
-			catch (...)
-			{
-				ASSERT(FALSE);
-				break;
-			}
-		}
-
-		//设置对象
-		pGameKindInfo->pGameKindItem=pGameKindItem;
-		pGameKindInfo->wSortID=pGameKindItem->m_GameKind.wSortID;
-
-		//插入对象
-		INT nItem=0;
-		for (nItem=0;nItem<GameKindInfoActiveMenu.GetCount();nItem++)
-		{
-			//获取对象
-			ASSERT(GameKindInfoActiveMenu[nItem]!=NULL);
-			tagGameKindInfo * pGameKindTemp=GameKindInfoActiveMenu[nItem];
-
-			//排序判断
-			if (pGameKindInfo->wSortID<pGameKindTemp->wSortID)
-			{
-				GameKindInfoActiveMenu.InsertAt(nItem,pGameKindInfo);
-				break;
-			}
-		}
-
-		//默认插入
-		if (nItem==GameKindInfoActiveMenu.GetCount())
-		{
-			GameKindInfoActiveMenu.Add(pGameKindInfo);
-		}
-
-		//结束判断
-		if (Position==NULL)
-		{
-			break;
-		}
-	}
-
-	//GameKindInfo = m_GameKindInfoActive;
-	for(int i = 0;i < GameKindInfoActiveMenu.GetCount();i++)
-	{
-		tagGameKindInfo *pGameKind = GameKindInfoActiveMenu.GetAt(i);
-		if(pGameKind == NULL) continue;
-
-		GameKindInfo.Add(pGameKind);
-	}
-
-	return;
-}
-
 //读取事件
 bool CPlazaViewItem::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wDataSize)
 {
@@ -2956,45 +3337,44 @@ bool CPlazaViewItem::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD 
 		case SUB_GP_SET_USER_BONUS_RET:
 		case SUB_GP_TOUZHU_CQSSC_RET:
 		case SUB_GP_GET_MORE_RECORD_RET:
-		case SUB_GR_GET_LHC_QIHAO_RET:
+		case SUB_GP_GET_QIHAO_CHA_RET:
+		case SUB_GP_QUERY_STATUS_LOTTERY_RET:
 			{
-				if(m_dlgChongQingSSC.IsWindowVisible())
+				if(m_dlgChongQingSSC.GetSafeHwnd()&&m_dlgChongQingSSC.IsWindowVisible())
 					m_dlgChongQingSSC.OnEventMissionRead(Command,pData,wDataSize);
-				else if (m_dlgJiangXiSSC.IsWindowVisible())
-					m_dlgJiangXiSSC.OnEventMissionRead(Command,pData,wDataSize);
-				else if (m_dlgXinjiangSSC.IsWindowVisible())
-					m_dlgXinjiangSSC.OnEventMissionRead(Command,pData,wDataSize);
-				else if (m_dlgFenFenCai.IsWindowVisible())
-					m_dlgFenFenCai.OnEventMissionRead(Command,pData,wDataSize);
-				else if (m_dlgWuFenCai.IsWindowVisible())
-					m_dlgWuFenCai.OnEventMissionRead(Command,pData,wDataSize);
-				else if (m_dlgGuangdong11x5.IsWindowVisible())
+				else if (m_dlgGuangdong11x5.GetSafeHwnd()&&m_dlgGuangdong11x5.IsWindowVisible())
 					m_dlgGuangdong11x5.OnEventMissionRead(Command,pData,wDataSize);
-				else if (m_dlgChongQing11x5.IsWindowVisible())
-					m_dlgChongQing11x5.OnEventMissionRead(Command,pData,wDataSize);
-				else if (m_dlgHeiLongJiang11X5.IsWindowVisible())
-					m_dlgHeiLongJiang11X5.OnEventMissionRead(Command,pData,wDataSize);
-				else if (m_dlgShanDong11x5.IsWindowVisible())
-					m_dlgShanDong11x5.OnEventMissionRead(Command,pData,wDataSize);
-				else if (m_dlgBjPK10.IsWindowVisible())
+				else if (m_dlgBjPK10.GetSafeHwnd()&&m_dlgBjPK10.IsWindowVisible())
 					m_dlgBjPK10.OnEventMissionRead(Command,pData,wDataSize);
-				else if (m_dlgBjKuai8.IsWindowVisible())
+				else if (m_dlgBjKuai8.GetSafeHwnd()&&m_dlgBjKuai8.IsWindowVisible())
 					m_dlgBjKuai8.OnEventMissionRead(Command,pData,wDataSize);
-				else if (m_dlgXingYun28.IsWindowVisible())
+				else if (m_dlgXingYun28.GetSafeHwnd()&&m_dlgXingYun28.IsWindowVisible())
 					m_dlgXingYun28.OnEventMissionRead(Command,pData,wDataSize);
-				else if (m_dlgJiangXi11x5.IsWindowVisible())
-					m_dlgJiangXi11x5.OnEventMissionRead(Command,pData,wDataSize);
-				else if (m_dlgLiuHeCai.IsWindowVisible())
+				else if (m_dlgLiuHeCai.GetSafeHwnd()&&m_dlgLiuHeCai.IsWindowVisible())
 					m_dlgLiuHeCai.OnEventMissionRead(Command,pData,wDataSize);
-				else if (m_dlgQiXingCai.IsWindowVisible())//lly
+				else if (m_dlgQiXingCai.GetSafeHwnd()&&m_dlgQiXingCai.IsWindowVisible())//lly
 					m_dlgQiXingCai.OnEventMissionRead(Command,pData,wDataSize);
-				else if (m_dlgPaiLie3.IsWindowVisible())
+				else if (m_dlgPaiLie3.GetSafeHwnd()&&m_dlgPaiLie3.IsWindowVisible())
 					m_dlgPaiLie3.OnEventMissionRead(Command,pData,wDataSize);
-				else if (m_dlg3D.IsWindowVisible())
+				else if (m_dlg3D.GetSafeHwnd()&&m_dlg3D.IsWindowVisible())
 					m_dlg3D.OnEventMissionRead(Command,pData,wDataSize);
 
 				return true;
 			}
+		case SUB_GR_GET_LHC_QIHAO_RET:
+			{
+				 if (m_dlgLiuHeCai.GetSafeHwnd()&&m_dlgLiuHeCai.IsWindowVisible())
+						m_dlgLiuHeCai.OnEventMissionRead(Command,pData,wDataSize);
+				 break;
+			}
+		case SUB_GP_GET_CANADA_START_QIHAO_RET:
+			{
+				if (m_dlgChongQingSSC.GetSafeHwnd()&&m_dlgChongQingSSC.IsWindowVisible())
+					m_dlgChongQingSSC.OnEventMissionRead(Command,pData,wDataSize);
+				break;
+
+			}
+
 		}
 	}
 	return true;
@@ -3004,4 +3384,10 @@ VOID CPlazaViewItem::SetLogonSuccess(bool bSuccess)
 {
 	m_bLogonSuccess = bSuccess;
 	m_dlgChongQingSSC.SetLogonSuccess(bSuccess);
+}
+
+//保存排行榜的消息
+void CPlazaViewItem::SetTopNewsMsg(CString strMsg)
+{
+	m_strTopNewsMsg = strMsg;
 }

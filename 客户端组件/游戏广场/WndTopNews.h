@@ -20,7 +20,7 @@ protected:
 	int								m_nFreshLength;		
 	CFont							m_font;
 	int								m_nNewsX;
-	CBitImage ImageItemBack;
+	CBitImage						ImageItemBack;
 //	CEncircleBMP					m_ItemFrameEncircle;				//框架资源
 	CString							m_strNews;
 	//函数定义
@@ -29,12 +29,17 @@ public:
 	CWndTopNews();
 	//析构函数
 	virtual ~CWndTopNews();
-
-	//消息函数
+	void DrawMultLineText(CDC *pDC, CRect rect, int nRowDis, UINT nFromat, CString strText);
+	//消息函数	
 protected:
 	BOOL PreTranslateMessage(MSG * pMsg);
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	//位置消息
+	VOID OnSize(UINT nType, INT cx, INT cy);
+	//创建消息
+	INT OnCreate(LPCREATESTRUCT lpCreateStruct);
 
+	CPlatformPublicize m_webbrowser;
 	//绘画背景
 	BOOL OnEraseBkgnd(CDC * pDC);
 public:

@@ -16,6 +16,7 @@ CGameClientApp::CGameClientApp()
 //析构函数
 CGameClientApp::~CGameClientApp() 
 {
+	AfxMessageBox(TEXT("111"));
 }
 
 //创建引擎

@@ -1,8 +1,5 @@
 #pragma once
 
-#define POINTER_64 __ptr64 //add by zrh20160801
-
-
 //////////////////////////////////////////////////////////////////////////////////
 
 #ifndef VC_EXTRALEAN
@@ -45,7 +42,7 @@
 	#pragma comment (lib,"../../Á´½Ó¿â/Ansi/WHImage.lib")
 	#pragma comment (lib,"../../Á´½Ó¿â/Ansi/ServiceCore.lib")
 #else
-	//#pragma comment (lib,"../../Á´½Ó¿â/Unicode/WHImage.lib")
+	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/WHImage.lib")
 	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/ServiceCore.lib")
 #endif
 #else

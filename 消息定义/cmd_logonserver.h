@@ -70,6 +70,11 @@ struct CMD_GP_GetCpUserInfo
 {
 	int								n_userid;
 };
+//卡线房间ID
+struct CMD_GP_KaXianServerID
+{
+	WORD								n_t_serverid;
+};
 
 //登录成功
 struct CMD_GP_LogonSuccess
@@ -88,7 +93,10 @@ struct CMD_GP_LogonSuccess
 	BYTE							cbGender;							//用户性别
 	BYTE							cbMoorMachine;						//锁定机器
 	TCHAR							szAccounts[LEN_ACCOUNTS];			//登录帐号
-	TCHAR							szNickName[LEN_ACCOUNTS];			//用户昵称
+	//TCHAR							szNickName[LEN_ACCOUNTS];			//用户昵称
+	BYTE							cIsYanZheng;						//是否需要验证码
+	BYTE							cbReserved;							//保留字段
+	TCHAR							szPhoneNum[LEN_ACCOUNTS-1];
 	TCHAR                           szAddrDescribe[LEN_ADDR_DESCRIBE];  //地址描述
 
 	int								n_type;
@@ -112,6 +120,8 @@ struct CMD_GP_LogonFinish
 {
 	WORD							wIntermitTime;						//中断时间
 	WORD							wOnLineCountTime;					//更新时间
+	TCHAR							szReserved1[64];					//保留字段1
+	TCHAR							szReserved2[64];					//保留字段2
 };
 
 //升级提示
@@ -165,6 +175,7 @@ struct DTP_GP_MemberInfo
 #define SUB_GP_LIST_KIND			101									//种类列表
 #define SUB_GP_LIST_SERVER			102									//房间列表
 #define SUB_GP_LIST_FINISH			103									//发送完成
+#define SUB_GP_KAXIAN_SERVERID 104									//卡线房间ID
 
 //在线信息
 #define SUB_GR_KINE_ONLINE			300									//类型在线
@@ -281,6 +292,8 @@ struct CMD_GP_GetTouzhuLogCount
 {
 	DWORD							dwUserID;							//用户ID
 	bool							bTime;								//通过时间查询
+	int									nCaiZhong;						//彩种
+	int									nStatus;								//中奖状态
 	TCHAR							szTimeStart[30];					//起始时间
 	TCHAR							szTimeEnd[30];						//结束时间
 };
@@ -295,9 +308,11 @@ struct CMD_GR_GetTouzhuLogCountRet
 struct	CMD_GP_GetTouzhuLog
 {
 	DWORD							dwUserID;							//用户ID
-	int								nPage;								//页
-	int								nSize;								//页的大小
-	bool							bByTime;							//通过时间
+	int									nPage;								//页
+	int									nSize;								//页的大小
+	bool								bByTime;							//通过时间
+	int									nCaiZhong;						//彩种
+	int									nStatus;								//中奖状态
 	TCHAR							szTimeStart[30];					//起始时间
 	TCHAR							szTimeEnd[30];						//结束时间
 };
@@ -458,11 +473,14 @@ struct CMD_GR_GetYingkuiMxRet
 //查询盈亏明细
 struct CMD_GP_GetQiPaiYingkuiCount
 {
-	DWORD							dwUserID;							//用户ID
-	int								nTypeID;					
-	int								nByTime;					
+	int									n_t_userid;							//用户ID
+	int									n_t_xjid;								//下级ID
+	TCHAR							s_t_account[30];					//查询账户
+	int									nTypeID;					
+	int									nByTime;					
 	TCHAR							szTimeStart[30];					//起始时间
 	TCHAR							szTimeEnd[30];						//结束时间
+	int									nKindID;
 };
 //返回
 struct CMD_GR_GetQiPaiYingkuiCountRet
@@ -475,12 +493,15 @@ struct CMD_GR_GetQiPaiYingkuiCountRet
 
 struct	CMD_GP_GetQiPaiYingkui
 {
-	DWORD							dwUserID;							//用户ID
-	int								nPage;								//页
-	int								nSize;								//页的大小
-	bool							bByTime;							//通过时间
+	int									n_t_userid;							//用户ID
+	int									n_t_xjid;								//下级ID
+	TCHAR							s_t_account[30];					//查询账户
+	int									nPage;								//页
+	int									nSize;								//页的大小
+	bool								bByTime;							//通过时间
 	TCHAR							szTimeStart[30];					//起始时间
 	TCHAR							szTimeEnd[30];						//结束时间
+	int									nKindID;
 };
 
 struct CMD_GR_GetQiPaiYingkuiRet
@@ -607,6 +628,51 @@ struct CMD_GR_LockMachine_RET
 {
 	int							lResult;
 };
+#define SUB_GP_BIND_PHONE				956								//绑定手机
+#define SUB_GR_BIND_PHONE_RET		957								//返回
+
+struct	CMD_GP_BindPhone
+{
+	int							nUserID;							//用户ID
+	TCHAR					sPhoneNum[20];									//手机号
+	BYTE						cType;								//1前台，2后台
+};
+struct CMD_GR_BindPhone_RET
+{
+	int							lResult;
+};
+#define SUB_GP_BIND_PHONE_INFO				958								//获取绑定手机信息
+#define SUB_GR_BIND_PHONE_INFO_RET		959								//返回
+
+struct	CMD_GP_SetBindPhoneInfo
+{
+	int							nUserID;							//用户ID
+	BYTE						cLoginverify;					//登录验证
+	BYTE						cTranferAccount;			//转账验证
+	BYTE						cfenhong;					//分红验证
+	BYTE						cType;							//类型  1、查询 ，2、编辑
+};
+struct CMD_GR_BindPhoneInfo_RET
+{
+	int							nResult;
+	int							nUserID;							//用户ID
+	BYTE						cLoginverify;					//登录验证
+	BYTE						cTranferAccount;			//转账验证
+	BYTE						cfenhong;					//分红验证
+	TCHAR					sPhoneNum[20];			//手机号码
+};
+#define SUB_GP_UNBIND_PHONE				960								//获取绑定手机信息
+#define SUB_GR_UNBIND_PHONE_RET		961								//返回
+
+struct	CMD_GP_UnBindPhone
+{
+	int							nUserID;							//用户ID
+};
+struct CMD_GR_UnBindPhone_RET
+{
+	int							nResult;
+	TCHAR					sDesc[128];
+};
 
 #define SUB_GP_XG_QUKUAN_PASS			536								//修改登录密码
 #define SUB_GR_XG_QUKUAN_PASS_RET		537								//返回
@@ -644,7 +710,7 @@ struct	CMD_GP_SetQukuanZhanghao
 	DWORD							dwUserID;							//用户ID
 	TCHAR							szKaihuYinghang[33];						//密码
 	TCHAR							szKaihuRen[33];						//问题
-	TCHAR							szYinhangZhanghu[33];						//答案
+	TCHAR							szYinhangZhanghu[39];						//答案
 	TCHAR							szQukuanPass[33];						//答案
 };
 struct CMD_GR_SetQukuanZhanghao_RET
@@ -671,6 +737,7 @@ struct CMD_GR_QueryMyYinHang_RET
 	TCHAR						szKaihuYinghang[33];
 	TCHAR						szKaihuRen[33];
 	TCHAR						szYinhangZhanghu[33];				
+	BYTE						n_t_lock;
 };
 
 #define SUB_GP_QUERY_MY_PROTECT			423								//查询自己的设置
@@ -743,26 +810,13 @@ struct CMD_GR_GetHYXXLogRet
 	int								n_t_type;
 	DOUBLE							f_t_fandian;
 	DOUBLE							f_t_yue;
+	SYSTEMTIME						n_t_lasttime;
+	TCHAR							s_t_online[33];
 	int								n_t_online;
 	TCHAR							s_t_qq[11];
+	BYTE								cb_ifxj;
 
-};
-#define SUB_GP_GET_HYXX_LOG_BY_ID			546								//查询会员信息日志
-// #define SUB_GP_GET_HYXX_LOG_BY_ID_RET		547								//返回
-
-struct	CMD_GP_GetHYXXLogByID
-{
-	DWORD							dwUserID;							//用户ID
-	int								nXiaJiID;							//下级ID
-};
-#define SUB_GP_GET_HYXX_LOG_BY_ACT			547								//查询会员信息日志
-
-struct	CMD_GP_GetHYXXLogByAct
-{
-	DWORD							dwUserID;							//用户ID
-	TCHAR							szAccount[33];							//下级账户
-};
-
+};		
 
 #define SUB_GP_XG_HY_FANDIAN			548								//修改QQ
 #define SUB_GR_XG_HY_FANDIAN_RET		549								//返回
@@ -802,12 +856,14 @@ struct	CMD_GP_HYXX_ZhuanZhang
 {
 	int								n_t_user_id;							//自己ID
 	int								n_t_target_id;							//目标ID
+	int								n_t_type;								//转账类型
 	DOUBLE 							f_t_jine;								//金额
 	TCHAR							s_t_password[126];							//密码
 };
 struct CMD_GP_HYXX_ZhuanZhang_RET
 {
 	int							lResult;
+	TCHAR							s_t_desc[126];				//描述
 };
 
 #define SUB_GP_GET_Peie			915								//获取配额
@@ -820,11 +876,15 @@ struct CMD_GetPeie
 struct CMD_GetPeieRet
 {
 	int								n_t_peie_1;					//3.0总配额
-	int								n_t_peie_2;					//2.8总配额
-	int								n_t_peie_3;					//2.7总配额
+	int								n_t_peie_2;					//2.9总配额
+	int								n_t_peie_3;					//2.8总配额
+	int								n_t_peie_4;					//2.7总配额
+	int								n_t_peie_5;					//2.6总配额
 	int								n_t_peie_s_1;				//3.0已用配额
-	int								n_t_peie_s_2;				//2.8已用配额
-	int								n_t_peie_s_3;				//2.7已用配额
+	int								n_t_peie_s_2;				//2.9已用配额
+	int								n_t_peie_s_3;				//2.8已用配额
+	int								n_t_peie_s_4;				//2.7已用配额
+	int								n_t_peie_s_5;				//2.6已用配额
 };
 #define SUB_GP_GET_LHC_QIHAO			917								//获取六合彩期号
 #define SUB_GR_GET_LHC_QIHAO_RET		918								//返回
@@ -849,27 +909,47 @@ struct CMD_GetLhcQihaoRet
 struct CMD_GetXjPeieRet
 {
 	int								n_t_peie_1;					//3.0总配额
-	int								n_t_peie_2;					//2.8总配额
-	int								n_t_peie_3;					//2.7总配额
+	int								n_t_peie_2;					//2.9总配额
+	int								n_t_peie_3;					//2.8总配额
+	int								n_t_peie_4;					//2.7总配额
+	int								n_t_peie_5;					//2.6总配额
 	int								n_t_peie_s_1;				//3.0已用配额
-	int								n_t_peie_s_2;				//2.8已用配额
-	int								n_t_peie_s_3;				//2.7已用配额
+	int								n_t_peie_s_2;				//2.9已用配额
+	int								n_t_peie_s_3;				//2.8已用配额
+	int								n_t_peie_s_4;				//2.7已用配额
+	int								n_t_peie_s_5;				//2.6已用配额
 };
 #define SUB_GP_SET_XJ_Peie				923								//设置下级配额
 #define SUB_GR_SET_XJ_Peie_RET			924								//返回
 
  struct CMD_SetXjPeie
  {
- 	int								n_t_userid;						//ID
-	int								n_t_xj_id;						//下级ID
-	int								n_t_peie1;
-	int								n_t_peie2;
-	int								n_t_peie3;
+	 int								n_t_userid;						//ID
+	 int								n_t_xj_id;						//下级ID
+	 int								n_t_peie1;
+	 int								n_t_peie2;
+	 int								n_t_peie3;
+	 int								n_t_peie4;
+	 int								n_t_peie5;
  };
 struct CMD_SetXjPeieRet
 {
 	int								n_t_result;					//返回
 	TCHAR							s_t_desc[126];				//描述
+};
+#define SUB_GP_GET_PARENT				931								//获取上级
+#define SUB_GR_GET_PARENT_RET			932								//返回
+
+ struct CMD_GetParent
+ {
+ 	int								n_t_userid;						//ID
+	int								n_t_xj_id;						//下级ID
+};
+struct CMD_GetParentRet
+{
+	int								n_t_result;					//返回
+	int								n_t_userid[10];
+	TCHAR							s_t_desc[10][126];				//描述
 };
 
 
@@ -880,7 +960,49 @@ struct CMD_GetKefuUrlRet
 	int								n_t_result;					//返回
 	TCHAR							s_t_desc[256];				//描述
 };
+#define SUB_GP_SEND_YANZHENGMA				962								//发送验证码
+struct CMD_SendYanZhengma
+{
+	int								n_t_userid;					//返回
+	TCHAR						s_t_code[12];				//验证码
+	BYTE							c_t_type;
+	BYTE							c_t_stype;
+};
+#define SUB_GP_SEND_CHECKYANZHENGMA		963							//对比验证码
+#define SUB_GP_SEND_CHECKYANZHENGMA_RET		964							//对比验证码返回
+struct CMD_GR_SendYanZhengmaRet
+{
+	int									nResult;
+	TCHAR							sDesc[200];
+};
 
+#define SUB_GP_GET_PHONE_TRASFER_FENHONG		965					//获取是否需要短信验证
+#define SUB_GP_GET_PHONE_TRASFER_FENHONG_RET		966					//获取是否需要短信验证返回
+struct CMD_GP_GetPhoneTransferFenhong 
+{
+	int										n_t_userid;
+	int										n_t_type;									
+};
+struct CMD_GR_GetPhoneTransferFenhongRet
+{
+	int									n_t_state;
+	TCHAR							sPhoneNum[200];
+};
+#define SUB_GP_SEND_YANZHENGMA_TRANS				969								//发送验证码
+#define SUB_GP_SEND_CHECKYANZHENGMA_TRANS		967							//对比验证码
+#define SUB_GP_SEND_CHECKYANZHENGMA_TRANS_RET		968							//对比验证码返回
+
+#define SUB_GP_GET_QIPAI_KIND									970
+#define SUB_GP_GET_QIPAI_KIND_RET									971
+struct CMD_GP_GetQipaiKind 
+{
+	int									n_t_typeid;
+};
+struct CMD_GR_GetQipaiKindRet 
+{
+	int									n_t_kindid;
+	TCHAR							s_t_Name[33];
+};
 //////////////////////////////////////////////////////////////////////////////////
 #define SUB_GP_GET_REG_URL			550								//获取注册链接
 #define SUB_GR_GET_REG_URL_RET		551								//返回
@@ -974,22 +1096,6 @@ struct CMD_GR_GetXJTZHLogRet
 	DOUBLE							f_t_yingkui_ze;
 };
 
-#define SUB_GP_GET_XJTZH_LOG_BY_ID			558								//查询会员信息日志
-
-struct	CMD_GP_GetXJTZHLogByID
-{
-	DWORD							dwUserID;							//用户ID
-	int								nXiaJiID;							//下级ID
-};
-#define SUB_GP_GET_XJTZH_LOG_BY_ACT			559								//查询会员信息日志
-
-struct	CMD_GP_GetXJTZHLogByAct
-{
-	DWORD							dwUserID;							//用户ID
-	TCHAR							szAccount[33];							//下级账户
-};
-
-
 //个人账户
 #define SUB_GP_CHK_XJTZH_LOG_COUNT			560								//查询下级投注日志数
 #define SUB_GR_CHK_XJTZH_LOG_COUNT_RET		561							//查询下级投注日志数返回
@@ -998,13 +1104,15 @@ struct	CMD_GP_GetXJTZHLogByAct
 struct CMD_GP_CHKXJTZHLogCount
 {
 	DWORD							dwUserID;							//用户ID
-	int								n_t_type;							//查询状态 0 :查所有人   1 :根据ID 查询   2 根据账户查询0
-	int								n_t_user_id;						//查询ID 
-	TCHAR							s_t_account[30];					//查询账户
-	int								n_xj_id;							//下级ID 
-	bool							bTime;								//通过时间查询
-	TCHAR							szTimeStart[30];					//起始时间
-	TCHAR							szTimeEnd[30];						//结束时间
+	WORD							n_t_type;							//查询状态 0 :查所有人   1 :根据ID 查询   2 根据账户查询0
+	int									n_t_user_id;						//查询ID 
+	TCHAR							s_t_account[30];				//查询账户
+	int									n_xj_id;								//下级ID 
+	int									n_t_caizhong;					//彩种
+	int									n_t_status;							//状态
+	bool								bTime;								//通过时间查询
+	TCHAR							szTimeStart[30];				//起始时间
+	TCHAR							szTimeEnd[30];					//结束时间
 };
 //返回
 struct CMD_GR_CHKXJTZHLogCountRet
@@ -1018,14 +1126,16 @@ struct CMD_GR_CHKXJTZHLogCountRet
 struct	CMD_GP_CHKXJTZHLog
 {
 	DWORD							dwUserID;							//用户ID
-	int								n_t_type;							//查询状态 0 :查所有人   1 :根据ID 查询   2 根据账户查询0
-	int								n_t_user_id;						//查询ID 
-	TCHAR							s_t_account[30];					//查询账户
-	int								nPage;								//页
-	int								nSize;								//页的大小
-	bool							bByTime;							//通过时间
-	TCHAR							szTimeStart[30];					//起始时间
-	TCHAR							szTimeEnd[30];						//结束时间
+	int									n_t_type;							//查询状态 0 :查所有人   1 :根据ID 查询   2 根据账户查询0
+	int									n_t_user_id;						//查询ID 
+	TCHAR							s_t_account[30];				//查询账户
+	int									nPage;								//页
+	WORD							nSize;									//页的大小
+	WORD							n_t_caizhong;					//彩种
+	int									n_t_status;							//状态
+	bool								bByTime;							//通过时间
+	TCHAR							szTimeStart[30];				//起始时间
+	TCHAR							szTimeEnd[30];					//结束时间
 };
 
 struct CMD_GR_CHKXJTZHLogRet
@@ -1045,23 +1155,6 @@ struct CMD_GR_CHKXJTZHLogRet
 	int								n_t_zhuihao;
 };
 
-#define SUB_GP_CHK_XJTZH_LOG_BY_ID			564								//查询会员信息日志
-
-struct	CMD_GP_CHKXJTZHLogByID
-{
-	DWORD							dwUserID;							//用户ID
-	int								nXiaJiID;							//下级ID
-	int								nPage;								//页
-	int								nSize;								//页的大小
-
-};
-#define SUB_GP_CHK_XJTZH_LOG_BY_ACT			565								//查询会员信息日志
-
-struct	CMD_GP_CHKXJTZHLogByAct
-{
-	DWORD							dwUserID;							//用户ID
-	TCHAR							szAccount[33];							//下级账户
-};
 
 //个人账户
 #define SUB_GP_GET_HYSHJ			566								//查询会员数据
@@ -1070,7 +1163,7 @@ struct	CMD_GP_CHKXJTZHLogByAct
 //查询投注日志数
 struct CMD_GP_GetHyShj
 {
-	int							dwUserID;							//用户ID
+    DWORD							dwUserID;							//用户ID
 	BYTE						cbOnlyToday;						//只看今天   0 不是    1 是
 	TCHAR						szTimeStart[30];					//起始时间
 	TCHAR						szTimeEnd[30];						//结束时间
@@ -1079,7 +1172,8 @@ struct CMD_GP_GetHyShj
 struct CMD_GR_GetHyShjRet
 {
 	int								n_t_xjrs;						//下级人数
-	int								n_t_xjzx;						//下级在线
+	WORD							n_t_xjzx;						//下级在线
+	WORD							n_t_qianfenlv;						//充值费用千分率
 	DOUBLE							f_t_hyye;						//会员余额
 	DOUBLE							f_t_jrfd;						//今日返点
 	DOUBLE							f_t_jrchz;						//今日充值
@@ -1097,6 +1191,8 @@ struct CMD_GR_GetHyShjRet
 	DOUBLE							f_my_qp_fandian;				//我的棋牌返点
 	DOUBLE							f_touzhuyongjin;				//投注佣金
 	DOUBLE							f_kuisunyongjin;				//亏损佣金
+	int									n_t_newchongzhi;			//当日注册并充值的人数
+	DOUBLE							f_t_userfandian;				//团队返点
 };
 
 //个人账户
@@ -1135,8 +1231,8 @@ struct	CMD_GP_GetXJYKLog
 	int								nPage;								//页
 	int								nSize;								//页的大小
 	bool							bByTime;							//通过时间
-	TCHAR							szTimeStart[30];					//起始时间
-	TCHAR							szTimeEnd[30];						//结束时间
+	TCHAR							szTimeStart[40];					//起始时间
+	TCHAR							szTimeEnd[40];						//结束时间
 };
 
 struct CMD_GR_GetXJYKLogRet
@@ -1153,23 +1249,6 @@ struct CMD_GR_GetXJYKLogRet
 
 };
 
-#define SUB_GP_GET_XJYK_LOG_BY_ID			572								//查询下级盈亏信息日志
-
-struct	CMD_GP_GetXJYKLogByID
-{
-	DWORD							dwUserID;							//用户ID
-	int								nXiaJiID;							//下级ID
-		int								nPage;								//页
-	int								nSize;								//页的大小
-
-};
-#define SUB_GP_GET_XJYK_LOG_BY_ACT			573								//查询下级盈亏信息日志
-
-struct	CMD_GP_GetXJYKLogByAct
-{
-	DWORD							dwUserID;							//用户ID
-	TCHAR							szAccount[33];							//下级账户
-};
 
 //////////////////////////下级盈亏统计////////////////
 //个人账户
@@ -1214,7 +1293,8 @@ struct CMD_GR_GetXJYKTjRet
 {
 	int								n_t_id;
 	TCHAR							s_t_account[30];
-	int								n_t_type;
+	WORD							n_t_type;
+	WORD							n_t_permillage; //充值费用千分点
 	DOUBLE							f_t_chongzhi_ze;
 	DOUBLE							f_t_qukuan_ze;
 	DOUBLE							f_t_touzhu_ze;
@@ -1223,7 +1303,8 @@ struct CMD_GR_GetXJYKTjRet
 	DOUBLE							f_t_xjfandian_ze;
 	DOUBLE							f_t_huodong_ze;
 	DOUBLE							f_t_tuandui_ye;
-//	DOUBLE							f_t_qipai_ze;
+	DOUBLE							f_t_qipai_yk;
+	DOUBLE							f_t_qipai_fd;
 };
 //////////////////////////下级游戏盈亏统计////////////////
 //个人账户
@@ -1273,21 +1354,6 @@ struct CMD_GR_GetXJYXTjRet
 	DOUBLE							f_t_fandian_ze;
 	DOUBLE							f_t_qipai_ze;
 	DOUBLE							f_t_tuandui_ye;
-};
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define SUB_GP_GET_XJYK_TJ_BY_ID			578								//查询下级盈亏信息日志
-
-struct	CMD_GP_GetXJYKTjByID
-{
-	DWORD							dwUserID;							//用户ID
-	int								nXiaJiID;							//下级ID
-};
-#define SUB_GP_GET_XJYK_TJ_BY_ACT			579								//查询下级盈亏信息日志
-
-struct	CMD_GP_GetXJYKTjByAct
-{
-	DWORD							dwUserID;							//用户ID
-	TCHAR							szAccount[33];							//下级账户
 };
 
 //////////////////////////下级充值日志////////////////
@@ -1339,20 +1405,6 @@ struct CMD_GR_GetXJCHZHLogRet
 	TCHAR							s_t_pingtai[30];
 };
 
-#define SUB_GP_GET_XJCHZH_LOG_BY_ID			584								//查询下级盈亏信息日志
-
-struct	CMD_GP_GetXJCHZHLogByID
-{
-	DWORD							dwUserID;							//用户ID
-	int								nXiaJiID;							//下级ID
-};
-#define SUB_GP_GET_XJCHZH_LOG_BY_ACT			585								//查询下级盈亏信息日志
-
-struct	CMD_GP_GetXJCHZHLogByAct
-{
-	DWORD							dwUserID;							//用户ID
-	TCHAR							szAccount[33];							//下级账户
-};
 //////////////////////////下级提现日志////////////////
 //个人账户
 #define SUB_GP_GET_XJTX_LOG_COUNT			586								//查询下级充值日志数
@@ -1404,21 +1456,6 @@ struct CMD_GR_GetXJTxLogRet
 	TCHAR							s_t_note[30];
 };
 
-#define SUB_GP_GET_XJTX_LOG_BY_ID			590								//查询下级盈亏信息日志
-
-struct	CMD_GP_GetXJTxLogByID
-{
-	DWORD							dwUserID;							//用户ID
-	int								nXiaJiID;							//下级ID
-};
-#define SUB_GP_GET_XJTX_LOG_BY_ACT			591								//查询下级盈亏信息日志
-
-struct	CMD_GP_GetXJTxLogByAct
-{
-	DWORD							dwUserID;							//用户ID
-	TCHAR							szAccount[33];							//下级账户
-};
-
 #define SUB_GP_CHONG_ZHI_TYPE					592					//获取充值信息
 #define SUB_GP_CHONG_ZHI_TYPE_RET				593					//获取充值信息返回
 
@@ -1431,10 +1468,13 @@ struct CMD_GP_GetChongzhiType
 struct CMD_GP_GetChongzhiTypeRet
 {
 	TCHAR							s_t_yinhang[60];				//银行
-	TCHAR							s_t_kaihuren[60];				//开户人
-	TCHAR							s_t_zhanghao[60];				//账号
-	TCHAR							s_t_web[60];					//网页
+	TCHAR							s_t_kaihuren[30];				//开户人
+	TCHAR							s_t_zhanghao[30];				//账号
+	TCHAR							s_t_web[120];					//网页
+	TCHAR							s_t_remark[126-2];					//网页
+	DWORD							n_t_typeid;						//typeid
 };
+
 #define SUB_GP_GET_ALL_YINHANG_NAME					417					//获取银行
 #define SUB_GP_GET_ALL_YINHANG_NAME_RET				418					//获取银行返回
 
@@ -1510,7 +1550,187 @@ struct CMD_GP_QuitGameRet
 {
 	int								nResult;
 };
+#define SUB_GP_GET_QUKUAN_LIMIT				927					//获取取款限制
+#define SUB_GP_GET_QUKUAN_LIMIT_RET			928					//获取取款限制返回
 
+struct CMD_GP_GetQukuanLimit
+{
+	int								n_t_userid;
+};
+struct CMD_GP_GetQukuanLimitRet 
+{
+	DOUBLE							f_t_nowxiaofei;				//当前消费			14
+	DOUBLE							f_t_xiaofei;				//所需消费额		13
+	DOUBLE							f_t_lowjine;				//最低金额			1
+	DOUBLE							f_t_highjine;				//最高金额			7
+	int								n_t_sxfpercent;				//手续费百分比		5
+	DOUBLE							f_t_lowsxf;					//最低手续费		9
+	DOUBLE							f_t_highsxf;				//最高手续费		10
+	int								n_t_limitcount;				//免费次数				8
+	int								n_t_lastcount;				//剩余提款次数			11
+	int								n_t_freelastcount;			//剩余免费次数			12
+	int								n_t_allcount;				//提款总次数			2
+	TCHAR							s_t_remark[256];			//取款说明				6
+	int								t_starttime;				//起始时间				3
+	int								t_endtime;					//终止时间				4
+};
+#define SUB_GP_GET_QIHAO_CHA				929					//获取期号差
+#define SUB_GP_GET_QIHAO_CHA_RET			930					//获取期号差返回
+struct CMD_GP_GetQihaoCha
+{
+	int								n_t_qishu;
+};
+#define SUB_GP_GET_CANADA_START_QIHAO				933					//获取加拿大彩开始期号
+#define SUB_GP_GET_CANADA_START_QIHAO_RET			934					//获取加拿大彩开始期号返回
+struct CMD_GP_GetCanadaQihaoRet
+{
+	int								n_t_start_qihao;
+	CTime				n_t_start_time;
+};
+#define SUB_GP_GET_NOTICE					935					//获取公告
+#define SUB_GP_GET_NOTICE_RET			936					//获取公告返回
+struct CMD_GP_GetNotic 
+{
+	int								n_t_type;
+};
+struct CMD_GP_GetNoticRet
+{
+	TCHAR						s_t_content[1024];
+	SYSTEMTIME				n_t_time;
+	int								n_t_type;
+	TCHAR						s_t_title[33];
+};
+
+#define SUB_GP_GET_ZNX_COUNT					937					//获取站内信数量
+#define SUB_GP_GET_ZNX_COUNT_RET			938					//获取站内信数量返回
+struct CMD_GP_GetZnxCount 
+{
+	int								n_t_userid;
+};
+struct CMD_GP_GetZnxCountRet
+{
+	int								n_t_count;
+};
+#define SUB_GP_GET_INBOX_MESSAGE					939					//获取站内信
+#define SUB_GP_GET_INBOX_MESSAGE_RET			940					//获取站内信返回
+struct CMD_GP_GetInboxMessage 
+{
+	int								n_t_userid;
+	int								n_t_typeid;
+	int								n_t_page;
+	int								n_t_size;
+};
+struct CMD_GP_GetInboxMessageRet
+{
+	int								n_t_id;
+	TCHAR						s_t_title[126];
+	TCHAR						s_t_content[1024];
+	SYSTEMTIME				n_t_time;
+	int								n_send_userid;
+	int								n_rcv_userid;
+	int								n_t_sitetype;
+	TCHAR						s_t_username[33];
+	BYTE							c_t_ifread;
+	int								n_t_rownum;
+	int								n_t_count;
+	int								n_t_ifSj;
+
+};
+#define SUB_GP_CHK_INBOX_MESSAGE					941					//查看站内信
+#define SUB_GP_CHK_INBOX_MESSAGE_RET			942					//查看站内信返回
+struct CMD_GP_ChkInboxMessage 
+{
+	int								n_t_id;
+	int								n_t_userid;
+};
+#define SUB_GP_GET_ALL_USERINFO					943					//获取上下级信息
+#define SUB_GP_GET_ALL_USERINFO_RET			944					//获取上下级信息返回
+struct CMD_GP_GetAllUserInfo 
+{
+	int								n_t_typeid;
+	TCHAR						s_t_search[33];
+	int								n_t_edittype;
+	int								n_t_size;
+	int								n_t_userid;
+	int								n_t_count;
+};
+
+struct CMD_GP_GetUserInfoRet
+{
+	int								n_t_userid;
+	TCHAR						s_t_name[33];
+	int								n_t_type;
+	int								n_t_count;
+};
+#define SUB_GP_SEND_MESSAGE					945					//发送信息
+#define SUB_GP_SEND_MESSAGE_RET			946					//发送信息返回
+struct CMD_GP_SendMessage 
+{
+	TCHAR						s_t_title[126];
+	TCHAR						s_t_content[1024];
+	int								n_t_type;
+	int								n_t_userid;
+	int								n_t_revid;
+	int								n_t_sign;
+
+};
+
+struct CMD_GP_SendMessageRet
+{
+	int								n_t_retid;
+	int								n_t_sign;
+
+};
+#define SUB_GP_GET_ChongZhiSong						947					//获取充值送状态
+#define SUB_GP_GET_ChongZhiSong_RET			948					//获取充值送状态返回
+struct CMD_GP_GetChongZhiSong 
+{
+	int								n_t_userid;
+};
+struct CMD_GP_GetChongZhiSongRet
+{
+	int								n_t_state;
+	DOUBLE						f_t_jine;
+};
+#define SUB_GP_SET_ChongZhiSong						949					//获取充值送状态
+#define SUB_GP_SET_ChongZhiSong_RET			950					//获取充值送状态返回
+struct CMD_GP_SetChongZhiSong 
+{
+	int								n_t_userid;
+};
+struct CMD_GP_SetChongZhiSongRet
+{
+	int								n_t_state;
+	DOUBLE						f_t_jine;
+};
+
+#define SUB_GP_DEL_MESSAGE					951					//删除信息
+#define SUB_GP_DEL_MESSAGE_RET			952					//删除信息返回
+struct CMD_GP_DelMessage 
+{
+	int								n_t_type;
+	int								n_t_id;
+};
+
+struct CMD_GP_DelMessageRet
+{
+	int								n_t_retid;
+};
+#define SUB_GP_QUERY_GAME_MOBILE_RESULT		953									//查询开奖结果
+
+#define SUB_GP_QUERY_STATUS_LOTTERY			954												//查询彩种状态 （针对跨年停售）
+#define SUB_GP_QUERY_STATUS_LOTTERY_RET 	955												//查询彩种状态 （针对跨年停售）
+struct CMD_GP_QueryStatusLottery
+{
+	int								n_t_kindid;
+};
+struct CMD_GP_QueryStatusLotteryRet
+{
+	int								n_t_kindid;												//彩种ID
+	TCHAR						s_t_expect[30];		//标准期号
+	SYSTEMTIME						n_t_shijian;		//标准时间
+	BYTE							c_t_ifts;													//是否停售
+};
 ///////////////////////////////大礼包/////////////////////////////////////////////
 #define SUB_GP_GET_DA_LI_BAO				602					//获取大礼包 信息
 #define SUB_GP_GET_DA_LI_BAO_RET			603					//获取大礼包 信息返回
@@ -1970,13 +2190,13 @@ struct CMD_GP_TouZhuCQSSC_Dan
 struct CMD_GP_TouZhuCQSSC_Zhuihao
 {
 	DWORD							dwUserID;							//用户ID
-	char							strQishu[50][20];						//期数
+	char							strQishu[100][20];						//期数
 	int								nGameType;							//游戏类别
 	int								nGameKind;							//玩法种类
-	char							strHaoma[14336];					//下注号码
+	char							strHaoma[13336];					//下注号码
 	int								nHaoMaLen;							//号码长度
 	int								nZhushu;							//注数
-	int								nBeitou[50];							//倍数
+	int								nBeitou[100];							//倍数
 	int								nMoshi;								//模式  元角分
 	int								nSign;								//投注标志
 	int								nEnd;								//是否发送结束

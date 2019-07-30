@@ -34,6 +34,7 @@ VOID * CGameLevelParser::QueryInterface(REFGUID Guid, DWORD dwQueryVer)
 bool CGameLevelParser::LoadGameLevelItem(LPCTSTR pszKindName, LPCTSTR pszDirectory, WORD wGameGenre)
 {
 	//效验参数
+	return true;
 	ASSERT(m_LevelDescribeActive.GetCount()==0);
 	if (m_LevelDescribeActive.GetCount()<0) return 0;
 

@@ -90,23 +90,23 @@
 //////////////////////////////////////////////////////////////////////////////////
 //系统环境
 
-#include "..\..\..\..\..\ewin\客户端组件\游戏框架\GameFrameHead.h"
+#include "..\..\..\..\..\系统模块-ewin升级版\客户端组件\游戏框架\GameFrameHead.h"
 
 #ifndef _DEBUG
 #ifndef _UNICODE
-	#pragma comment (lib,"../../../../系统模块/链接库/Ansi/WHImage.lib")
-	#pragma comment (lib,"../../../../系统模块/链接库/Ansi/GameFrame.lib")
-	#pragma comment (lib,"../../../../系统模块/链接库/Ansi/GameEngine.lib")
-	#pragma comment (lib,"../../../../系统模块/链接库/Ansi/SkinControl.lib")
-	#pragma comment (lib,"../../../../系统模块/链接库/Ansi/ServiceCore.lib")
-	#pragma comment (lib,"../../../../系统模块/链接库/Ansi/ShareControl.lib")
+	#pragma comment (lib,"../../../../系统模块-ewin升级版/链接库/Ansi/WHImage.lib")
+	#pragma comment (lib,"../../../../系统模块-ewin升级版/链接库/Ansi/GameFrame.lib")
+	#pragma comment (lib,"../../../../系统模块-ewin升级版/链接库/Ansi/GameEngine.lib")
+	#pragma comment (lib,"../../../../系统模块-ewin升级版/链接库/Ansi/SkinControl.lib")
+	#pragma comment (lib,"../../../../系统模块-ewin升级版/链接库/Ansi/ServiceCore.lib")
+	#pragma comment (lib,"../../../../系统模块-ewin升级版/链接库/Ansi/ShareControl.lib")
 #else
-	#pragma comment (lib,"../../../../../ewin/链接库/Unicode/WHImage.lib")
-	#pragma comment (lib,"../../../../../ewin/链接库/Unicode/GameFrame.lib")
-	#pragma comment (lib,"../../../../../ewin/链接库/Unicode/GameEngine.lib")
-	#pragma comment (lib,"../../../../../ewin/链接库/Unicode/SkinControl.lib")
-	#pragma comment (lib,"../../../../../ewin/链接库/Unicode/ServiceCore.lib")
-	#pragma comment (lib,"../../../../../ewin/链接库/Unicode/ShareControl.lib")
+	#pragma comment (lib,"../../../../../系统模块-ewin升级版/链接库/Unicode/WHImage.lib")
+	#pragma comment (lib,"../../../../../系统模块-ewin升级版/链接库/Unicode/GameFrame.lib")
+	#pragma comment (lib,"../../../../../系统模块-ewin升级版/链接库/Unicode/GameEngine.lib")
+	#pragma comment (lib,"../../../../../系统模块-ewin升级版/链接库/Unicode/SkinControl.lib")
+	#pragma comment (lib,"../../../../../系统模块-ewin升级版/链接库/Unicode/ServiceCore.lib")
+	#pragma comment (lib,"../../../../../系统模块-ewin升级版/链接库/Unicode/ShareControl.lib")
 #endif
 #else
 #ifndef _UNICODE

@@ -191,7 +191,7 @@
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="2"
-			CharacterSet="2"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -212,8 +212,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="2"
 				AdditionalIncludeDirectories="..\..\..\..\ÓÎÏ·×é¼þ\¿ª·¢¿â\DX9SDK\Include"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_BANK_;_UNICODE"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_UNICODE"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="true"
@@ -1198,11 +1199,11 @@
 			</File>
 		</Filter>
 		<File
-			RelativePath=".\Res\Sound\ADD_GOLD.wav"
+			RelativePath=".\Res\ADD_GOLD.wav"
 			>
 		</File>
 		<File
-			RelativePath=".\Res\ADD_GOLD.wav"
+			RelativePath=".\Res\Sound\ADD_GOLD.wav"
 			>
 		</File>
 		<File
@@ -1350,11 +1351,11 @@
 			>
 		</File>
 		<File
-			RelativePath=".\Res\Sound\GAME_START.wav"
+			RelativePath=".\Res\GAME_START.wav"
 			>
 		</File>
 		<File
-			RelativePath=".\Res\GAME_START.wav"
+			RelativePath=".\Res\Sound\GAME_START.wav"
 			>
 		</File>
 		<File
@@ -1434,10 +1435,6 @@
 			>
 		</File>
 		<File
-			RelativePath=".\Res\Áú\OPENBOX2.png"
-			>
-		</File>
-		<File
 			RelativePath=".\Res\¹ê\OPENBOX2.png"
 			>
 		</File>
@@ -1447,6 +1444,10 @@
 		</File>
 		<File
 			RelativePath=".\Res\»¢\OPENBOX2.png"
+			>
+		</File>
+		<File
+			RelativePath=".\Res\Áú\OPENBOX2.png"
 			>
 		</File>
 		<File
@@ -1466,10 +1467,6 @@
 			>
 		</File>
 		<File
-			RelativePath=".\Res\»¢\OPENBOX4.png"
-			>
-		</File>
-		<File
 			RelativePath=".\Res\È¸\OPENBOX4.png"
 			>
 		</File>
@@ -1479,6 +1476,10 @@
 		</File>
 		<File
 			RelativePath=".\Res\¹ê\OPENBOX4.png"
+			>
+		</File>
+		<File
+			RelativePath=".\Res\»¢\OPENBOX4.png"
 			>
 		</File>
 		<File
@@ -1498,10 +1499,6 @@
 			>
 		</File>
 		<File
-			RelativePath=".\Res\»¢\OPENBOX6.png"
-			>
-		</File>
-		<File
 			RelativePath=".\Res\Áú\OPENBOX6.png"
 			>
 		</File>
@@ -1514,7 +1511,7 @@
 			>
 		</File>
 		<File
-			RelativePath=".\Res\Áú\OPENBOX7.png"
+			RelativePath=".\Res\»¢\OPENBOX6.png"
 			>
 		</File>
 		<File
@@ -1527,6 +1524,10 @@
 		</File>
 		<File
 			RelativePath=".\Res\È¸\OPENBOX7.png"
+			>
+		</File>
+		<File
+			RelativePath=".\Res\Áú\OPENBOX7.png"
 			>
 		</File>
 		<File
@@ -1546,10 +1547,6 @@
 			>
 		</File>
 		<File
-			RelativePath=".\Res\¹ê\OPENBOX9.png"
-			>
-		</File>
-		<File
 			RelativePath=".\Res\È¸\OPENBOX9.png"
 			>
 		</File>
@@ -1559,6 +1556,10 @@
 		</File>
 		<File
 			RelativePath=".\Res\Áú\OPENBOX9.png"
+			>
+		</File>
+		<File
+			RelativePath=".\Res\¹ê\OPENBOX9.png"
 			>
 		</File>
 		<File

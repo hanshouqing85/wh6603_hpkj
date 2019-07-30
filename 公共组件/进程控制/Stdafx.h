@@ -27,11 +27,7 @@
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS
 
 //////////////////////////////////////////////////////////////////////////////////
-// add by hxh 20160801
-#define POINTER_64 __ptr64
 
-typedef void *PVOID;
-typedef void * POINTER_64 PVOID64;
 //MFC нд╪Ч
 #include <AfxWin.h>
 #include <AfxExt.h>

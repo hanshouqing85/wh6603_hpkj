@@ -1,10 +1,12 @@
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fish", "fish\Fish.vcproj", "{8770F292-C476-4B7A-9B98-2DA3E3D8DE59}"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fish", "fish\Fish.vcxproj", "{8770F292-C476-4B7A-9B98-2DA3E3D8DE59}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fish_server", "fish_server\fish_server.vcproj", "{C7EDB21F-4577-4DD9-8475-E7A72AB51B23}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fish_server", "fish_server\fish_server.vcxproj", "{C7EDB21F-4577-4DD9-8475-E7A72AB51B23}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fish_android", "fish_android\fish_android.vcproj", "{5A021AC8-C743-41E0-84AF-05E4A2AD4D9B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fish_android", "fish_android\fish_android.vcxproj", "{5A021AC8-C743-41E0-84AF-05E4A2AD4D9B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

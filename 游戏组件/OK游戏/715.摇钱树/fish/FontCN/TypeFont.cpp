@@ -47,7 +47,9 @@ TypeFont::~TypeFont()
 	}
 
 	size_t size = m_Glyphs.size();
-	for (size_t i = 0;i < size;i++) m_Glyphs[i].Release(m_pHGE);
+	//TEXTURE µÄrelease
+	for (size_t i = 0;i < size;i++) 
+		m_Glyphs[i].Release(m_pHGE);
 	m_Glyphs.clear();
 
 	DELETE_OBJECT(m_pSprite);

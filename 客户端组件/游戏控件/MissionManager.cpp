@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 #include "MissionManager.h"
-
+#include "LogFile.h"
 //////////////////////////////////////////////////////////////////////////////////
 
 //关闭连接
@@ -82,6 +82,12 @@ bool CMissionSocket::OnEventTCPSocketLink(WORD wSocketID, INT nErrorCode)
  	//切换连接
  	if ((nErrorCode==WSAETIMEDOUT)||(nErrorCode==WSAECONNREFUSED)||(nErrorCode==WSAEADDRNOTAVAIL))
  	{
+		DWORD dwTickCount = GetTickCount();
+		CString strLog;
+
+		strLog.Format(L"PINGSECOND  MISSIONSEND CMissionSocket LinkError curtime: %d ",dwTickCount);
+		OutputDebugString(strLog);
+
  		//切换连接
  		if (SwitchServerItem()==true)
  		{
@@ -193,6 +199,9 @@ bool CMissionSocket::PerformConnect(bool bContinue)
  		m_wCurrentPort=PORT_LOGON;
  		lstrcpyn(m_szCurrentServer,m_szCustomServer,CountArray(m_szCurrentServer));
  
+		CString strLog;
+		strLog.Format(L"MISSIONSEND connectip:%s",m_szCurrentServer);
+		OutputDebugString(strLog);
  		//默认地址
  		if ((GetServerInfo()==false)&&(SwitchServerItem()==false))
  		{
@@ -302,6 +311,11 @@ bool CMissionSocket::GetServerInfo()
 
 		if(nValidHostName == -1)
 		{
+
+			CString strLog;
+			strLog.Format(L"MISSIONSEND nValidHostName=-1  :%s",m_szCustomServer);
+			OutputDebugString(strLog);
+
 			DWORD dwServerAddr = 0;
 			LPHOSTENT lpHost=gethostbyname(CT2CA(m_szCustomServer));
 			if (lpHost!=NULL) m_dwCurrentServer=((LPIN_ADDR)lpHost->h_addr)->s_addr;
@@ -309,6 +323,11 @@ bool CMissionSocket::GetServerInfo()
 		}
 		else
 		{
+
+			CString strLog;
+			strLog.Format(L"MISSIONSEND nValidHostName=else :%s",m_szCurrentServer);
+			OutputDebugString(strLog);
+
 			//地址转换
 			CT2CA CurrentServer(m_szCurrentServer);
 			m_dwCurrentServer=inet_addr(CurrentServer);
@@ -351,6 +370,11 @@ bool CMissionSocket::SwitchServerItem()
 			return false;
 		}
 		lstrcpyn(m_szCurrentServer,szPlatformUrl[m_wSwitchIndex],CountArray(m_szCurrentServer));
+		CString strLog;
+
+		strLog.Format(L"PINGSECOND  MISSIONSEND SwitchServerItem  SwitchIP:%s",m_szCurrentServer);
+		OutputDebugString(strLog);
+		LogFile::instance().LogText(strLog);
 
 		m_wSwitchIndex = m_wSwitchIndex+1;
 		//状态切换
@@ -367,6 +391,7 @@ bool CMissionSocket::SwitchServerItem()
 
 		//相同判断
 		if ((m_bSwitchDns==false)&&(lstrcmp(m_szCurrentServer,m_szCustomServer)==0)) continue;
+		lstrcpyn(m_szCustomServer,m_szCurrentServer,CountArray(m_szCustomServer));
 
 		//获取信息
 		if (GetServerInfo()==true) return true;
@@ -453,17 +478,34 @@ bool CMissionManager::OnEventMissionLink(INT nErrorCode,INT nSocketID)
 //关闭事件
 bool CMissionManager::OnEventMissionShut(BYTE cbShutReason)
 {
+	int nCount = m_MissionItemArray.GetCount();
+	CString strLog;
+	strLog.Format(L"\nMissionArray:%d",nCount);
+	OutputDebugString(strLog);
 	//关闭通知
-	for (INT_PTR i=0;i<m_MissionItemArray.GetCount();i++)
+	for (INT_PTR i=0;i<nCount;i++)
 	{
+		if(!AfxIsValidAddress((const void*)&m_MissionItemArray, sizeof(m_MissionItemArray)))
+			return false;
+		if(m_MissionItemArray.IsEmpty())
+			return true;
 		//获取子项
-		CMissionItem * pMissionItem=m_MissionItemArray[i];
+		try{
 
-		//事件处理
-		if (pMissionItem->m_bActiveStatus==true)
+			CMissionItem * pMissionItem=m_MissionItemArray[i];
+			if(pMissionItem == NULL)
+			{
+				continue;
+			}
+			//事件处理
+			if (pMissionItem->m_bActiveStatus==true)
+			{
+				pMissionItem->m_bActiveStatus=false;
+				pMissionItem->OnEventMissionShut(cbShutReason);
+			}
+		}catch(...)
 		{
-			pMissionItem->m_bActiveStatus=false;
-			pMissionItem->OnEventMissionShut(cbShutReason);
+			;
 		}
 	}
 
@@ -474,9 +516,6 @@ bool CMissionManager::OnEventMissionShut(BYTE cbShutReason)
 bool CMissionManager::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wDataSize)
 {
 	int nCount = m_MissionItemArray.GetCount();
-	CString strLog;
-	strLog.Format(L"MISSIONMANAGER nCount:%d",nCount);
-	OutputDebugString(strLog);
 	//数据通知
 	for (INT_PTR i=0;i<nCount;i++)
 	{
@@ -597,7 +636,8 @@ bool CMissionManager::AvtiveMissionItem(CMissionItem * pMissionItem, bool bConti
 	{
 	case SOCKET_STATUS_IDLE:	//空闲状态
 		{
-			SetTimer(IDI_CANCEL_LINK,10*1000,NULL);
+			if(GetSafeHwnd())
+				SetTimer(IDI_CANCEL_LINK,10*1000,NULL);
 			//发起连接
 			if (m_MissionSocket.PerformConnect(bContinue)==false)
 			{
@@ -630,9 +670,9 @@ bool CMissionManager::AvtiveMissionItem(CMissionItem * pMissionItem, bool bConti
 //终止任务
 bool CMissionManager::ConcludeMissionItem(CMissionItem * pMissionItem, bool bDeferIntermit)
 {
+	if (pMissionItem->m_bActiveStatus==false) return false;
 	//效验状态
 	ASSERT(pMissionItem->m_bActiveStatus==true);
-	if (pMissionItem->m_bActiveStatus==false) return false;
 
 	//设置任务
 	pMissionItem->m_bActiveStatus=false;
@@ -707,13 +747,13 @@ bool CMissionManager::SendData(WORD wMainCmdID, WORD wSubCmdID, VOID * const pDa
 
 	if(!bSuccess)
 	{
-		CString strLog;
-		strLog.Format(L"MISSIONSEND wMainCmdID:%d,wSubCmdID:%d",wMainCmdID,wSubCmdID);
-		OutputDebugString(strLog);
 		m_MissionSocket.PerformClose();
 		bSuccess = m_MissionSocket.PerformConnect(false);
-		strLog.Format(L"MISSIONSEND wMainCmdID:%d,wSubCmdID:%d,reconnect:%s",wMainCmdID,wSubCmdID,bSuccess?_T("true"):_T("false"));
-		OutputDebugString(strLog);
+
+		CString strLog;
+		strLog.Format(L"MISSIONSEND FAILE reconnect:%s wMainCmdID:%d,wSubCmdID:%d",bSuccess?L"success":L"faile",wMainCmdID,wSubCmdID);
+		LogFile::instance().LogText(strLog);
+
 	}
 	return true;
 }

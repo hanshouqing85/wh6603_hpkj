@@ -7,6 +7,7 @@
 #include "ImageButton.h"
 #include "ImgRioButton.h"
 #include "ImgStatic.h"
+#include "mycheckbox.h"
 #include "GameRule.h"
 #include "resource.h"
 // #include "GamePlaza.h"
@@ -20,13 +21,12 @@ class CPlazaViewItem;
 typedef CWHArray<CString>	CStringArr;					//类型数组
 #include "MyStatic.h"
 #define IDM_LUCKY_NUM_SSC			10001
-#define IDM_SHOW_MENU_SSC				11110								//显示菜单
-#define IDM_CLICKED_TYPE_SSC			11111								//点击游戏
-//#define IDM_SHOW_MENU				11112								//显示菜单
+#define IDM_SHOW_MENU_SSC			11110								//显示菜单
 #define IDM_UPDATE_ACCOUNT			11113								//更新玩家资料
 #define IDM_SHOW_XGMM				11117								//修改密码
 
 #define IDM_TANCHUANG				900									//弹窗
+
 // 重庆时时彩 对话框
 class CChongQingSSC : public CDialog, public IStatusViewSink
 {
@@ -37,7 +37,7 @@ public:
 	COpenRecord						m_DlgOpenRecord;					//更多开奖记录
 	//取消连接
 	virtual VOID OnStatusCancel();
-
+	CString ChangeStringToT(CStringA strInput);
 // 	//时时彩玩法种类
 	enum {
 		Dxdsh_Shi_Da,
@@ -58,20 +58,20 @@ public:
 	CChongQingSSC(CWnd* pParent = NULL);   // 标准构造函数
 	virtual ~CChongQingSSC();
 
-	HBRUSH hBrush;
-
+	HBRUSH			m_hBrush;
+	BYTE			m_cbIfTs;
 // 对话框数据
 	enum { IDD = IDD_DLG_CHQSSC };
 	int							m_SocketID;
 	int							m_nTzhSign;
 	int							m_nTzhSign1;
 public:
-	void ConnectMainDlg(CPlazaViewItem* luckMeDlg);
+	
 	void FlushZongjine();
 	bool	CheckInput();
-	CString		ChangeStringToT(CStringA strInput);
 	CString GetScoreMoshi();
 	int GetMoshiRet(CString moshi);
+	int	m_nCanadaStartQihao;
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
 	afx_msg void OnBnClickedBtnYuan();
@@ -149,6 +149,15 @@ protected:
 	afx_msg void OnBnClickedRioZuXuan10();
 	afx_msg void OnBnClickedRioZuXuan5();
 
+	afx_msg void OnBnClickedRioQsZuXuan24();
+	afx_msg void OnBnClickedRioQsZuXuan12();
+	afx_msg void OnBnClickedRioQsZuXuan6();
+	afx_msg void OnBnClickedRioQsZuXuan4();
+
+	afx_msg void OnBnClickedRioHsZuXuan24();
+	afx_msg void OnBnClickedRioHsZuXuan12();
+	afx_msg void OnBnClickedRioHsZuXuan6();
+	afx_msg void OnBnClickedRioHsZuXuan4();
 	afx_msg void OnBnClickedRioYffs();
 	afx_msg void OnBnClickedRioHscs();
 	afx_msg void OnBnClickedRioSxbx();
@@ -235,8 +244,11 @@ protected:
 
 	afx_msg void OnBnClickedBtnZhuihao();
 	afx_msg void OnBnClickedBtnMoreRecord();
+	afx_msg void OnBnClickedBtnQuShi();
 	afx_msg void OnBnClickedBtnTouzhu();
-
+	afx_msg void OnBnClickedBtnTouzhuOneKey();
+	void OnBnClickedBtnTouzhuQ();
+	
 	afx_msg void OnBnClickedBtnDelSel();
 	afx_msg LRESULT onBnCLick( WPARAM wParam, LPARAM lParam );
 public:
@@ -269,8 +281,6 @@ protected:
 	WORD							m_wViewItemDown;					//点击子项
 	bool							m_bCanSend	;						//是否发送
 	CFanDian						m_FandianView;						//返点
-	//对象索引
-	WORD GetGameHoverIndex(CPoint MousePoint);
 
 	int GetDanShiZhusu(int nKind);
 	//鼠标移动
@@ -357,6 +367,8 @@ private:
 	void ShowErChong1();
 	void ShowSanChong();
 	void ShowSiChong();
+	void ShowSxErChong();
+	void ShowSxSanChong();
 
 	//显示或隐藏大小单双
 	void ShowDaXiaoDanShuang();
@@ -411,16 +423,11 @@ public:
 	VOID SendQuerySystemTime();
 	//服务器端返回前N个开奖号码
 	bool GetTopLuckyNumber(CMD_GP_QueryLotResult* pResult, int	nDataSize,int nTypeID);
-	void SetTypeID(CaiZhong TypeID)
-	{
-		m_TypeID = TypeID;
-		
-
-	}
+	void SetTypeID(CaiZhong TypeID);
 private:
 
-	CImageButton m_btnBeiTouJia;
-	CImageButton m_btnBeiTouJian;
+	CImageButton					m_btnBeiTouJia;
+	CImageButton					m_btnBeiTouJian;
 	CToolTipCtrl					m_ToolTipCtrl;						//提示控件
 	CToolTipCtrl					m_ToolTipHelp;						//提示控件
 
@@ -559,17 +566,17 @@ private:
 	UINT			m_beishu;					//倍数
 	int				m_nFrameIndex;				//GIF动画的当前帧数
 	int				m_nFrameCount;				//GIF动画总共帧数
-	//CStatic m_staticDanShi;
-	CEdit m_editDanShiHaoMa;
-	CRichEditCtrl m_richDanshiHaoma;
-	CImgStatic m_staticWan;
-	CImgStatic m_staticQian;
-	CImgStatic m_staticBai;
-	CImgStatic m_staticShi;
-	CImgStatic m_staticGe;
-	CImgStatic m_staticNiu;
-	CImgStatic m_staticLhd;
-	CImgStatic m_statichzh;
+	//CImgStatic m_staticDanShi;
+	CSkinEditEx		m_editDanShiHaoMa;
+	CSkinRichEdit	m_richDanshiHaoma;
+	CImgStatic		m_staticWan;
+	CImgStatic		m_staticQian;
+	CImgStatic		m_staticBai;
+	CImgStatic		m_staticShi;
+	CImgStatic		m_staticGe;
+	CImgStatic		m_staticNiu;
+	CImgStatic		m_staticLhd;
+	CImgStatic		m_statichzh;
 
 	CTextButton m_btnWanQuan;
 	CTextButton m_btnWanDa;
@@ -617,8 +624,10 @@ private:
 	CImageButton m_btnClsList;
 	CImageButton m_btnTouZhu;
 	CImageButton m_btnZhuiHao;
+	CImageButton m_btnTouZhuOnekey;
 
 	CImageButton m_btnMoreRecord;
+	CImageButton m_btnQushi;
 	CSkinEditEx m_editBeiTou;
 
 	CImageButton m_btnChqAdd;
@@ -669,12 +678,13 @@ private:
 	CImgRioButton m_rioMouseInput;
 	CImgRioButton m_rioKeyboardInput;
 
-	//
-	CButton		m_rioWan;
-	CButton		m_rioQian;
-	CButton		m_rioBai;
-	CButton		m_rioShi;
-	CButton		m_rioGe;
+	CStatic			m_static_RenXuan_Tip;
+	//change from cbutton to CImgRioButton		CMyCheckBox
+	CButton			m_rioWan;
+	CButton			m_rioQian;
+	CButton			m_rioBai;
+	CButton			m_rioShi;
+	CButton			m_rioGe;
 
  	CImgRioButton m_rioWuXingZX;
 	CImgRioButton m_rioWuXingZXDan;
@@ -739,6 +749,15 @@ private:
 	CImgRioButton m_rioZuXuan20;
 	CImgRioButton m_rioZuXuan10;
 	CImgRioButton m_rioZuXuan5;			
+
+ 	CImgRioButton m_rioQsZuXuan24;
+ 	CImgRioButton m_rioQsZuXuan12;
+ 	CImgRioButton m_rioQsZuXuan6;
+ 	CImgRioButton m_rioQsZuXuan4;			
+	CImgRioButton m_rioHsZuXuan24;
+	CImgRioButton m_rioHsZuXuan12;
+	CImgRioButton m_rioHsZuXuan6;
+	CImgRioButton m_rioHsZuXuan4;			
 
 	CImgRioButton m_rioYffs;
 	CImgRioButton m_rioHscs;
@@ -811,13 +830,18 @@ private:
 	afx_msg void OnBnClickedBeiTouJia();
 	afx_msg void OnBnClickedBeiTouJian();
 	virtual BOOL PreTranslateMessage(MSG * pMsg);
-	CPlazaViewItem* m_pLuckMeDlg;
 	CChqSSCRule m_chqRule;
 	CJxSSCRule m_jxRule;
 	CXJSSCRule m_xjRule;
 	CFenFenCaiRule m_ffcRule;
+	CTXFenFenCaiRule m_txffcRule;
+	CQQFenFenCaiRule m_qqffcRule;
+	CErFenCaiRule m_efcRule;
 	CWuFenCaiRule m_wfcRule;
 	CHgydwfcRule	m_hgRule;
+	CCanadaRule	m_jndRule;
+	CKuaiLe8RUle m_bj5fcRule;				//时间控件
+	int GetTXQihaoCha();
 public:
 	VOID AddOpenResult(CMD_GP_QueryLotResult* pQueryLotResult);
 	//重载函数

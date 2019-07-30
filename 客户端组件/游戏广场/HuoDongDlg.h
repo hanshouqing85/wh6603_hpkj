@@ -8,20 +8,23 @@
 #include "HuodongZhuanzhuan.h"
 #include "HuoDongDaili.h"
 #define  IDM_RETURN_GAME 11118
-//活动专区
+
+
+//禄卯露炉脳篓脟酶
 class CHuoDongDlg : public CDialog
 {
 	DECLARE_DYNAMIC(CHuoDongDlg)
 
 public:
-	CHuoDongDlg(CWnd* pParent = NULL);   // 标准构造函数
+	CHuoDongDlg(CWnd* pParent = NULL);   // 卤锚脳录鹿鹿脭虂潞炉脢瓢
 	virtual ~CHuoDongDlg();
 
-// 对话框数据
+// 露脭禄掳驴蹋脢瓢戮漂
 	enum { IDD = IDD_DLG_HUODONG };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 脰搂鲁脰
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 
 	afx_msg void OnPaint();
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
@@ -41,23 +44,31 @@ protected:
 	virtual BOOL OnInitDialog();
 	virtual void OnCancel();
 	virtual void OnOK();
+public:
+	CMissionManager* m_MissionManager;
+
+	void SetMissionManager(CMissionManager* pMissionManager)
+	{
+		m_MissionManager = pMissionManager;
+	}
+	CPngImage				m_ImgTitle;
 
 private:
-	void AdjustCtrls();
+	void					AdjustCtrls();
 
 private:
 	Bitmap*					m_bmpBk;
-	Bitmap*					m_bmpTip;
-	CImageButton			m_btnDalibao;		//大礼包按钮
-	CImageButton			m_btnZaJinDan;		//砸金蛋按钮
-	CImageButton			m_btnHuanlesong;	//欢乐颂
-	CImageButton			m_btnZhuanZhuan;	//幸运转转
-	CImageButton			m_btnDaili;			//代理回馈
+	//Bitmap*					m_bmpTip;
+	CImageButton			m_btnDalibao;		//麓贸脌帽掳眉掳麓脜楼
+	CImageButton			m_btnZaJinDan;		//脭虊陆膽碌掳掳麓脜楼
+	CImageButton			m_btnHuanlesong;	//禄露脌脰脣虁
+	CImageButton			m_btnZhuanZhuan;	//膼虊脭脣脳陋脳陋
+	CImageButton			m_btnDaili;			//麓煤脌铆禄脴脌隆
 public:
-	CHuoDongDaliBaoDlg		m_dalibao;		//大礼包
-	CHuoDongZaJinDanDlg		m_zajindan;		//砸金蛋
-	CHuoDongHuanLeSongDlg	m_huanlesong;	//欢乐颂
-	HuodongZhuanzhuan		m_zhuanzhuan;	//幸运转转
-	CHuoDongDaili			m_daili;		//代理
-	CImageButton m_btnClose;
+	CHuoDongDaliBaoDlg		m_dalibao;		//麓贸脌帽掳眉
+	CHuoDongZaJinDanDlg		m_zajindan;		//脭虊陆膽碌掳
+	CHuoDongHuanLeSongDlg	m_huanlesong;	//禄露脌脰脣虁
+	HuodongZhuanzhuan		m_zhuanzhuan;	//膼虊脭脣脳陋脳陋
+	CHuoDongDaili			m_daili;		//麓煤脌铆
+	CImageButton			m_btnClose;
 };

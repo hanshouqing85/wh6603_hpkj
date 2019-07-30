@@ -356,7 +356,9 @@ bool CGameClientEngine::OnEventSceneMessage(BYTE cbGameStatus, bool bLookonUser,
 			CMD_S_StatusFree * pStatusFree=(CMD_S_StatusFree *)pData;
 
 			//设置界面
-			m_GameClientView.m_btScore.ShowWindow(!IsDistributeMode());
+//			m_GameClientView.m_btScore.ShowWindow(!IsDistributeMode());
+			m_GameClientView.m_btScore.ShowWindow(0);
+			m_GameClientView.m_btScore.ShowWindow(0);
 			m_GameClientView.SetCellScore(pStatusFree->lCellScore);
 
 
@@ -446,7 +448,8 @@ bool CGameClientEngine::OnEventSceneMessage(BYTE cbGameStatus, bool bLookonUser,
 			m_GameClientView.m_BackCardControl.SetCardData(3);
 
 			//设置界面
-			m_GameClientView.m_btScore.ShowWindow(!IsDistributeMode());
+//			m_GameClientView.m_btScore.ShowWindow(!IsDistributeMode());
+			m_GameClientView.m_btScore.ShowWindow(0);
 			m_GameClientView.SetCellScore(pStatusCall->lCellScore);
 
 	
@@ -617,7 +620,8 @@ bool CGameClientEngine::OnEventSceneMessage(BYTE cbGameStatus, bool bLookonUser,
 			m_GameClientView.SetBankerScore(pStatusPlay->cbBankerScore);
 
 			//控制界面
-			m_GameClientView.m_btScore.ShowWindow(!IsDistributeMode());
+//			m_GameClientView.m_btScore.ShowWindow(!IsDistributeMode());
+			m_GameClientView.m_btScore.ShowWindow(0);
 			m_GameClientView.m_BackCardControl.SetCardData(pStatusPlay->cbBankerCard,3);
 
 			//出牌界面

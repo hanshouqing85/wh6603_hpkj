@@ -30,7 +30,7 @@
 #define	KJ_HAOMA_LENGTH	45
 #define	KJ_SHIJIAN_LENGTH	30
 
-#define	TOP_KAIJIANG_NUMBERS	5
+#define	TOP_KAIJIANG_NUMBERS	4
 
 
 //彩票种类
@@ -39,25 +39,34 @@ typedef enum {
 	CZJiangXiSSC=2,			//江西时时彩
 	CZ3D=3,					//福彩3D
 	CZXinJiangSSC = 4,		//新疆时时彩
-	CZPaiLie3,			//排列3
-	CZGD11Xuan5,		//广东11选5
-	CZCQ11Xuan5,		//重庆11选5
-	CZSD11Xuan5,		//山东11选5
-	CZJX11Xuan5,		//江西11选5
+	CZPaiLie3,				//排列3
+	CZGD11Xuan5,			//广东11选5
+	CZCQ11Xuan5,			//重庆11选5
+	CZSD11Xuan5,			//山东11选5
+	CZJX11Xuan5,			//江西11选5
 	CZKUAILE8,				//北京快乐8
 	CZ_FENFEN_CAI,			//分分彩：5分钟开奖，24小时不停。每天288期
 	CZ_WUFEN_CAI,			//5分彩
 	CZ_BJKUAICHE,			//北京快车
-	CZ_PK10=13,		//PK10
+	CZ_PK10=13,				//PK10
 	CZ_LIUHECAI = 14,
-	CZ_QiXingCai = 15,			//七星彩--lly
+	CZ_QiXingCai = 15,		//七星彩--lly
 	CZHLJ11Xuan5=16,		//黑龙江11选5
 	CZXingYun28,
 	CZ_HGYDWFC=20,
-	CZ_TianJinSSC = 23,	//天津时时彩
+	CZ_TianJinSSC = 23,		//天津时时彩
+	CZ_BJ5FC=24,
+	CZ_JiaNaDaSSC = 25,		//加拿大时时彩
+	CZ_ErFenCai,			//吉利二分彩
+	CZ_CaiZhangdie,			//猜涨跌
+	CZ_TXfenfencai,			//腾讯分分彩
+	CZ_QQfenfencai,			//QQ分分彩
 	CZCount
 }CaiZhong;
-
+typedef enum
+{
+	CaiZhangDie=1
+}Caizhangdie;
 //时时彩玩法种类
 typedef enum 
 {
@@ -148,7 +157,7 @@ typedef enum
 	QW_SiJiFaCai,				//趣味：四季发财，4个一样的数字才中奖
 	NiuNiu_Num,					//牛牛：5个数字之和是10的倍数；牛1--牛10（牛牛） 1:10（无牛通吃）
 	NiuNiu_None,				//牛牛：无牛 1:2
-	NiuNiu_DxDs,				//牛牛：大小单双 1:2.5
+	Zhongsanzusandan,				//牛牛：大小单双 1:2.5
 	DaXiaoDanShuang_dw,			//大小单双定位
 	Zonghe_DXDSLh=56,			//总和大小单双：总和值大於等於23為大，小於等於22為小。
 	SSC_LongHu,					//龙虎：头大于尾为龙，尾大于头为虎；和 ？
@@ -166,6 +175,15 @@ typedef enum
 	Ren2Zuxuan_Fushi,			//任2组选 复式	0
 	Ren2Zuxuan_Danshi,			//任2组选 单式	0
 	BuDingWei_ZhongSan,
+	QSZuXuan24=72,				//前四组选24
+	QSZuXuan12,					//前四组选12
+	QSZuXuan6,					//前四组选6
+	QSZuXuan4,					//前四组选4
+	HSZuXuan24,					//后四组选24
+	HSZuXuan12,					//后四组选12
+	HSZuXuan6,					//后四组选6
+	HSZuXuan4,					//后四组选4
+
 	WanFaCount
 }SSCWanFaKind;
 
@@ -251,21 +269,38 @@ typedef enum {
 
 //幸运28
 typedef enum {
-	enBJK8_1=1,
-	enBJK8_2,
-	enBJK8_3,
-	enBJK8_4,
-	enBJK8_5,
-	enBJK8_6,
-	enBJK8_7,
-	enBJK8_8,
-	enBJK8_9,
-	enBJK8_10,
+	xy28_tm0=1,
+	xy28_tm1,
+	xy28_tm2,
+	xy28_tm3,
+	xy28_tm4,
+	xy28_tm5,
+	xy28_tm6,
+	xy28_tm7,
+	xy28_tm8,
+	xy28_tm9,
+	xy28_tm10,
+	xy28_tm11,
+	xy28_tm12,
+	xy28_tm13,
+	xy28_tm14,
+	xy28_tm15,
+	xy28_tm16,
+	xy28_tm17,
+	xy28_tm18,
+	xy28_tm19,
+	xy28_tm20,
+	xy28_tm21,
+	xy28_tm22,
+	xy28_tm23,
+	xy28_tm24,
+	xy28_tm25,
+	xy28_tm26,
+	xy28_tm27,
 
 	enXY28_DXDS,	//和值大小单双
 	enXY28_Funny,		//趣味
 	enXY28_JiZhi,		//极值
-	enXY28_TeMa=14,	//特码
 
 }XingYun28Kind;
 

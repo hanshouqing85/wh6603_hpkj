@@ -58,7 +58,16 @@ CSkinButton::CSkinButton()
 	TCHAR szDirectory[MAX_PATH]=TEXT("");
 	CWHService::GetWorkDirectory(szDirectory,CountArray(szDirectory));
 
-	_sntprintf(m_szWave,CountArray(m_szWave),TEXT("%s\\skin\\game\\MouseDown.wav"),szDirectory);
+	//构造路径
+	TCHAR szFileName[MAX_PATH]=TEXT("");
+	_sntprintf(szFileName,CountArray(szFileName),TEXT("%s\\GamePlaza.ini"),szDirectory);
+	int nPlay = GetPrivateProfileInt(TEXT("SOUND"),TEXT("IsPlay"),1,szFileName);
+
+	if(nPlay==1)
+	{
+		_sntprintf(m_szWave,CountArray(m_szWave),TEXT("%s\\skin\\game\\MouseDown.wav"),szDirectory);
+	}
+
 
 	return;
 }
@@ -385,6 +394,7 @@ VOID CSkinButton::OnMouseMove(UINT nFlags, CPoint Point)
 		//过渡处理
 		if (m_wImageIndex<MAX_TRANSITION_INDEX)
 		{
+			KillTimer(IDI_TRANSITION);
 			SetTimer(IDI_TRANSITION,TIME_TRANSITION,NULL);
 		}
 	}

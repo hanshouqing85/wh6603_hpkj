@@ -272,7 +272,8 @@ bool GameManager::LoadGameResource(int& progress) {
     self_info_font_ = FontSprite::CreateEx(font_dir, 18);
     self_info_font_->SetColor(0xFFFFFFFF);
 
-    resource_manager_->ChangeScript("zyqs\\content.res");
+	    resource_manager_->ChangeScript("zyqs\\content.res");
+
 
     ret = game_scene_->LoadGameResource();
     if (!ret) break;
@@ -295,6 +296,8 @@ bool GameManager::LoadGameResource(int& progress) {
 
     ret = jetton_manager_->LoadGameResource();
     if (!ret) break;
+
+
     ret = Message::LoadGameResource();
     if (!ret) break;
     progress = 80;
@@ -351,6 +354,10 @@ bool GameManager::LoadGameResource(int& progress) {
     client_kernel_->SendGameOption();
     game_ready_ = true;
     SoundManager::GetInstance().PlayBackMusic();
+
+
+
+
   } while (0);
 
   return ret;
@@ -660,7 +667,8 @@ bool GameManager::OnRender(float hscale, float vscale) {
   }
 
   // 用户信息
-  spr_self_info_->RenderEx(0.f, screen_height, 0.f, hscale, vscale);
+  if(spr_self_info_)
+		spr_self_info_->RenderEx(0.f, screen_height, 0.f, hscale, vscale);
   IGameUserItem* me_user_item = client_kernel_->GetTableUserItem(show_user_info_chairid_);
   if (me_user_item != NULL) {
     self_info_font_->Render(70.f * hscale, screen_height - 30.f * vscale, me_user_item->GetNickName());
@@ -1308,6 +1316,8 @@ void GameManager::RenderUserScoreNum(SCORE num, float x, float y, float rot, flo
   if (num < 0) return;
 
   static const int kMaxShowNumCount = 14;
+	if(spr_user_score_num_ == NULL)
+		return;
 
   float num_width = spr_user_score_num_->GetWidth();
   float num_height = spr_user_score_num_->GetHeight();

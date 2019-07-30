@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="客户端 D3D"
 	ProjectGUID="{3A34A9AE-B81F-4884-9D1C-316B9B204899}"
+	RootNamespace="客户端 D3D"
 	Keyword="MFCProj"
 	>
 	<Platforms>
@@ -351,7 +352,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="mkdir ..\..\..\发布组件\客户端组件\Release\Unicode&#x0D;&#x0A;copy /y ..\..\..\..\运行\Release\Unicode\$(TargetFileName) ..\..\..\发布组件\客户端组件\Release\Unicode\$(TargetFileName)&#x0D;&#x0A;"
+				CommandLine=""
 			/>
 		</Configuration>
 	</Configurations>
@@ -512,11 +513,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Boy\BOMB_CARD.wav"
+				RelativePath=".\Res\Girl\BOMB_CARD.wav"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Girl\BOMB_CARD.wav"
+				RelativePath=".\Res\Boy\BOMB_CARD.wav"
 				>
 			</File>
 			<File
@@ -760,19 +761,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Boy\DOUBLE.wav"
-				>
-			</File>
-			<File
 				RelativePath=".\Res\Girl\DOUBLE.wav"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Boy\DOUBLE_LINE.wav"
+				RelativePath=".\Res\Boy\DOUBLE.wav"
 				>
 			</File>
 			<File
 				RelativePath=".\Res\Girl\DOUBLE_LINE.wav"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\Boy\DOUBLE_LINE.wav"
 				>
 			</File>
 			<File
@@ -784,11 +785,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Girl\FOUR_TAKE_ONE.wav"
+				RelativePath=".\Res\Boy\FOUR_TAKE_ONE.wav"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Boy\FOUR_TAKE_ONE.wav"
+				RelativePath=".\Res\Girl\FOUR_TAKE_ONE.wav"
 				>
 			</File>
 			<File
@@ -864,11 +865,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Boy\MISSILE_CARD.wav"
+				RelativePath=".\Res\Girl\MISSILE_CARD.wav"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Girl\MISSILE_CARD.wav"
+				RelativePath=".\Res\Boy\MISSILE_CARD.wav"
 				>
 			</File>
 			<File
@@ -884,11 +885,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Girl\PASS_CARD.wav"
+				RelativePath=".\Res\Boy\PASS_CARD.wav"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Boy\PASS_CARD.wav"
+				RelativePath=".\Res\Girl\PASS_CARD.wav"
 				>
 			</File>
 			<File
@@ -912,11 +913,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Boy\Score_1.wav"
+				RelativePath=".\Res\Girl\Score_1.wav"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Girl\Score_1.wav"
+				RelativePath=".\Res\Boy\Score_1.wav"
 				>
 			</File>
 			<File
@@ -928,11 +929,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Boy\SCORE_3.wav"
+				RelativePath=".\Res\Girl\SCORE_3.wav"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Girl\SCORE_3.wav"
+				RelativePath=".\Res\Boy\SCORE_3.wav"
 				>
 			</File>
 			<File
@@ -948,15 +949,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Girl\SINGLE_1.wav"
-				>
-			</File>
-			<File
 				RelativePath=".\Res\Boy\SINGLE_1.wav"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Boy\SINGLE_10.wav"
+				RelativePath=".\Res\Girl\SINGLE_1.wav"
 				>
 			</File>
 			<File
@@ -964,7 +961,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Boy\SINGLE_11.wav"
+				RelativePath=".\Res\Boy\SINGLE_10.wav"
 				>
 			</File>
 			<File
@@ -972,11 +969,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Boy\SINGLE_12.wav"
+				RelativePath=".\Res\Boy\SINGLE_11.wav"
 				>
 			</File>
 			<File
 				RelativePath=".\Res\Girl\SINGLE_12.wav"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\Boy\SINGLE_12.wav"
 				>
 			</File>
 			<File
@@ -988,19 +989,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Boy\SINGLE_14.wav"
-				>
-			</File>
-			<File
 				RelativePath=".\Res\Girl\SINGLE_14.wav"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Girl\SINGLE_15.wav"
+				RelativePath=".\Res\Boy\SINGLE_14.wav"
 				>
 			</File>
 			<File
 				RelativePath=".\Res\Boy\SINGLE_15.wav"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\Girl\SINGLE_15.wav"
 				>
 			</File>
 			<File
@@ -1012,19 +1013,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Girl\SINGLE_3.wav"
-				>
-			</File>
-			<File
 				RelativePath=".\Res\Boy\SINGLE_3.wav"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Boy\SINGLE_4.wav"
+				RelativePath=".\Res\Girl\SINGLE_3.wav"
 				>
 			</File>
 			<File
 				RelativePath=".\Res\Girl\SINGLE_4.wav"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\Boy\SINGLE_4.wav"
 				>
 			</File>
 			<File
@@ -1036,15 +1037,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Girl\SINGLE_6.wav"
-				>
-			</File>
-			<File
 				RelativePath=".\Res\Boy\SINGLE_6.wav"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Girl\SINGLE_7.wav"
+				RelativePath=".\Res\Girl\SINGLE_6.wav"
 				>
 			</File>
 			<File
@@ -1052,7 +1049,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Girl\SINGLE_8.wav"
+				RelativePath=".\Res\Girl\SINGLE_7.wav"
 				>
 			</File>
 			<File
@@ -1060,11 +1057,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Boy\SINGLE_9.wav"
+				RelativePath=".\Res\Girl\SINGLE_8.wav"
 				>
 			</File>
 			<File
 				RelativePath=".\Res\Girl\SINGLE_9.wav"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\Boy\SINGLE_9.wav"
 				>
 			</File>
 			<File
@@ -1076,15 +1077,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Boy\THREE.wav"
-				>
-			</File>
-			<File
 				RelativePath=".\Res\Girl\THREE.wav"
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Boy\THREE_LINE.wav"
+				RelativePath=".\Res\Boy\THREE.wav"
 				>
 			</File>
 			<File
@@ -1092,7 +1089,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Boy\THREE_ONE_LINE.wav"
+				RelativePath=".\Res\Boy\THREE_LINE.wav"
 				>
 			</File>
 			<File
@@ -1100,11 +1097,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Res\Girl\THREE_TAKE_ONE.wav"
+				RelativePath=".\Res\Boy\THREE_ONE_LINE.wav"
 				>
 			</File>
 			<File
 				RelativePath=".\Res\Boy\THREE_TAKE_ONE.wav"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\Girl\THREE_TAKE_ONE.wav"
 				>
 			</File>
 			<File

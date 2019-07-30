@@ -242,7 +242,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../../../运行/Debug/Unicode/ShareControlD.dll"
+				OutputFile="../../运行/Debug/Unicode/ShareControlD.dll"
 				LinkIncremental="2"
 				ModuleDefinitionFile=".\ShareControlD.def"
 				GenerateDebugInformation="true"
@@ -273,7 +273,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="mkdir ..\..\..\发布组件\客户端组件\Debug\Unicode&#x0D;&#x0A;copy /y ..\..\..\运行\Debug\Unicode\$(TargetFileName) ..\..\..\发布组件\客户端组件\Debug\Unicode\$(TargetFileName)&#x0D;&#x0A;"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
@@ -394,6 +394,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\LogFile.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\MissionManager.cpp"
 				>
 			</File>
@@ -497,6 +501,10 @@
 			</File>
 			<File
 				RelativePath=".\Information.h"
+				>
+			</File>
+			<File
+				RelativePath=".\LogFile.h"
 				>
 			</File>
 			<File

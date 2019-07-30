@@ -7,7 +7,7 @@
 // 如果您必须使用下列所指定的平台之前的平台，则修改下面的定义。
 // 有关不同平台的相应值的最新信息，请参考 MSDN。
 #ifndef WINVER				// 允许使用 Windows 95 和 Windows NT 4 或更高版本的特定功能。
-#define WINVER 0x0400		//为 Windows98 和 Windows 2000 及更新版本改变为适当的值。
+#define WINVER 0x0500
 #endif
 
 #ifndef _WIN32_WINNT		// 允许使用 Windows NT 4 或更高版本的特定功能。
@@ -92,11 +92,11 @@ typedef void * POINTER_64 PVOID64;
 #pragma comment (lib,"../../../开发库/Lib/Ansi/ServiceCoreD.lib")
 #pragma comment (lib,"../../../开发库/Lib/Ansi/ShareControlD.lib")
 #else
-#pragma comment (lib,"../../../../系统模块/链接库/Unicode/WHImageD.lib")
-#pragma comment (lib,"../../../../系统模块/链接库/Unicode/GameFrameD.lib")
-#pragma comment (lib,"../../../../系统模块/链接库/Unicode/GameEngineD.lib")
-#pragma comment (lib,"../../../../系统模块/链接库/Unicode/SkinControlD.lib")
-#pragma comment (lib,"../../../../系统模块/链接库/Unicode/ServiceCoreD.lib")
+#pragma comment (lib,"../../../../链接库/Unicode/WHImageD.lib")
+#pragma comment (lib,"../../../../链接库/Unicode/GameFrameD.lib")
+#pragma comment (lib,"../../../../链接库/Unicode/GameEngineD.lib")
+#pragma comment (lib,"../../../../链接库/Unicode/SkinControlD.lib")
+#pragma comment (lib,"../../../../链接库/Unicode/ServiceCoreD.lib")
 #endif
 #endif
 
@@ -131,11 +131,11 @@ typedef void * POINTER_64 PVOID64;
 #pragma comment (lib,"../../../../系统模块/链接库/Ansi/SkinControlD.lib")
 #pragma comment (lib,"../../../../系统模块/链接库/Ansi/ServiceCoreD.lib")
 #else
-#pragma comment (lib,"../../../../系统模块/链接库/Unicode/WHImageD.lib")
-#pragma comment (lib,"../../../../系统模块/链接库/Unicode/GameFrameD.lib")
-#pragma comment (lib,"../../../../系统模块/链接库/Unicode/GameEngineD.lib")
-#pragma comment (lib,"../../../../系统模块/链接库/Unicode/SkinControlD.lib")
-#pragma comment (lib,"../../../../系统模块/链接库/Unicode/ServiceCoreD.lib")
+#pragma comment (lib,"../../../../链接库/Unicode/WHImageD.lib")
+#pragma comment (lib,"../../../../链接库/Unicode/GameFrameD.lib")
+#pragma comment (lib,"../../../../链接库/Unicode/GameEngineD.lib")
+#pragma comment (lib,"../../../../链接库/Unicode/SkinControlD.lib")
+#pragma comment (lib,"../../../../链接库/Unicode/ServiceCoreD.lib")
 #endif
 #endif
 

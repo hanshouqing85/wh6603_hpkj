@@ -307,6 +307,10 @@ CGameClientView::CGameClientView()
 
 	m_pClientControlDlg = NULL;
 	m_hInst = NULL;
+	return;
+
+
+
 	WCHAR szPath[255];
 			static int  current = 0;
 			::memset(szPath,0,sizeof(szPath));

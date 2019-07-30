@@ -21,13 +21,9 @@
 #include <GL/GLAux.h>
 
 //平台文件
-#if 1
-#include "..\..\全局定义\Platform.h"
-#include "..\..\客户端组件\界面控件\SkinControlHead.h"
-#else
 #include "..\..\..\系统模块-EWIN升级版\全局定义\Platform.h"
 #include "..\..\..\系统模块-EWIN升级版\客户端组件\界面控件\SkinControlHead.h"
-#endif
+
 //////////////////////////////////////////////////////////////////////////////////
 
 //公共定义

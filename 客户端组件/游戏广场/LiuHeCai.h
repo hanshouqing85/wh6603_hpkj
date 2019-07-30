@@ -40,7 +40,7 @@ public:
 	enum {
 		Kj_XinXi_Count = 5
 	};
-
+	BYTE m_cbIfTs;
 public:
 	CLiuHeCai(CWnd* pParent = NULL);   // 标准构造函数
 	virtual ~CLiuHeCai();
@@ -89,14 +89,15 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	float						m_fBonus;						//设置的
 	float						m_fPercent;						//设置的
-	float	nPercent;
-	float	fDanweiFandian;
-	float	nBonus ;
-	int	m_singlezhushu;
-	DOUBLE m_fSingleJine;
-	int m_zongZhuShu;
-	DOUBLE m_zongJine;
-	CFont m_font;
+	float						nPercent;
+	float						fDanweiFandian;
+	float						nBonus ;
+	int							m_singlezhushu;
+	int							m_nShengXiaoWuCha;				//生肖的误差：每年农历大年开始，生肖自动转换。
+	DOUBLE						m_fSingleJine;
+	int							m_zongZhuShu;
+	DOUBLE						m_zongJine;
+	CFont						m_font;
 	VOID OnMouseMove(UINT nFlags, CPoint Point);
 	VOID OnLButtonDown(UINT nFlags, CPoint Point);
 	void ResetAllEdit();
@@ -118,25 +119,31 @@ public:
 	int GetBoSe(int nNum);
 	bool ChangeStringToA(CString strInput, string&  strOutput);
 	int GetLhcZhushu();
+	
+	//生肖的屏幕位置图
+	bool GetShengXiaoPos(int nIndex, CPoint& ptOut);
+	//生肖的顺序转换
+	int	GetShengXiaoIndex(int nIndex, int nYearXiuZheng);
 	//读取事件
 	virtual bool OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wDataSize);
 
 	//位置信息
 protected:
-	int		m_nMoshi;
-	KjXinXi m_kjXinxi[Kj_XinXi_Count];
-	bool	m_bKaiJiangzhong;
-	int	m_kjXinxiCont;
-	TCHAR m_lastExpect[KJ_QIHAO_LENGTH];
+	int			m_nMoshi;
+	KjXinXi		m_kjXinxi[Kj_XinXi_Count];
+	bool		m_bKaiJiangzhong;
+	int			m_kjXinxiCont;
+	TCHAR		m_lastExpect[KJ_QIHAO_LENGTH];
 public:
-	void FlushZongjine();
-	Bitmap* m_bmpBk;
-	Bitmap* m_bmpTmdm;
-	Bitmap* m_bmpTmpm;
-	Bitmap* m_bmpTmds;
-	Bitmap* m_bmpTmdx;
-	Bitmap* m_bmpTmsx;
-	Bitmap* m_bmpTmbs;
+	void		FlushZongjine();
+	Bitmap*							m_bmpBk;
+	Bitmap*							m_bmpTmdm;
+	Bitmap*							m_bmpTmpm;
+	Bitmap*							m_bmpTmds;
+	Bitmap*							m_bmpTmdx;
+	Bitmap*							m_bmpTmsx;
+	Bitmap*							m_bmpTmbs;
+	Bitmap*							m_pngShengXiao;							//生肖图
 
 	CTextButton						 m_btnTmdm;		//特码单买
 	CTextButton						 m_btnPmdm;		//平码单买
@@ -247,6 +254,7 @@ private:
 	void HideTmbsCtrl();
 	void DrawLastKjHaoma(CDC* pDC, Graphics& graphics);
 	void DrawBigNum(Graphics& graphics, Bitmap* img, Rect& rc_dest, int num);
+	void DrawBigShengXiao(Graphics& graphics, Bitmap* img, Rect& rc_dest, int num);
 	void DrawTopKjHaoma(CDC* pDC, Graphics& graphics);
 	void DrawSmallNum(Graphics& graphics, Bitmap* img, Rect& rc_dest, int num);
 	int GetGameKindByDesc(const CString& desc);
@@ -258,6 +266,9 @@ private:
 	Bitmap* m_kjNumSmall;
 	int m_SmallNumWidth;
 	int m_SmallNumHeight;
+	Bitmap*	m_imgKaijiang;			//开奖动画
+	int				m_nFrameIndex;				//GIF动画的当前帧数
+	int				m_nFrameCount;				//GIF动画总共帧数
 
 
 };

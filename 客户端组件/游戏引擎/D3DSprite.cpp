@@ -87,28 +87,27 @@ bool CD3DSprite::LoadImage( CD3DDevice * pD3DDevice, HINSTANCE hInstance, LPCTST
 
 	if(FAILED(hResult)) 
 	{
-		TraceService->TraceString(TraceLevel_Game_Warning,TEXT("[Sprite] load Resource [ %s ] failed"),pszResource);
-
+		//TraceService->TraceString(TraceLevel_Warning,TEXT("[Sprite] load Resource [ %s ] failed"),pszResource);
 		SafeRelease(m_pISprite);
 		SafeRelease(m_pITexture);
-
+		ASSERT(FALSE);
 		return false;
 	}
 
 	if(m_pISprite==NULL||m_pITexture==NULL)
 	{
-		TraceService->TraceString(TraceLevel_Game_Warning,TEXT("[Sprite] load Resource [ %s ] failed"),pszResource);
+		//TraceService->TraceString(TraceLevel_Warning,TEXT("[Sprite] load Resource [ %s ] failed"),pszResource);
 
 		SafeRelease(m_pISprite);
 		SafeRelease(m_pITexture);
-
+		ASSERT(FALSE);
 		return false;
 	}
 
 	m_ImageSize.SetSize(ImageInfo.Width,ImageInfo.Height);
 	m_D3DSpritePtrArray.Add(this);
 
-	TraceService->TraceString(TraceLevel_Game_Normal,TEXT("[Sprite] load Resource [ %s ] success"),pszResource);
+	//TraceService->TraceString(TraceLevel_Normal,TEXT("[Sprite] load Resource [ %s ] success"),pszResource);
 
 	return true;
 }
@@ -135,26 +134,26 @@ bool CD3DSprite::LoadImage( CD3DDevice * pD3DDevice, HINSTANCE hInstance, LPCTST
 
 	if(FAILED(hResult)) 
 	{
-		TraceService->TraceString(TraceLevel_Game_Warning,TEXT("[Sprite] load Memory [ %s ] failed"),pszResource);
+		//TraceService->TraceString(TraceLevel_Warning,TEXT("[Sprite] load Memory [ %s ] failed"),pszResource);
 		SafeRelease(m_pISprite);
 		SafeRelease(m_pITexture);
-
+		ASSERT(FALSE);
 		return false;
 	}
 
 	if(m_pISprite==NULL||m_pITexture==NULL)
 	{
-		TraceService->TraceString(TraceLevel_Game_Warning,TEXT("[Sprite] load Memory [ %s ] failed"),pszResource);
+		//TraceService->TraceString(TraceLevel_Warning,TEXT("[Sprite] load Memory [ %s ] failed"),pszResource);
 		SafeRelease(m_pISprite);
 		SafeRelease(m_pITexture);
-
+		ASSERT(FALSE);
 		return false;
 	}
 
 	m_ImageSize.SetSize(ImageInfo.Width,ImageInfo.Height);
 	m_D3DSpritePtrArray.Add(this);
 
-	TraceService->TraceString(TraceLevel_Game_Normal,TEXT("[Sprite] load Memory [ %s ] success"),pszResource);
+	//TraceService->TraceString(TraceLevel_Normal,TEXT("[Sprite] load Memory [ %s ] success"),pszResource);
 
 	return true;
 }

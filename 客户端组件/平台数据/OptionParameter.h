@@ -31,6 +31,7 @@
 #define MESSAGE_MODE_ALL			0									//全部显示
 #define MESSAGE_MODE_DETEST			1									//屏蔽厌恶
 #define MESSAGE_MODE_FRIEND			2									//社团好友
+#define MESSAGE_MODE_NONE			3									//全不显示
 
 //界面动作
 #define ACTION_ORIENTATION			0									//定位用户
@@ -155,6 +156,7 @@ public:
 	//系统配置
 public:
 	bool							m_bAllowSound;						//允许声音
+	bool							m_bAllowBackMusic;					//允许背景音乐
 	bool							m_bAutoSitDown;						//自动坐下
 	bool							m_bAutoShowWhisper;					//显示私聊
 	bool							m_bSaveWhisperChat;					//保存私聊

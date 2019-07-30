@@ -30,13 +30,13 @@ static const int wanfa_sel_width = 71;
 static const int wanfa_sel_height = 22;
 
 //号码数据
-static const int haoma_btn_x = 100;
-static const int haoma_btn_y = 226;
+static const int haoma_btn_x = 100-43;
+static const int haoma_btn_y = 226-10;
 static const int haoma_btn_col_wdith = 40;
 static const int haoma_btn_row_height = 35;
 
 //号码提示数据
-static const int haoma_tip_x = 20;
+static const int haoma_tip_x = 20-15;
 static const int haoma_tip_y = haoma_btn_y;
 
 //单式选号编辑框
@@ -46,10 +46,10 @@ static const int edit_haomao_danshi_width = 752;
 static const int edit_haomao_danshi_height = 195;
 
 //添加号码按钮
-static const int btn_chq_add_x = 571;
+static const int btn_chq_add_x = 588;
 static const int btn_chq_add_y = 415;
 //
-static const int btn_lock_x = 450;
+static const int btn_lock_x = 378;
 static const int btn_lock_y = 417;
 
 //选号显示区域数据
@@ -57,40 +57,43 @@ static const int btn_lock_y = 417;
 static const int btn_del_sel_x = 470;
 static const int btn_del_sel_y = 543;
 //清空列表按钮
-static const int btn_cls_list_x = 645;
+static const int btn_cls_list_x = 654;
 static const int btn_cls_list_y = 415;
 //号码列表
 static const int list_haomao_x = 43;
 static const int list_haomao_y = 469;
-static const int list_haomao_width = 592;
-static const int list_haomao_height = 72;
+static const int list_haomao_width = 577;
+static const int list_haomao_height = 58;
 //倍投编辑框
-static const int edit_beitou_x = 214;
-static const int edit_beitou_y = 423;
-static const int edit_beitou_width = 48;
-static const int edit_beitou_height = 21;
+static const int edit_beitou_x = 182+9+10;
+static const int edit_beitou_y = 426;
+static const int edit_beitou_width = 35;
+static const int edit_beitou_height = 27;
 //确认投注按钮
 static const int btn_touzhu_x = 638;
 static const int btn_touzhu_y = 490;
+//一键投注按钮
+static const int btn_touzhu_onekey_x = 496;
+static const int btn_touzhu_onekey_y = 417;
 //追号按钮
-static const int btn_zhuihao_x = 719;
+static const int btn_zhuihao_x = 721;
 static const int btn_zhuihao_y = 415;
 //更多记录
-static const int btn_more_x = 712;
-static const int btn_more_y = 92;
+static const int btn_more_x = 712+50;
+static const int btn_more_y = 92-90;
 
 //大开奖号
 static const int kj_big_haoma_x = 276;
 static const int kj_big_haoma_y = 38;
 
-static const int czh_rc_left = 243;
-static const int czh_rc_top = 4;
+static const int czh_rc_left = 243-35;
+static const int czh_rc_top = 4-5;
 static const int czh_rc_width = 65;
 static const int czh_rc_height = 30;
 static CRect rcCzh(czh_rc_left, czh_rc_top, czh_rc_left + czh_rc_width, czh_rc_top + czh_rc_height);
 
-static const int qihao_rc_left = 325;
-static const int qihao_rc_top = 4;
+static const int qihao_rc_left = 335-45+20;
+static const int qihao_rc_top = 4-5;
 static const int qihao_rc_width = 125;
 static const int qihao_rc_height = 30;
 static CRect rcQiHao(qihao_rc_left, qihao_rc_top, qihao_rc_left + qihao_rc_width, qihao_rc_top + qihao_rc_height);
@@ -108,15 +111,15 @@ static const int kj_small_haoma_col_span = 5;
 static const int kj_small_haoma_row_span = 6;
 
 //总注数
-static const int zongzhushu_x = 71;
-static const int zongzhushu_y = 411;
+static const int zongzhushu_x = 75;
+static const int zongzhushu_y = 415;
 static const int zongzhushu_width = 150;
 static const int zongzhushu_height = 25;
 static CRect rcZongZhuShu(zongzhushu_x, zongzhushu_y, zongzhushu_x+zongzhushu_width, zongzhushu_y+zongzhushu_height);
 
 //总金额
-static const int zongjine_x = 295;
-static const int zongjine_y = 428;
+static const int zongjine_x = 261;
+static const int zongjine_y = 433;
 static const int zongjine_width = 150;
 static const int zongjine_height = 25;
 static CRect rcZongJinE(zongjine_x, zongjine_y, zongjine_x+zongjine_width, zongjine_y+zongjine_height);
@@ -142,11 +145,11 @@ static const int redraw_rc_height = 103;
 static CRect rcRedraw(redraw_rc_left, redraw_rc_top, redraw_rc_left + redraw_rc_width, redraw_rc_top + redraw_rc_height);
 static const int btn_yuan_x = 10;
 static const int btn_yuan_y = 415;
-static const int btn_jiao_x = 45;
+static const int btn_jiao_x = 37+10;
 static const int btn_jiao_y = 415;
-static const int btn_fen_x = 80;
+static const int btn_fen_x = 64+20;
 static const int btn_fen_y = 415;
-static const int btn_li_x = 115;
+static const int btn_li_x = 91+30;
 static const int btn_li_y = 415;
 
 
@@ -158,6 +161,7 @@ static const int timer_id_kaijiangzhong=3;
 static const int TimerJiShi = 4;
 CString   C3D::m_strHaoma = _T("");
 //排列3
+static const int TimerLotteryStatus = 6;
 
 IMPLEMENT_DYNAMIC(C3D, CDialog)
 
@@ -176,7 +180,6 @@ C3D::C3D(CWnd* pParent /*=NULL*/)
 	, m_smallNumWidth(0)
 	, m_smallNumHeight(0)
 	, m_kjXinxiCont(0)
-	, m_pLuckMeDlg(NULL)
 	, m_bmpDxdsh(NULL)
 {
 	for (int i=0; i<Kj_XinXi_Count; i++) 
@@ -197,43 +200,46 @@ C3D::C3D(CWnd* pParent /*=NULL*/)
 	m_nTzhSign = 1;
 	m_nTzhSign1 = 0;
 	InitWanFaMoShi();
+	m_nStartQihao = 2017001;
+	CTime t(2017,1,1,21,15,0);
+	m_tStartTime = t;
+	m_cbIfTs=0;
 }
 
 C3D::~C3D()
 {
 	if (m_bmpBk != NULL) 
 	{
-		delete m_bmpBk;
+		SafeDelete(m_bmpBk);
 	}
 	if (m_bmpDxdsh != NULL) 
 	{
-		delete m_bmpDxdsh;
+		SafeDelete(m_bmpDxdsh);
 	}
 
 	if (m_numImageList != NULL) 
 	{
-		delete m_numImageList;
+		SafeDelete(m_numImageList);
 	}
 
 	if (m_kjNumBig != NULL) 
 	{
-		delete m_kjNumBig;
+		SafeDelete(m_kjNumBig);
 	}
 
 	if (m_kjNumSmall != NULL) 
 	{
-		delete m_kjNumSmall;
+		SafeDelete(m_kjNumSmall);
 	}
 
 	if (m_bmpNumTip != NULL) 
 	{
-		delete m_bmpNumTip;
+		SafeDelete(m_bmpNumTip);
 	}
 
 	if (m_imgKaijiang != NULL) 
 	{
-		m_imgKaijiang=NULL;
-		delete m_imgKaijiang;
+		//SafeDelete(m_imgKaijiang);
 	}
 
 }
@@ -245,11 +251,6 @@ VOID C3D::OnStatusCancel()
 	PostMessage(WM_COMMAND,IDM_DELETE_SERVER_ITEM,0);
 
 	return;
-}
-
-void C3D::ConnectMainDlg(CPlazaViewItem* luckMeDlg)
-{
-	m_pLuckMeDlg = luckMeDlg;
 }
 
 void C3D::FlushZongjine()
@@ -379,6 +380,7 @@ void C3D::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BTN_JIAO,m_btnJiao);
 	DDX_Control(pDX, IDC_BTN_FEN,m_btnFen);
 	DDX_Control(pDX, IDC_BTN_LI,m_btnLi);
+	DDX_Control(pDX, IDC_BTN_TOUZHU_ONEKEY, m_btnTouZhuOnekey);
 }
 
 
@@ -446,7 +448,7 @@ BEGIN_MESSAGE_MAP(C3D, CDialog)
 	ON_BN_CLICKED(IDC_BTN_LOCK, &C3D::OnBnClickedBtnLock)
 	ON_BN_CLICKED(IDC_BTN_BEITOU_JIA, &C3D::OnBnClickedBeiTouJia)
 	ON_BN_CLICKED(IDC_BTN_BEITOU_JIAN, &C3D::OnBnClickedBeiTouJian)
-
+	ON_BN_CLICKED(IDC_BTN_TOUZHU_ONEKEY, &C3D::OnBnClickedBtnTouzhuOneKey)
 	ON_MESSAGE( WM_BN_CLICK, &C3D::onBnCLick)
 	ON_EN_CHANGE(IDC_RICHEDIT_DANSHI, &C3D::OnEnChangeRichEditDanshiInput)
 	ON_COMMAND(ID_RBTN_CPY, &C3D::OnRichEditCopy)
@@ -487,7 +489,7 @@ void C3D::OnPaint()
 	CBitmap *pOldCacheBmp = cacheDC.SelectObject(&cacheBmp);
 
 	Graphics graphics(cacheDC.m_hDC);
-	graphics.DrawImage(m_bmpBk, Rect(0, 0, m_bmpBk->GetWidth(), m_bmpBk->GetHeight()), 0, 0, m_bmpBk->GetWidth(), m_bmpBk->GetHeight(), UnitPixel);
+	graphics.DrawImage(m_bmpBk, Rect(0, 0, m_bmpBk->GetWidth(), m_bmpBk->GetHeight()), 0, 28, m_bmpBk->GetWidth(), m_bmpBk->GetHeight(), UnitPixel);
 
 	//绘制开奖号
 	DrawLastKjHaoma(&cacheDC, graphics);
@@ -625,6 +627,10 @@ void C3D::OnTimer(UINT_PTR nIDEvent)
 		InvalidateRect(&rcRect);
 
 	}
+	else if(TimerLotteryStatus == nIDEvent)
+	{
+		SendToServer(11);
+	}
 	else if(TimerJiShi == nIDEvent)
 	{
 		DWORD newCount = ::GetTickCount();
@@ -652,9 +658,9 @@ void C3D::OnTimer(UINT_PTR nIDEvent)
 			//for(int n=0; n<m_nFrameCount; n++)
 			{
 				int nLeft=kj_big_haoma_x -15/*+ n *( m_bigNumWidth+8)*/;
-				CMemDC	mDC(pDC, CRect(nLeft, kj_big_haoma_y, nLeft+m_imgKaijiang->GetWidth(), kj_big_haoma_y+m_imgKaijiang->GetHeight()));
+				CMemDC	mDC(pDC, CRect(nLeft, kj_big_haoma_y-2, nLeft+m_imgKaijiang->GetWidth()+250, kj_big_haoma_y+m_imgKaijiang->GetHeight()+37-2));
 				Graphics gh(mDC.m_hDC);
-				gh.DrawImage(m_imgKaijiang, nLeft, kj_big_haoma_y, m_imgKaijiang->GetWidth(), m_imgKaijiang->GetHeight());
+				gh.DrawImage(m_imgKaijiang, nLeft, kj_big_haoma_y-2, m_imgKaijiang->GetWidth(), m_imgKaijiang->GetHeight());
 			}
 			GUID Guid = FrameDimensionTime;
 			m_imgKaijiang->SelectActiveFrame(&Guid, m_nFrameIndex++);
@@ -673,7 +679,10 @@ void C3D::OnTimer(UINT_PTR nIDEvent)
 void C3D::OnShowWindow(BOOL bShow, UINT nStatus)
 {
 	CDialog::OnShowWindow(bShow, nStatus);
+	OnBnClickedBtnClsList();
+	ResetAllNums();
 
+	KillTimer(TimerLotteryStatus);
 	if(bShow)
 	{
 		if(theAccount.user_id <=0)
@@ -702,6 +711,9 @@ void C3D::OnShowWindow(BOOL bShow, UINT nStatus)
 		SendToServer(6);
 		OnBnClickedBtn3dSxzhx();
 		SetTimer(timer_id_kaijiangzhong, 100, NULL);
+		m_cbIfTs=0;
+		SendToServer(11);
+		SetTimer(TimerLotteryStatus, 30000, NULL);
 
 	}
 	else
@@ -1463,7 +1475,7 @@ bool C3D::GetTopLuckyNumber(CMD_GP_QueryLotResult* pResult, int	nIndex)
 	{
 		//第一次进入
 		if(m_lastExpect[0] == 0)
-			_tcscpy_s(m_lastExpect, KJ_HAOMA_LENGTH, m_kjXinxi[0].qihao);
+			_tcscpy_s(m_lastExpect, KJ_QIHAO_LENGTH, m_kjXinxi[0].qihao);
 		m_bKaiJiangzhong=false;											//开奖结束
 
 		KillTimer(timer_id_kaijiangzhong);
@@ -1781,7 +1793,7 @@ void C3D::OnBnClickedBtn3dAdd()
 	DOUBLE fJine = 0.0f;
 	fJine = zhushu*m_beishu*danzhujine;
 	CString strZongzhu ;
-	strZongzhu.Format(L"￥%.3lf",fJine);
+	strZongzhu.Format(L"%.3lf",fJine);
 	m_list3D.SetItemText(nCount, 2, strZongzhu);
 
 	m_list3D.SetItemText(nCount, 3, GetWanDesc());
@@ -1913,6 +1925,7 @@ void C3D::OnBnClickedBtnDelSel()
 void C3D::OnBnClickedBtnClsList()
 {
 	m_richDanshiHaoma.SetWindowText(L"");
+	vecAllNums.clear();
 
 	m_zongZhuShu = 0;
 	m_singlezhushu = 0;
@@ -1929,6 +1942,83 @@ void C3D::OnBnClickedBtnClsList()
 
 	m_list3D.deleteAllItemEx();
 }
+void C3D::OnBnClickedBtnTouzhuOneKey()
+{
+	if(vecAllNums.size()<=0)
+	{
+		OnBnClickedBtn3dAdd();
+	}
+	OnBnClickedBtnTouzhuQ();
+	return;
+}
+void C3D::OnBnClickedBtnTouzhuQ()
+{
+
+	if (_tcslen(m_lastExpect) == 0)
+	{
+		MyMessageBox(_T("正在获取数据……"));
+		return;
+	}
+
+	// 	CString strHao = m_list3D.GetItemText(0,0);
+	// 	if(strHao.IsEmpty())
+	// 	{
+	// 		OnBnClickedBtn3dAdd();
+	// 	}
+	if ( vecAllNums.size()<=0) 
+	{
+		MyMessageBox(_T("您并未选择号码"));
+		return ;
+	}
+
+
+	CString str;
+	m_editBeiShu.GetWindowText(str);
+	if (str.IsEmpty())
+	{
+		MyMessageBox(_T("投注倍数不可为空"));
+		return;
+	}
+
+	int itm_cnt = m_list3D.GetItemCount();
+	if (itm_cnt == 0 && vecAllNums.size()==0) 
+	{
+		MyMessageBox(_T("您并未选择号码"));
+		return;
+	}
+	//判断余额是否充足
+	if(theAccount.yue < m_zongJine)
+	{
+		MyMessageBox(_T("您余额不足，请充值后再试"));
+		return;
+	}
+
+
+	//判断是否临近开奖点
+	long kjing = GetKjShjDiff(); 
+	if (kjing < 0L||kjing>=84000)
+	{
+		MyMessageBox(_T("此期封单,请稍后再试"));
+		return;
+	}
+
+
+	SendToServer(1);
+//	OnBnClickedBtnClsList();
+
+	m_zongZhuShu = 0;
+	CRect rcInvali;
+	rcInvali.CopyRect(rcZongZhuShu);
+	rcInvali.right+=400;
+	InvalidateRect(&rcInvali);
+	InvalidateRect(&rcZongJinE);
+
+	//m_beishu = 1;
+	UpdateData(FALSE);
+
+	//m_list3D.DeleteAllItems();
+
+}
 
 void C3D::OnBnClickedBtnTouzhu()
 {
@@ -1939,10 +2029,15 @@ void C3D::OnBnClickedBtnTouzhu()
 		return;
 	}
 
-	CString strHao = m_list3D.GetItemText(0,0);
-	if(strHao.IsEmpty())
+// 	CString strHao = m_list3D.GetItemText(0,0);
+// 	if(strHao.IsEmpty())
+// 	{
+// 		OnBnClickedBtn3dAdd();
+// 	}
+	if ( vecAllNums.size()<=0) 
 	{
-		OnBnClickedBtn3dAdd();
+		MyMessageBox(_T("您并未选择号码"));
+		return ;
 	}
 
 
@@ -1980,7 +2075,7 @@ void C3D::OnBnClickedBtnTouzhu()
 
 	//判断是否临近开奖点
 	long kjing = GetKjShjDiff(); 
-	if (kjing < 0L)
+	if (kjing < 0L||kjing>=84000)
 	{
 		MyMessageBox(_T("此期封单,请稍后再试"));
 		return;
@@ -1989,7 +2084,7 @@ void C3D::OnBnClickedBtnTouzhu()
 	bool bSucc = true;
 
 	SendToServer(1);
-	OnBnClickedBtnClsList();
+	//OnBnClickedBtnClsList();
 
 	m_zongZhuShu = 0;
 	CRect rcInvali;
@@ -1998,10 +2093,10 @@ void C3D::OnBnClickedBtnTouzhu()
 	InvalidateRect(&rcInvali);
 	InvalidateRect(&rcZongJinE);
 
-	m_beishu = 1;
+	//m_beishu = 1;
 	UpdateData(FALSE);
 
-	m_list3D.DeleteAllItems();
+	//m_list3D.DeleteAllItems();
 
 }
 
@@ -2034,7 +2129,21 @@ void C3D::OnBnClickedBtnZhuihao()
 		danzhujine = 0.002;
 
 	CString strBeishu ;
-	strBeishu.Format(L"%d",m_beishu);
+	strBeishu.Format(L"%d",1);
+	int nCount = 0 ;
+	nCount = m_list3D.GetItemCount();
+	DOUBLE fJine = 0.00f;
+	for (int i = 0;i < nCount;i++)
+	{
+		CString strBeishu = m_list3D.GetItemText(i,5);
+		int nBeishu = _ttoi(strBeishu);
+		CString strJine = m_list3D.GetItemText(i,2);
+		DOUBLE fSjine = _wtof(strJine);
+
+		DOUBLE fSingle = fSjine/nBeishu;
+
+		fJine += fSingle;
+	}
 
 	bool bRunNian = FALSE;
 	CTime t;
@@ -2057,15 +2166,15 @@ void C3D::OnBnClickedBtnZhuihao()
 	{
 		nMostQishu = 358;
 	}
-	if(m_bKaiJiangzhong)
-		dlgZhuiHao.SetCurrentQihaoTime(GetNextExpect(), strBeishu,4,3,m_zongJine,nMostQishu,CZ3D);
-	else
-		dlgZhuiHao.SetCurrentQihaoTime( m_kjXinxi[0].qihao, strBeishu,4,3,m_zongJine,nMostQishu,CZ3D);
+//	if(m_bKaiJiangzhong)
+		dlgZhuiHao.SetCurrentQihaoTime(GetNextExpect(-1), strBeishu,4,3,fJine,nMostQishu,CZ3D);
+// 	else
+// 		dlgZhuiHao.SetCurrentQihaoTime( m_kjXinxi[0].qihao, strBeishu,4,3,fJine,nMostQishu,CZ3D);
 	if(dlgZhuiHao.DoModal() == IDOK)
 	{
 		//判断是否临近开奖点
 		long kjing = GetKjShjDiff(); 
-		if (kjing < 0L)
+		if (kjing < 0L||kjing>=84000)
 		{
 			MyMessageBox(_T("此期封单,请稍后再试"));
 			return;
@@ -2081,7 +2190,7 @@ void C3D::OnBnClickedBtnZhuihao()
 		for(int i = 0;i < m_nZhuihaoCount;i++)
 		{
 			int nBeishu = _ttoi(vecData1[i].c_str());
-			fZongJine += m_zongZhuShu*nBeishu*danzhujine;
+			fZongJine += fJine*nBeishu;
 		}
 
 		if(fZongJine > theAccount.yue)
@@ -2098,7 +2207,7 @@ void C3D::OnBnClickedBtnZhuihao()
 	//初始化参数
 	m_zongZhuShu = 0;
 
-	m_beishu = 1;
+	//m_beishu = 1;
 	//UpdateData(FALSE);
 
 	CRect rcInvali;
@@ -2106,7 +2215,7 @@ void C3D::OnBnClickedBtnZhuihao()
 	rcInvali.right+=400;
 	InvalidateRect(&rcInvali);
 	InvalidateRect(&rcZongJinE);
-	OnBnClickedBtnClsList();
+	//OnBnClickedBtnClsList();
 
 }
 
@@ -2133,7 +2242,7 @@ void C3D::OnEnChangeEditBeishu()
 		if (!str.IsEmpty())
 		{
 			MyMessageBox(_T("投注倍数必须是一个正整数"));
-			m_beishu = 1;
+			//m_beishu = 1;
 			UpdateData(FALSE);
 		}
 	}
@@ -2185,7 +2294,7 @@ BOOL C3D::OnInitDialog()
 		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH|FF_DONTCARE, _T("微软雅黑")); 
 	m_KjInfoFont1.CreateFont(20, 0, 0, 0, FW_BOLD, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, 
 		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH|FF_DONTCARE, _T("微软雅黑")); 
-	m_KjInfoFont.CreateFont(30, 0, 0, 0, FW_BOLD, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, 
+	m_KjInfoFont.CreateFont(35, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, 
 		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH|FF_DONTCARE, _T("微软雅黑")); 
 	m_btnYuan.SetBkImage(CBmpUtil::GetExePath() + _T("skin\\game\\BT_USER_INFO_1.png"));
 	m_btnJiao.SetBkImage(CBmpUtil::GetExePath() + _T("skin\\game\\BT_USER_INFO_2.png"));
@@ -2195,6 +2304,7 @@ BOOL C3D::OnInitDialog()
 	m_btnDelSel.SetImage(CBmpUtil::GetExePath() + _T("skin\\game\\btn_delate.png"));
 	m_btnClsList.SetImage(CBmpUtil::GetExePath() + _T("skin\\game\\btn_clear.png"));
 	m_btnTouZhu.SetImage(CBmpUtil::GetExePath() + _T("skin\\game\\btn_bet.png"));
+	m_btnTouZhuOnekey.SetImage(CBmpUtil::GetExePath() + _T("skin\\game\\yjtz.png"));
 	m_btnZhuiHao.SetImage(CBmpUtil::GetExePath() + _T("skin\\game\\btn_append.png"));
 	m_btn3DAdd.SetImage(CBmpUtil::GetExePath() + _T("skin\\game\\btn_addnum.png"));
 	m_btnLock.SetBkImage(CBmpUtil::GetExePath() + _T("skin\\game\\btn_lock.png"));
@@ -2211,7 +2321,7 @@ BOOL C3D::OnInitDialog()
 	cf.dwMask = CFM_COLOR;
 	cf.crTextColor = RGB(88, 78, 77);
 	m_richDanshiHaoma.SetDefaultCharFormat(cf);
-	m_editBeiShu.SetEnableColor(RGB(0,0,0),RGB(250,243,227),RGB(40,29,27));
+	m_editBeiShu.SetEnableColor(RGB(0,0,0),RGB(214,223,254),RGB(214,223,254));
 	m_editBeiShu.SetFont(&m_zongFont);
 	m_btnBeiTouJia.SetImage(CBmpUtil::GetExePath() + _T("skin\\game\\btn_jia.png"));
 	m_btnBeiTouJian.SetImage(CBmpUtil::GetExePath() + _T("skin\\game\\btn_jian.png"));
@@ -2779,11 +2889,11 @@ void C3D::AdjustNumView()
 {
 	if(m_btnBeiTouJia.GetSafeHwnd() != NULL) 
 	{
-		m_btnBeiTouJia.SetWindowPos(NULL,edit_beitou_x+edit_beitou_width , edit_beitou_y-8, m_btnBeiTouJia.Width(), m_btnBeiTouJia.Height(), SWP_NOZORDER);
+		m_btnBeiTouJia.SetWindowPos(NULL,edit_beitou_x+edit_beitou_width, edit_beitou_y-3, m_btnBeiTouJia.Width(), m_btnBeiTouJia.Height(), SWP_NOZORDER);
 	}
 	if(m_btnBeiTouJian.GetSafeHwnd() != NULL) 
 	{
-		m_btnBeiTouJian.SetWindowPos(NULL,edit_beitou_x-m_btnBeiTouJian.Width() , edit_beitou_y-8, m_btnBeiTouJian.Width(), m_btnBeiTouJian.Height(), SWP_NOZORDER);
+		m_btnBeiTouJian.SetWindowPos(NULL,edit_beitou_x-m_btnBeiTouJian.Width(), edit_beitou_y-3, m_btnBeiTouJian.Width(), m_btnBeiTouJian.Height(), SWP_NOZORDER);
 	}
 
 	if(m_btnDelSel.GetSafeHwnd() != NULL) 
@@ -2810,6 +2920,10 @@ void C3D::AdjustNumView()
 	if(m_btnTouZhu.GetSafeHwnd() != NULL) 
 	{
 		m_btnTouZhu.SetWindowPos(NULL, btn_touzhu_x, btn_touzhu_y, m_btnTouZhu.Width(), m_btnTouZhu.Height(), SWP_NOZORDER);
+	}
+	if(m_btnTouZhuOnekey.GetSafeHwnd() != NULL) 
+	{
+		m_btnTouZhuOnekey.SetWindowPos(NULL, btn_touzhu_onekey_x, btn_touzhu_onekey_y, m_btnTouZhuOnekey.Width(), m_btnTouZhuOnekey.Height(), SWP_NOZORDER);
 	}
 
 	if(m_btnZhuiHao.GetSafeHwnd() != NULL) 
@@ -2871,7 +2985,7 @@ void C3D::AdjustAdd()
 	}
 	if(m_btWxzxTip.GetSafeHwnd() != NULL)
 	{
-		m_btWxzxTip.SetWindowPos(NULL,keyboardinput_x,mouseinput_y-32,m_btWxzxTip.Width(),m_btWxzxTip.Height(),SWP_NOZORDER);
+		m_btWxzxTip.SetWindowPos(NULL,keyboardinput_x,mouseinput_y-30,m_btWxzxTip.Width(),m_btWxzxTip.Height(),SWP_NOZORDER);
 	}
 
 }
@@ -3692,7 +3806,7 @@ void C3D::DrawLastKjHaoma(CDC* pDC, Graphics& graphics)
 
 	if (_tcscmp(m_lastExpect, m_kjXinxi[0].qihao) != 0) 
 	{
-		_tcscpy_s(m_lastExpect, KJ_HAOMA_LENGTH, m_kjXinxi[0].qihao);
+		_tcscpy_s(m_lastExpect, KJ_QIHAO_LENGTH, m_kjXinxi[0].qihao);
 		m_bKaiJiangzhong=false;
 
 	}
@@ -3728,8 +3842,14 @@ void C3D::DrawLastKjHaoma(CDC* pDC, Graphics& graphics)
 	//strYg.Format(_T("正在销售"));
 	//pDC->DrawText(strYg, &rcYuGao, DT_CENTER|DT_VCENTER|DT_SINGLELINE);
 
-
-	strYg.Format(_T("第%s	下单时间"), GetNextExpect());
+	if(m_cbIfTs == 1)
+	{
+		strYg.Format(_T("暂停销售"));
+	}
+	else if(nTimeLeft<0)
+		strYg.Format(_T("第%s	封单时间"), GetNextExpect());
+	else
+		strYg.Format(_T("第%s	下单时间"), GetNextExpect());
 	//pDC->SetTextColor(RGB(255, 125, 0));
 	rcYuGao1.left = rcYuGao.left+15;
 	rcYuGao1.top = rcYuGao.top+40;
@@ -3748,10 +3868,10 @@ void C3D::DrawLastKjHaoma(CDC* pDC, Graphics& graphics)
 	pDC->SelectObject(&m_KjInfoFont);
 	strYg.Format(_T("%s"), GetKjShjDiffDesc());
 	pDC->SetTextColor(RGB(219, 219, 219));
-	rcYuGao1.left = rcYuGao1.left-30;
+	rcYuGao1.left = rcYuGao1.left-75;
 	rcYuGao1.top = rcYuGao1.top+12;
-	rcYuGao1.bottom = rcYuGao1.bottom+3;
-	rcYuGao1.right = rcYuGao1.right-30;
+	rcYuGao1.bottom = rcYuGao1.bottom+20;
+	rcYuGao1.right = rcYuGao1.right-20;
 	pDC->DrawText(strYg, &rcYuGao1,DT_CENTER|DT_SINGLELINE);
 
 	pDC->SetTextColor(oldTextClr);
@@ -3842,7 +3962,7 @@ void C3D::DrawZongZhushuJinE(CDC* pDC)
 
 	CRect rcZhu;
 	rcZhu.CopyRect(rcZongZhuShu);
-	rcZhu.left += 225;
+	rcZhu.left += 188;
 	rcZhu.right += 475;
 	pDC->DrawText(strText, &rcZhu, DT_LEFT|DT_VCENTER|DT_SINGLELINE);
 	pDC->SetTextColor(RGB(160, 8, 8));
@@ -3859,12 +3979,21 @@ void C3D::DrawZongZhushuJinE(CDC* pDC)
 
 	CRect rcRect;
 
-	rcRect.left = rcZongZhuShu.left+27;
-	rcRect.right = rcZongZhuShu.right+27;
-	rcRect.top = rcZongZhuShu.top+15;
-	rcRect.bottom = rcZongZhuShu.bottom+15;
-	strText.Format(L"倍数：");
+	rcRect.left = rcZongZhuShu.left+39;
+	rcRect.right = rcZongZhuShu.right;
+	rcRect.top = rcZongZhuShu.top+6;
+	rcRect.bottom = rcZongZhuShu.bottom;
+	strText.Format(L"倍");
 	pDC->DrawText(strText, &rcRect, DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+
+	CRect rcRect_down;
+
+	rcRect_down.left = rcZongZhuShu.left+39;
+	rcRect_down.right = rcZongZhuShu.right;
+	rcRect_down.top = rcZongZhuShu.top+6;
+	rcRect_down.bottom = rcZongZhuShu.bottom+30;
+	strText.Format(L"数");
+	pDC->DrawText(strText, &rcRect_down, DT_CENTER|DT_VCENTER|DT_SINGLELINE);
 	double danzhujine = 2.0;
 
 	if(theAccount.Scoretype == MoShi_Yuan)
@@ -3973,35 +4102,48 @@ bool C3D::LuckyNumCQSSC()
 
 	if (_tcscmp(m_lastExpect, m_kjXinxi[0].qihao) != 0) 
 	{
-		_tcscpy_s(m_lastExpect, KJ_HAOMA_LENGTH, m_kjXinxi[0].qihao);
+		_tcscpy_s(m_lastExpect, KJ_QIHAO_LENGTH, m_kjXinxi[0].qihao);
 		Invalidate();
 	}
 
 	return true;
 }
 
-CString C3D::GetNextExpect()
+CString C3D::GetNextExpect(int nDel)
 {
 	if (_tcslen(m_lastExpect) == 0)
 	{
 		return _T("---");
 	}
 
-	int iQh = _ttoi(m_lastExpect);
-	iQh ++;
-	if (GetKjShjDiff() < 1) 
-	{
-		iQh ++;	
-	}
+	CTime tNow;//= CTime::GetCurrentTime() ;
+	theApp.GetTime(tNow);
+
+
+	CTimeSpan tSpan = tNow-m_tStartTime;
+	int nDay = tSpan.GetDays();
+	nDay+=nDel;
 
 	CString rQh;
-	rQh.Format(_T("%d"), iQh);
+	rQh.Format(_T("%d"), m_nStartQihao+nDay+1);
 
 	return rQh;
+
 }
 
 CTime C3D::GetNextKjShj()
 {
+	CTime tNow;//= CTime::GetCurrentTime() ;
+	theApp.GetTime(tNow);
+
+	CTime sTime(m_tStartTime.GetYear(),m_tStartTime.GetMonth(),m_tStartTime.GetDay(),m_tStartTime.GetHour(),15,0);
+	CTimeSpan tSpan = tNow-sTime;
+	int nDay = tSpan.GetDays()+1;
+	CTime tKaiJiang = sTime+CTimeSpan(nDay,0,0,0);
+
+	return tKaiJiang;
+
+
 	CString lastKjShj = m_kjXinxi[0].shijian;
 
 	if(lastKjShj.IsEmpty())
@@ -4020,8 +4162,6 @@ CTime C3D::GetNextKjShj()
 	CTime ctm(systime);
 
 	ctm += timespan_kj_shj;
-
-
 	return ctm;
 }
 
@@ -4035,20 +4175,21 @@ long C3D::GetKjShjDiff()
 	CTime t;
 	theApp.GetTime(t);
 	CTimeSpan span = GetNextKjShj() - t;
-	return (long)span.GetTotalSeconds() - 10 * 60;
+	return (long)span.GetTotalSeconds() - 15 * 60;
 }
 
 CString C3D::GetKjShjDiffDesc()
 {
-	if (_tcslen(m_lastExpect) == 0)
-	{
-		return _T("00:00");	
-	}
+	CTime t = CTime::GetCurrentTime();
 
 	long secDiff = GetKjShjDiff();
-	if (secDiff < 0L) 
+	CString strLog;
+	strLog.Format(L"SANDKAIJIANG secDiff:%d %s",secDiff,t.Format(_T("%Y%m%d %H:%M:%S")));
+	OutputDebugString(strLog);
+	if (secDiff <= 0) 
 	{
-		return _T("00:00");
+		secDiff+=15 * 60;
+		//return _T("00:00:00");
 	}
 
 	int hour = secDiff / 3600;
@@ -4060,6 +4201,7 @@ CString C3D::GetKjShjDiffDesc()
 	str.Format(_T("%02d:%02d:%02d"), hour, minute, second);
 
 	return str;
+
 }
 
 void C3D::SetLockText()
@@ -4267,7 +4409,8 @@ bool C3D::GetDanShiHaoma(CString& haoma, int size, int& zhushu)
 	//	m_editDanShiHaoMa.GetWindowText(line);
 	m_richDanshiHaoma.GetWindowText(line);
 
-	if(line.GetLength() > 2999)
+	int nLength = line.GetLength();
+	if(line.GetLength() > 4000)
 	{
 		MyMessageBox(_T("您输入的号码太多了"));	
 		return false;
@@ -4540,8 +4683,6 @@ bool C3D::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wDataSize)
 						m_nTzhSign1 = pTouzhuRes->nSign;
 						m_list3D.DeleteAllItems();
 						MyMessageBox(_T("成功投注！"), _T("【祝君好运 投注成功】"));
-						SendToServer(7);						
-
 					}
 				}
 				else if(lResult == 1)
@@ -4550,7 +4691,7 @@ bool C3D::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wDataSize)
 				}
 				else if(lResult == 2)
 				{
-					MyMessageBox(_T("该期号已经开奖，投注失败！"));
+					MyMessageBox(_T("当前期已封单，停止销售！"));
 				}
 				else if(lResult == 3)
 				{
@@ -4592,7 +4733,11 @@ bool C3D::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wDataSize)
 				{
 					MyMessageBox(_T("对不起，该玩法维护中，请选择其他玩法进行投注！"));
 				}
-				else if(lResult>=20 && lResult <= 30)
+				else if(lResult == 13)
+				{
+					MyMessageBox(_T("该彩种暂停销售！"));
+				}
+				else if(lResult>=20 && lResult < 30)
 				{
 					MyMessageBox(_T("该账户没有投注权限！"));
 
@@ -4601,6 +4746,19 @@ bool C3D::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wDataSize)
 				{
 					CInformation information;
 					int nResult = information.ShowMessageBox(_T("投注未成功！由于您密码设置过于简单，请设置复杂登陆密码和取款密码！"),MB_ICONWARNING,30);
+					if(nResult==1)
+					{
+						CWnd* pParent = GetParent();
+						if(pParent!=NULL)
+						{
+							pParent->SendMessage(IDM_SHOW_XGMM,0,0);
+						}
+					}		
+				}
+				else if(lResult == 112)
+				{
+					CInformation information;
+					int nResult = information.ShowMessageBox(_T("网络异常，请重新登陆！"),MB_ICONWARNING,30);
 					if(nResult==1)
 					{
 						CWnd* pParent = GetParent();
@@ -4629,6 +4787,26 @@ bool C3D::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wDataSize)
 
 				return true;
 			}
+		case SUB_GP_QUERY_STATUS_LOTTERY_RET:
+			{
+				ASSERT(wDataSize == sizeof(CMD_GP_QueryStatusLotteryRet));
+				if(wDataSize!=sizeof(CMD_GP_QueryStatusLotteryRet)) return false;
+
+				CMD_GP_QueryStatusLotteryRet* pLogRet = (CMD_GP_QueryStatusLotteryRet*)pData;
+
+				if(pLogRet->n_t_kindid != CZ3D)
+					return true;
+
+				m_cbIfTs = pLogRet->c_t_ifts;
+				
+				m_nStartQihao = _ttoi(pLogRet->s_t_expect);
+				CTime ctm(pLogRet->n_t_shijian);
+				m_tStartTime = ctm;
+				//m_chqRule.SetStartQihao(nStartQihao,ctm);
+
+				return true;
+			}
+
 		}
 	}
 	return false;
@@ -4639,7 +4817,14 @@ VOID C3D::SendToServer(int nSendType)
 
 	if(nSendType == 1)
 	{
+		if(m_cbIfTs == 1)
+		{
+			MyMessageBox(L"此彩种暂停销售！");
+			return;
+		}
 		m_DlgStatus.ShowStatusWindow(TEXT("正在提交数据，请稍候..."));
+
+		m_nTzhSign++;
 
 		int itm_cnt = m_list3D.GetItemCount();
 		int nNowKind = 10000;
@@ -4773,7 +4958,8 @@ VOID C3D::SendToServer(int nSendType)
 				TouzhuCQSSC.nEnd = 0;
 
 			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-			bool bSuccess = pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_TOUZHU_CQSSC_DAN,&TouzhuCQSSC,sizeof(CMD_GP_TouZhuCQSSC_Dan));
+			if(pPlatformFrame!=NULL)
+				 pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_TOUZHU_CQSSC_DAN,&TouzhuCQSSC,sizeof(CMD_GP_TouZhuCQSSC_Dan));
 			m_bShowFail=true;
 
 			nSendSize += nHaoMaLen;
@@ -4784,13 +4970,21 @@ VOID C3D::SendToServer(int nSendType)
 		m_bShowFail = true;
 		OnBnClickedBtnClsList();
 
-		m_nTzhSign ++;
+	//	m_nTzhSign ++;
 
 	}
 
 	if(nSendType == 4)
 	{
+		if(m_cbIfTs == 1)
+		{
+			MyMessageBox(L"此彩种暂停销售！");
+			return;
+		}
+
 		int nItemCount = m_list3D.GetItemCount();
+		m_nTzhSign++;	
+		m_DlgStatus.ShowStatusWindow(TEXT("正在提交数据，请稍候..."));
 
 		CMD_GP_TouZhuCQSSC_Zhuihao TouzhuCQSSC;
 		ZeroMemory(&TouzhuCQSSC,sizeof(CMD_GP_TouZhuCQSSC_Zhuihao));
@@ -4916,7 +5110,8 @@ VOID C3D::SendToServer(int nSendType)
 					TouzhuCQSSC.nEnd = 0;
 
 				CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-				bool bSuccess = pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_TOUZHU_CQSSC_ZHUIHAO,&TouzhuCQSSC,sizeof(CMD_GP_TouZhuCQSSC_Zhuihao));
+				if(pPlatformFrame!=NULL)
+					pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_TOUZHU_CQSSC_ZHUIHAO,&TouzhuCQSSC,sizeof(CMD_GP_TouZhuCQSSC_Zhuihao));
 				m_bShowFail=true;
 				nSendSize += nHaoMaLen;
 				//m_bCanSend = false;
@@ -4925,9 +5120,8 @@ VOID C3D::SendToServer(int nSendType)
 
 		}
 			OnBnClickedBtnClsList();
-			m_nTzhSign++;
-			m_DlgStatus.ShowStatusWindow(TEXT("正在提交数据，请稍候..."));
-			m_list3D.DeleteAllItems();
+		//	m_nTzhSign++;
+//			m_list3D.DeleteAllItems();
 
 		return;
 	}
@@ -4946,7 +5140,8 @@ VOID C3D::SendToServer(int nSendType)
 
 		//发送数据
 		CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-		pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_SET_USER_BONUS,&SetUserBonus,sizeof(SetUserBonus));
+		if(pPlatformFrame!=NULL)
+			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_SET_USER_BONUS,&SetUserBonus,sizeof(SetUserBonus));
 		return;
 	}
 
@@ -4961,7 +5156,8 @@ VOID C3D::SendToServer(int nSendType)
 
 		//发送数据
 		CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-		pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_USER_FANDIAN,&GetUserFandian,sizeof(GetUserFandian));
+		if(pPlatformFrame!=NULL)
+			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_USER_FANDIAN,&GetUserFandian,sizeof(GetUserFandian));
 		return;
 
 	}
@@ -4974,9 +5170,21 @@ VOID C3D::SendToServer(int nSendType)
 		GetMoreRecord.n_t_type = CZ3D;
 
 		CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-		pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_MORE_RECORD,&GetMoreRecord,sizeof(GetMoreRecord));
+		if(pPlatformFrame!=NULL)
+			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_MORE_RECORD,&GetMoreRecord,sizeof(GetMoreRecord));
 
 		return;
+	}
+	if(nSendType == 11)
+	{
+		CMD_GP_QueryStatusLottery QueryStatusLottery;
+		ZeroMemory(&QueryStatusLottery,sizeof(QueryStatusLottery));
+
+		QueryStatusLottery.n_t_kindid = CZ3D;
+
+		CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
+		if(pPlatformFrame!=NULL)
+			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_QUERY_STATUS_LOTTERY,&QueryStatusLottery,sizeof(QueryStatusLottery));
 	}
 
 }

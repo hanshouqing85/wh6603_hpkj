@@ -22,7 +22,7 @@
 //////////////////////////////////////////////////////////////////////////
 //公共宏定义
 
-#define KIND_ID						32								//游戏 I D
+#define KIND_ID						132								//游戏 I D
 #define GAME_PLAYER					100								//游戏人数
 
 #define VERSION_SERVER				PROCESS_VERSION(6,0,3)			//程序版本

@@ -49,7 +49,9 @@ VOID CWebPublicize::Navigate(LPCTSTR pszURL)
 	{
 		CRect rcCreate(0,0,0,0);
 		m_WebBrowser.Create(NULL,WS_CHILD|WS_VISIBLE,rcCreate,this,IDC_WEB_BROWSER);
-		m_WebBrowser.ModifyStyle(WS_VSCROLL|WS_HSCROLL,0);
+#define		DOCHOSTUIFLAG_SCROLL_NO  0x00000008
+
+		m_WebBrowser.ModifyStyle(WS_VSCROLL|WS_HSCROLL|DOCHOSTUIFLAG_SCROLL_NO ,0);
 	}
 
 	//‰Ø¿¿“≥√Ê

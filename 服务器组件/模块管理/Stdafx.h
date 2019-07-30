@@ -1,9 +1,5 @@
 #pragma once
-// add by hxh 20160801
-#define POINTER_64 __ptr64
 
-typedef void *PVOID;
-typedef void * POINTER_64 PVOID64;
 #ifndef VC_EXTRALEAN
 #define VC_EXTRALEAN
 #endif
@@ -56,7 +52,7 @@ typedef void * POINTER_64 PVOID64;
 	#pragma comment (lib,"../../Á´½Ó¿â/Ansi/ServiceCoreD.lib")
 	#pragma comment (lib,"../../Á´½Ó¿â/Ansi/KernelEngineD.lib")
 #else
-	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/ServiceCore.lib")
+	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/ServiceCoreD.lib")
 	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/KernelEngineD.lib")
 #endif
 #endif

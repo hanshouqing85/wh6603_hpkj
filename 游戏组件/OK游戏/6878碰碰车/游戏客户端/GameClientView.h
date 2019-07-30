@@ -216,8 +216,8 @@ protected:
 	int iP;     //角度
     int iP1;
 	//下注区域 2012-9-12
-	CRect  m_RectArea[8];
-	CPngImage           m_ImageCh[8];                   
+	CRect							m_RectArea[8];
+	CPngImage						m_ImageCh[8];                   
 	//机器人下注
 	CWHArray<tagAndroidBet>	m_ArrayAndroid;
 
@@ -260,7 +260,7 @@ public:
 	CRect							m_MeInfoRect;						//
 	int								m_Out_Bao_y;
 	bool						    m_bShowBao;
-	CRect							m_CarRect[32];	
+	CRect							m_CarRect[36];	
 	int								m_carX;
 	int								m_carY;
 	int								m_carX1;

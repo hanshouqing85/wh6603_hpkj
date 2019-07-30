@@ -23,6 +23,7 @@
 #include "BeiJingKuai8.h"
 #include "XingYun28.h"
 #include "PlatformPublicize.h"
+#include "ScrollBarEx.h"
 //////////////////////////////////////////////////////////////////////////////////
 
 #define IDM_SHOW_MENU				1110								//显示菜单
@@ -59,10 +60,22 @@ struct tagGameServerInfo
 };
 
 
+
 //数组定义
 typedef CWHArray<tagGameKindInfo *>	CGameKindInfoArray;					//类型数组
 typedef CWHArray<tagGameServerInfo *> CGameServerInfoArray;				//房间数组
 #define  IDM_RETURN_GAME 11118
+struct tagLuckNumXinXi
+{
+	WORD  wKindID;
+	TCHAR qihao[KJ_QIHAO_LENGTH];
+	TCHAR haoma[KJ_HAOMA_LENGTH];
+	TCHAR shijian[KJ_SHIJIAN_LENGTH];
+};
+struct tagLuckNum
+{
+	tagLuckNumXinXi LuckNum[50];
+};
 
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -80,7 +93,7 @@ protected:
 	int								m_nMenuXPos;
 	int								m_nMenuYPos;
 	BYTE							m_cbMenuType;						//菜单类别
-	CPlatformPublicize					m_logo;			//LOGO IE控件
+	CPlatformPublicize					m_logo;							//LOGO IE控件
 	TCHAR 							m_strWebUrl[126];
 	int								m_nOldTypeID;							//上一个游戏ID
 	CRect							m_rcTypeRect[3];						//类型区域
@@ -88,14 +101,17 @@ protected:
 	int								m_nRecordTypeID;					//返回按钮响应的ID
 	int								m_nRecordKindID;					//类型ID 
 	DWORD							m_dwTanChuangTick;
+	CScrollBarEx					m_VerticalScrollBar2;				//滚动条
+	CScrollBarEx					m_VerticalScrollBarQp;				//滚动条：棋牌
+	int								m_nScrollX;
+	int								m_nScrollXQp;
+
+	tagLuckNum						m_AllLuckNum[50];					//开奖号码缓存
 	//时时彩
 public:
 	CFont							m_Font;
 // 
-// 	CFont							m_Font1;							//重庆时时彩字体
-// 	CFont							m_Font2;							//重庆时时彩字体
-// 	CFont							m_Font3;							//重庆时时彩字体
-// 	CFont							m_Font4;							//重庆时时彩字体
+
 	
 	//移动位置
 protected:
@@ -142,27 +158,31 @@ protected:
 protected:
 	static CPlazaViewItem *			m_pPlazaViewItem;					//广场指针
 public:
-	CChongQingSSC					m_dlgChongQingSSC;						//重庆时时彩
-	CChongQingSSC						m_dlgFenFenCai;							//分分彩
-	CChongQingSSC						m_dlgWuFenCai;							//分分彩
-	CChongQingSSC						m_dlgJiangXiSSC;						//江西时时彩
+	CChongQingSSC					m_dlgChongQingSSC;					//重庆时时彩
+	CChongQingSSC					m_dlgFenFenCai;						//分分彩
+	CChongQingSSC					m_dlgWuFenCai;						//分分彩
+	CChongQingSSC					m_dlgJiangXiSSC;					//江西时时彩
 	CChongQingSSC					m_dlgXinjiangSSC;					//新疆时时彩
 	CGuangDong11X5					m_dlgGuangdong11x5;					//广东11选5
 	CGuangDong11X5					m_dlgChongQing11x5;					//重庆11选5
 	CGuangDong11X5					m_dlgJiangXi11x5;					//江西11选5
 	CGuangDong11X5					m_dlgShanDong11x5;					//山东11选5
+	CGuangDong11X5					m_dlgHeiLongJiang11X5;				//黑龙江11选5		
 	CLiuHeCai						m_dlgLiuHeCai;						//六合彩
-	CGuangDong11X5				m_dlgHeiLongJiang11X5;				//黑龙江11选5		
 	CQiXingCai						m_dlgQiXingCai;						//七星彩--lly
 	CPaiLie3						m_dlgPaiLie3;						//排列三
 	C3D								m_dlg3D;							//3D彩
-	CBeiJingPK10								m_dlgBjPK10;							//pk10
+	CBeiJingPK10					m_dlgBjPK10;						//pk10
 	CBeiJingKuai8					m_dlgBjKuai8;						//快乐8
 	CXingYun28						m_dlgXingYun28;						//幸运28
+	bool							m_bLogonSuccess;
+
+	CString							m_strTopNewsMsg;					//TOPWIN消息
+
+
 	//读取事件
 	virtual bool OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wDataSize);
 	void CreateDlgCaipiao(int nType);
-	bool							m_bLogonSuccess;
 	//函数定义
 public:
 	//构造函数
@@ -193,20 +213,26 @@ public:
 
 	//显示类型
 	VOID ShowKindItemView(WORD wTypeID,BOOL bResetPageIndex=TRUE);
+	//显示类型
+	VOID ShowKindQpItemView(WORD wTypeID,BOOL bResetPageIndex=TRUE);
 	//显示房间
-	VOID ShowServerItemView(WORD wKindID,BOOL bResetPageIndex=FALSE);
+	VOID ShowServerItemView(WORD wKindID,BOOL bResetPageIndex=FALSE, bool Invalidate=true);
 	//界面更新
 	VOID InValidateWndView(BYTE cbViewType);
 
-	VOID ShowGameMenu(bool bShowMenu,WORD wMenuType,int nXPos,int nYPos);
-
-	VOID ShowMenu(WORD wMenuType,CGameKindInfoArray& GameKindInfo);
+	VOID ShowGameMenu(WORD wTypeID);
 
 	VOID FreshGame();
 
 	VOID SetLogonSuccess(bool bSuccess);
+	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg   BOOL   OnMouseWheel(   UINT   nFlags,   short   zDelta,   CPoint   pt   );
 
 	VOID SetMissionManager(CMissionManager* pMissionManager){m_MissionManager = pMissionManager;}
+
+	//排行榜消息
+	void SetTopNewsMsg(CString strMsg);
+
 	//功能函数
 public:
 	//获取实例
@@ -226,8 +252,6 @@ protected:
 	//调整控件
 	VOID RectifyControl(INT nWidth, INT nHeight);
 	VOID RectifyDlg();
-	//资源目录
-	VOID GetGameDirectory(TCHAR szDirectory[], WORD wBufferCount, tagGameKind & GameKind);
 
 	//位置测试
 protected:
@@ -241,6 +265,8 @@ protected:
 	WORD GetGameHoverIndex(CPoint MousePoint);
 	//按钮消息
 public:
+	//资源目录
+	VOID GetGameDirectory(TCHAR szDirectory[], WORD wBufferCount, tagGameKind & GameKind);
 	//查看规则
 	VOID OnButtonViewRule(WORD wKindID);
 	//进入类型
@@ -279,8 +305,6 @@ protected:
 	//鼠标离开
 	LRESULT OnMouseLeave(WPARAM wParam, LPARAM lParam);
 
-	LRESULT SendQueryGameResult(WPARAM wParam, LPARAM lParam);
-
 	LRESULT OnUpdateAccount(WPARAM wParam, LPARAM lParam);
 	//更新余额
 	LRESULT OnUpdateYue(WPARAM wParam, LPARAM lParam);
@@ -288,10 +312,6 @@ protected:
 	LRESULT OnTanChuang(WPARAM wParam, LPARAM lParam);
 	//修改密码
 	LRESULT OnShowXgmm(WPARAM wParam, LPARAM lParam);
-	//显示菜单框
-	LRESULT OnShowMenu(WPARAM wParam, LPARAM lParam);
-	//点击游戏
-	LRESULT OnBnClickedGameType(WPARAM wParam, LPARAM lParam);
 
 public:
 	VOID AddOpenResult(CMD_GP_QueryLotResult* pQueryLotResult, int wDataSize);

@@ -88,12 +88,12 @@ BEGIN
     BEGIN
         BLOCK "080403a8"
         BEGIN
-            VALUE "Comments", "深圳市哈皮科技有限公司"
-            VALUE "CompanyName", "深圳市哈皮科技有限公司"
+            VALUE "Comments", "深圳市水果科技有限公司"
+            VALUE "CompanyName", "深圳市水果科技有限公司"
             VALUE "FileDescription", "水果乐园游戏客户端"
             VALUE "FileVersion", "6, 6, 0, 3"
             VALUE "InternalName", "SGDZ_Client.exe"
-            VALUE "LegalCopyright", "深圳市哈皮科技有限公司保留所有权利。"
+            VALUE "LegalCopyright", "深圳市水果科技有限公司保留所有权利。"
             VALUE "OriginalFilename", "SGDZ_Client.exe"
             VALUE "ProductName", "水果乐园游戏客户端"
             VALUE "ProductVersion", "6, 6, 0, 3"

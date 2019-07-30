@@ -22,7 +22,6 @@ CD3DFont::~CD3DFont()
 bool CD3DFont::DeleteFont()
 {
 	m_Font.DeleteObject();
-
 	return true;
 }
 
@@ -59,7 +58,7 @@ bool CD3DFont::DrawText( CD3DDevice * pD3DDevice, LPCTSTR pszString, CRect rcDra
 
 		m_FontItemPtrActive.Add(this);
 	}
-
+	
 // 	D3DXMATRIX matTransform;
 // 	D3DXMatrixIdentity( &matTransform );
 // 	m_pManager->m_pSprite->SetTransform( &matTransform );

@@ -170,8 +170,10 @@ BOOL CAutoUpdateDlg::OnInitDialog()
 	//读取配置参数
 	strSiteURL = AfxGetApp()->GetProfileString(_T("SERVER"), _T("SERVER1"), szNavigation);
 	strTempDir = AfxGetApp()->GetProfileString(_T("DIR"), _T("TEMPDIR"), _T("Update"));
+	TCHAR szXmlUrl[MAX_PATH]=TEXT("");
 	// add by hxh 20160603
-	CString strXmlUrl = AfxGetApp()->GetProfileString(_T("SERVER"), _T("XMLURL"),_T("http://61.164.110.131:8888/update/update.xml"));
+	GetPrivateProfileString(TEXT("SERVER"),TEXT("XMLURL"),TEXT(""),szXmlUrl,CountArray(szXmlUrl),szFileName);
+	CString strXmlUrl = AfxGetApp()->GetProfileString(_T("SERVER"), _T("XMLURL"),szXmlUrl);
 
 	//设置URL路径
 	if( strSiteURL.Left(7) != HTTP_PROTOCOL )
@@ -180,7 +182,7 @@ BOOL CAutoUpdateDlg::OnInitDialog()
 	strSiteURL += _T("/update/");
 
 	CString strLog;
-	strLog.Format(_T("\n strSiteURL:%s"),strSiteURL);
+	strLog.Format(_T("\nUPDATEFAILED strSiteURL:%s"),strSiteURL);
 	OutputDebugString(strLog);
 	m_DownloadMgr.Initialize((IDownloadSink*)this, strSiteURL, m_strCurrentDir+strTempDir, m_strCurrentDir);
 
@@ -421,34 +423,53 @@ BOOL CAutoUpdateDlg::CheckVersionUpdate(CString& strUpdateURL)
 	UINT nFileSize;
 	CString strFileName, strFileVer, strMD5String,strFilePath;
 	LONG lElementCount = 0L;
+	CString strLog;
+	strLog.Format(_T("\nUPDATEFAILED  CheckVersionUpdate"));
+	OutputDebugString(strLog);
 
 	try
 	{
 		hr = pHttpRequest.CreateInstance(TEXT("Msxml2.XMLHTTP.3.0"));
 		if( FAILED(hr) )
 			_com_issue_error(hr);
-
+		DeleteUrlCacheEntry(strUpdateURL);
 		hr = pHttpRequest->open(TEXT("GET"), (_bstr_t)strUpdateURL, false);
-		if( FAILED(hr) )
-			_com_issue_error(hr);
+		strLog.Format(_T("\nUPDATEFAILED  GET ，strUpdateURL：%s"),strUpdateURL);
+		OutputDebugString(strLog);
+
+		if( FAILED(hr) ){
+			CString strError = AfxGetApp()->GetProfileString(_T("messages"), _T("ErrorMsg"), _T("更新失败，请到官方下载最新版本"));
+			MessageBox(strError, _T("提示"), MB_OK|MB_ICONINFORMATION);
+            _com_issue_error(hr);
+		}
 
 		hr = pHttpRequest->send();
+		strLog.Format(_T("\nUPDATEFAILED  send()"));
+		OutputDebugString(strLog);
+
 		if( FAILED(hr) )
 			_com_issue_error(hr);
 
 		if (pHttpRequest->Getstatus() != 200)
-			throw (0);
+		{
+			strLog.Format(_T("\nUPDATEFAILED  pHttpRequest->Getstatus():%d"),pHttpRequest->Getstatus());
+			OutputDebugString(strLog);
 
+			throw (0);
+		}
 		pDispatch = pHttpRequest->GetresponseXML();
 		hr = pDispatch->QueryInterface(pXmlDoc.GetIID(), (void**)&pXmlDoc);
+		strLog.Format(_T("\nUPDATEFAILED  QueryInterface"));
+		OutputDebugString(strLog);
+
 		if( FAILED(hr) )
 			_com_issue_error(hr);
 
 		pList = pXmlDoc->selectNodes("/manifest/filelist/file");
 		lElementCount = pList->Getlength();
 
-		CString strLog;
-		strLog.Format(_T("\nUPDATE  文件数目:%d"),lElementCount);
+	
+		strLog.Format(_T("\nUPDATEFAILED  文件数目:%d"),lElementCount);
 		OutputDebugString(strLog);
 
 		for( LONG i = 0; i < lElementCount; i++ )
@@ -469,14 +490,14 @@ BOOL CAutoUpdateDlg::CheckVersionUpdate(CString& strUpdateURL)
 			CString strPathFileName=m_strCurrentDir+strFilePath+strFileName;
             BOOL iRet=PathFileExists(strPathFileName);
 			CString strLog;
-			strLog.Format(_T("\nUPDATE %s %s,%s"),(iRet?_T("存在文件"):_T("不存在文件")),strPathFileName,strRemoteFile);
+			strLog.Format(_T("\nUPDATEFAILED %s %s,%s"),(iRet?_T("存在文件"):_T("不存在文件")),strPathFileName,strRemoteFile);
 			OutputDebugString(strLog);
 			if(iRet)
 			{
 				//效验文件,如果MD5码不相同则重新下载
 				CString strLocalMD5String =CMD5Checksum::GetMD5(strPathFileName);
 				CString strLog;
-				strLog.Format(_T("\nUPDATE  本地MD5:%s 远程MD5:%s %s"),strLocalMD5String,strMD5String,(strLocalMD5String==strMD5String?_T("相同"):_T("不相同")));
+				strLog.Format(_T("\nUPDATEFAILED  本地MD5:%s 远程MD5:%s %s"),strLocalMD5String,strMD5String,(strLocalMD5String==strMD5String?_T("相同"):_T("不相同")));
 				OutputDebugString(strLog);
 				if ( strLocalMD5String!= strMD5String)
 				{

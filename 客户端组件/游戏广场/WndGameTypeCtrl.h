@@ -16,8 +16,8 @@ protected:
 	WORD							m_wItemDown;						//按下子项
 	WORD							m_wItemHover;						//盘旋子项
 	WORD							m_wItemActive;						//激活子项
-		CBitImage ImageItemBack;
-	CPngImage ImageGameTypeItem;
+	CBitImage						ImageItemBack;
+	CPngImage						ImageGameTypeItem;
 	
 	//CSkinMenu						*m_pGameMenu;
 	//配置信息

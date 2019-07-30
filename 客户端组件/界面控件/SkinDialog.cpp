@@ -142,7 +142,7 @@ bool CSkinDialogAttribute::Initialization(CSkinRenderManager * pSkinRenderManage
 
 	//控件颜色
 	m_crControlText=RGB(10,10,10);
-	m_crBackGround=RGB(215,209,209);
+	m_crBackGround=RGB(214,233,254);
 
 	//设置资源
 	m_brBackGround.DeleteObject();

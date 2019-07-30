@@ -6,29 +6,29 @@
 
 static const int rio_width = 71;
 static const int rio_height = 23;
-static const int rio_daili_x = 228;
-static const int rio_daili_y = 152;
+static const int rio_daili_x = 380;
+static const int rio_daili_y = 140;
 
-static const int rio_huiyuan_x = 320;
-static const int rio_huiyuan_y = 152;
+static const int rio_huiyuan_x = 472;
+static const int rio_huiyuan_y = 140;
 
-static const int edit_width = 186;
+static const int edit_width = 198;
 static const int edit_height = 21;
 
-static const int edit_x = 231;
-static const int edit_fandian_y = 189;
-static const int edit_zhanghu_y = 225;
-static const int edit_dl_pwd_y = 262;
-static const int edit_crm_dl_pwd_y = 297;
-static const int edit_qk_pwd_y = 332;
-static const int edit_crm_qk_pwd_y = 370;
-static const int edit_qq_y = 407;
+static const int edit_x = 382;
+static const int edit_fandian_y = 175;
+static const int edit_zhanghu_y = 208;
+static const int edit_dl_pwd_y = 240;
+static const int edit_crm_dl_pwd_y = 272;
+static const int edit_qk_pwd_y = 304;
+static const int edit_crm_qk_pwd_y = 338;
+static const int edit_qq_y = 370;
 
-static const int btn_ok_x = 270;
-static const int btn_ok_y = 468;
+static const int btn_ok_x = 433;
+static const int btn_ok_y = 427;
 
-static const int btn_regurl_x = 527;
-static const int btn_regurl_y = 72;
+static const int btn_regurl_x = 749;
+static const int btn_regurl_y = 66;
 
 static CRect rcRegUrl(btn_regurl_x+80, btn_regurl_y, btn_regurl_x+600, btn_regurl_y+30);
 
@@ -36,13 +36,13 @@ static CRect rcRegUrl(btn_regurl_x+80, btn_regurl_y, btn_regurl_x+600, btn_regur
 static CRect rcText(edit_x-72, edit_qq_y + 30, edit_x+400-72, edit_qq_y + 30+20);
 
 static const int web_fandian_x = 229;
-static const int web_fandian_y = 118;
+static const int web_fandian_y = 106;
 
-static const int set_fandian_x = 425;
-static const int set_fandian_y = 120;
+static const int set_fandian_x = 587;
+static const int set_fandian_y = 105;
 
-static const int set_mima_x = 425;
-static const int set_mima_y = 250;
+static const int set_mima_x = 587;
+static const int set_mima_y = 199;
 IMPLEMENT_DYNAMIC(CHuiYuanTjxjDlg, CDialog)
 
 CHuiYuanTjxjDlg::CHuiYuanTjxjDlg(CWnd* pParent /*=NULL*/)
@@ -68,7 +68,7 @@ CHuiYuanTjxjDlg::~CHuiYuanTjxjDlg()
 {
 	if (m_bmpBk != NULL)
 	{
-		delete m_bmpBk;
+		SafeDelete(m_bmpBk);
 	}
 }
 
@@ -238,27 +238,30 @@ BOOL CHuiYuanTjxjDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	// TODO:  ÔÚ´ËÌí¼Ó¶îÍâµÄ³õÊ¼»¯
-	m_bmpBk = new Bitmap(CBmpUtil::GetExePath() + _T("skin\\tjxj_bg.png"));
-	m_btnOK.SetImage(CBmpUtil::GetExePath() + _T("skin\\quedingt_bt1.png"));
-	m_btnRegUrl.SetImage(CBmpUtil::GetExePath() + _T("skin\\fz_bt.png"));
-	m_btnSetWebFandian.SetImage(CBmpUtil::GetExePath() + _T("skin\\shezhi1.png"));
-	m_btnSetMorenMima.SetImage(CBmpUtil::GetExePath() + _T("skin\\shezhi1.png"));
+	if(m_bmpBk == NULL)
+	{
+		m_bmpBk = new Bitmap(CBmpUtil::GetExePath() + _T("skin\\tjxj_bg.png"));
+		m_btnOK.SetImage(CBmpUtil::GetExePath() + _T("skin\\quedingt_bt1.png"));
+		m_btnRegUrl.SetImage(CBmpUtil::GetExePath() + _T("skin\\fz_bt.png"));
+		m_btnSetWebFandian.SetImage(CBmpUtil::GetExePath() + _T("skin\\shezhi.png"));
+		m_btnSetMorenMima.SetImage(CBmpUtil::GetExePath() + _T("skin\\shezhi.png"));
+		m_font.CreateFont(20, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, 
+			OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH|FF_DONTCARE, _T("Î¢ÈíÑÅºÚ")); 
+
+
+	}
 	
 
 	((CEdit*)GetDlgItem(IDC_EDIT_ZHANGHAO))->LimitText(12);
 	((CEdit*)GetDlgItem(IDC_EDIT_PASSWORD))->LimitText(12);
 	((CEdit*)GetDlgItem(IDC_EDIT_QK_PWD))->LimitText(12);
 	((CEdit*)GetDlgItem(IDC_EDIT_QQ))->LimitText(12);
-	m_font.CreateFont(20, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, 
-		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH|FF_DONTCARE, _T("Î¢ÈíÑÅºÚ")); 
-
-	m_editZhanghu.SetEnableColor(RGB(107,102,101),RGB(250,242,228),RGB(58,27,20));
-	m_editPassword.SetEnableColor(RGB(107,102,101),RGB(250,242,228),RGB(58,27,20));
-	m_editCrmPwd.SetEnableColor(RGB(107,102,101),RGB(250,242,228),RGB(58,27,20));
-	m_editQkPwd.SetEnableColor(RGB(107,102,101),RGB(250,242,228),RGB(58,27,20));
-	m_editCrmQkPwd.SetEnableColor(RGB(107,102,101),RGB(250,242,228),RGB(58,27,20));
-	m_editQQ.SetEnableColor(RGB(107,102,101),RGB(250,242,228),RGB(58,27,20));
+	m_editZhanghu.SetEnableColor(RGB(56,90,154),RGB(241,233,255),RGB(241,233,255));
+	m_editPassword.SetEnableColor(RGB(56,90,154),RGB(241,233,255),RGB(241,233,255));
+	m_editCrmPwd.SetEnableColor(RGB(56,90,154),RGB(241,233,255),RGB(241,233,255));
+	m_editQkPwd.SetEnableColor(RGB(56,90,154),RGB(241,233,255),RGB(241,233,255));
+	m_editCrmQkPwd.SetEnableColor(RGB(56,90,154),RGB(241,233,255),RGB(241,233,255));
+	m_editQQ.SetEnableColor(RGB(56,90,154),RGB(241,233,255),RGB(241,233,255));
 
 	m_cmbWebFandian.SetFont(&m_font);
 	m_cmbWebRegUrl.SetFont(&m_font);
@@ -492,16 +495,16 @@ void CHuiYuanTjxjDlg::AdjustCtrls()
 
 	if (m_cmbFandian.GetSafeHwnd() != NULL) 
 	{
-		m_cmbFandian.SetWindowPos(NULL, edit_x-2, edit_fandian_y-6, edit_width+3, edit_height+20, SWP_NOZORDER);
+		m_cmbFandian.SetWindowPos(NULL, edit_x-2, edit_fandian_y-4, edit_width+3, edit_height+20, SWP_NOZORDER);
 	}
 
 	if (m_cmbWebFandian.GetSafeHwnd() != NULL) 
 	{
-		m_cmbWebFandian.SetWindowPos(NULL,  edit_x-2, web_fandian_y, edit_width+3, edit_height+20, SWP_NOZORDER);
+		m_cmbWebFandian.SetWindowPos(NULL,  edit_x-2, web_fandian_y-2, edit_width+3, edit_height+20, SWP_NOZORDER);
 	}
 	if (m_cmbWebRegUrl.GetSafeHwnd() != NULL) 
 	{
-		m_cmbWebRegUrl.SetWindowPos(NULL,  edit_x-2, web_fandian_y-48, edit_width+100, edit_height+20, SWP_NOZORDER);
+		m_cmbWebRegUrl.SetWindowPos(NULL,  edit_x-2, web_fandian_y-36, edit_width+153, edit_height+20, SWP_NOZORDER);
 	}
 
 	CWnd* pWnd = GetDlgItem(IDC_EDIT_ZHANGHAO);
@@ -661,8 +664,8 @@ void CHuiYuanTjxjDlg::InitFanDianCmb()
 		//int i=0;
 		for(double f=theAccount.fandian*100-0.1; f>=-0.0000000001; f-=0.1/*, i++*/) 
 		{
-			if(f>2.89999 && f<2.9000001) //ÅÅ³ý 2.9
-				continue;
+// 			if(f>2.89999 && f<2.9000001) //ÅÅ³ý 2.9
+// 				continue;
 			CString str;
 			str.Format(_T("%.1lf"), fabs(f));
 			m_cmbFandian.AddString(str);
@@ -689,8 +692,8 @@ void CHuiYuanTjxjDlg::InitFanDianCmb()
 		//int i=0;
 		for(double f=theAccount.fandian*100-0.1; f>=-0.0000000001; f-=0.1/*, i++*/) 
 		{
-			if(f>2.89999 && f<2.9000001) //ÅÅ³ý 2.9
- 				continue;
+// 			if(f>2.89999 && f<2.9000001) //ÅÅ³ý 2.9
+//  				continue;
 			CString str;
 			str.Format(_T("%.1lf"), fabs(f));
 			m_cmbWebFandian.AddString(str);
@@ -717,21 +720,39 @@ bool CHuiYuanTjxjDlg::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD
 				ASSERT(wDataSize%sizeof(CMD_GetPeieRet)==0);
 				if (wDataSize%sizeof(CMD_GetPeieRet)!=0) return false;
 
+				//×¢ÊÍµôÅä¶î
+				return true;
+
+
+
+
 				CMD_GetPeieRet* pCountRet = (CMD_GetPeieRet*)pData;
 				int n_peie_1 = pCountRet->n_t_peie_1;
 				int n_peie_2 = pCountRet->n_t_peie_2;
 				int n_peie_3 = pCountRet->n_t_peie_3;
+				int n_peie_4 = pCountRet->n_t_peie_4;
+				int n_peie_5 = pCountRet->n_t_peie_5;
 				int n_peie_s_1 = pCountRet->n_t_peie_s_1;
 				int n_peie_s_2 = pCountRet->n_t_peie_s_2;
 				int n_peie_s_3 = pCountRet->n_t_peie_s_3;
+				int n_peie_s_4 = pCountRet->n_t_peie_s_4;
+				int n_peie_s_5 = pCountRet->n_t_peie_s_5;
 				m_strPeie.Empty();
 				if(theAccount.fandian*100 > 3.099999999999 && theAccount.fandian < 3.100000000000001)
 				{
-					m_strPeie.Format(L"Ê£ÓàÅä¶î£º¡¾3.0¡¿%d¸ö ¡¾2.8¡¿%d¸ö ¡¾2.7¡¿%d¸ö",n_peie_1-n_peie_s_1,n_peie_2-n_peie_s_2,n_peie_3-n_peie_s_3);
+					m_strPeie.Format(L"Ê£ÓàÅä¶î£º¡¾3.0¡¿%d¸ö¡¾2.9¡¿%d¸ö ¡¾2.8¡¿%d¸ö ¡¾2.7¡¿%d¸ö ¡¾2.6¡¿%d¸ö",n_peie_1-n_peie_s_1,n_peie_2-n_peie_s_2,n_peie_3-n_peie_s_3,n_peie_4-n_peie_s_4,n_peie_5-n_peie_s_5);
 				}
-				else if(theAccount.fandian*100 > 2.799999999999 && theAccount.fandian*100 < 3.00000001)
+				else if(theAccount.fandian*100 > 2.999999999999 && theAccount.fandian*100 < 3.00000001)
 				{
-					m_strPeie.Format(L"Ê£ÓàÅä¶î£º¡¾2.8¡¿%d¸ö ¡¾2.7¡¿%d¸ö",n_peie_2-n_peie_s_2,n_peie_3-n_peie_s_3);
+					m_strPeie.Format(L"Ê£ÓàÅä¶î£º¡¾2.9¡¿%d¸ö¡¾2.8¡¿%d¸ö ¡¾2.7¡¿%d¸ö ¡¾2.6¡¿%d¸ö",n_peie_2-n_peie_s_2,n_peie_3-n_peie_s_3,n_peie_4-n_peie_s_4,n_peie_5-n_peie_s_5);
+				}
+				else if(theAccount.fandian*100 > 2.899999999999 && theAccount.fandian*100 < 2.90000001)
+				{
+					m_strPeie.Format(L"Ê£ÓàÅä¶î£º¡¾2.8¡¿%d¸ö ¡¾2.7¡¿%d¸ö ¡¾2.6¡¿%d¸ö",n_peie_3-n_peie_s_3,n_peie_4-n_peie_s_4,n_peie_5-n_peie_s_5);
+				}
+				else if(theAccount.fandian*100 > 2.799999999999 && theAccount.fandian*100 < 2.80000001)
+				{
+					m_strPeie.Format(L"Ê£ÓàÅä¶î£º¡¾2.8¡¿%d¸ö ¡¾2.7¡¿%d¸ö ¡¾2.6¡¿%d¸ö",n_peie_3-n_peie_s_3,n_peie_4-n_peie_s_4,n_peie_5-n_peie_s_5);
 				}
 				else 
 				{
@@ -848,7 +869,7 @@ bool CHuiYuanTjxjDlg::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD
 				{
 					MyMessageBox( _T("ÉèÖÃÍøÒ³·µµãÊ§°Ü"));
 				}
-
+				return true;
 			}
 
 		}
@@ -874,8 +895,8 @@ VOID CHuiYuanTjxjDlg::SendToServer(int nSendType)
 			ZeroMemory(&GetUrlFandian,sizeof(GetUrlFandian));
 
 			GetUrlFandian.n_t_userid = theAccount.user_id;
-			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_REG_URL,&GetUrlFandian,sizeof(GetUrlFandian));
+			if(m_MissionManager!=NULL)
+				m_MissionManager->SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_REG_URL,&GetUrlFandian,sizeof(GetUrlFandian));
 			return;
 		}
 
@@ -905,7 +926,10 @@ VOID CHuiYuanTjxjDlg::SendToServer(int nSendType)
 			TCHAR szDlPwd[33]=TEXT("");
 			TCHAR szQkPwd[33]=TEXT("");
 
+			m_password.Trim();
+			m_qkpwd.Trim();
 
+			m_zhanghu.Trim();
 			CMD5Encrypt::EncryptData(m_password,szDlPwd);
 			CMD5Encrypt::EncryptData(m_qkpwd,szQkPwd);
 
@@ -914,8 +938,8 @@ VOID CHuiYuanTjxjDlg::SendToServer(int nSendType)
 			lstrcpyn(AddHuiYuan.s_t_qukuan_pass,szQkPwd,sizeof(AddHuiYuan.s_t_qukuan_pass));
 			lstrcpyn(AddHuiYuan.s_t_qq,m_strQQ.GetBuffer(),sizeof(AddHuiYuan.s_t_qq));
 
-			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_ADD_HY,&AddHuiYuan,sizeof(AddHuiYuan));
+			if(m_MissionManager!=NULL)
+				m_MissionManager->SendData(MDM_GP_USER_SERVICE,SUB_GP_ADD_HY,&AddHuiYuan,sizeof(AddHuiYuan));
 			return;
 		}
 	}
@@ -934,11 +958,12 @@ VOID CHuiYuanTjxjDlg::SendToServer(int nSendType)
 
 			DWORD wSel = m_cmbWebFandian.GetCurSel();
 			m_cmbWebFandian.GetLBText(wSel,m_strWebFandian);
+			m_strWebFandian.Trim();
 			DOUBLE fandian = _tstof(m_strWebFandian);
 			SetWebFandian.f_t_fandian = fandian/100;
 
-			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_SET_WEB_FANDIAN,&SetWebFandian,sizeof(SetWebFandian));
+			if(m_MissionManager!=NULL)
+				m_MissionManager->SendData(MDM_GP_USER_SERVICE,SUB_GP_SET_WEB_FANDIAN,&SetWebFandian,sizeof(SetWebFandian));
 			return;
 		}
 
@@ -954,8 +979,8 @@ VOID CHuiYuanTjxjDlg::SendToServer(int nSendType)
 			ZeroMemory(&GetPeie,sizeof(GetPeie));
 
 			GetPeie.n_t_userid = theAccount.user_id;
-			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_Peie,&GetPeie,sizeof(GetPeie));
+			if(m_MissionManager!=NULL)
+				m_MissionManager->SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_Peie,&GetPeie,sizeof(GetPeie));
 			return;
 		}
 

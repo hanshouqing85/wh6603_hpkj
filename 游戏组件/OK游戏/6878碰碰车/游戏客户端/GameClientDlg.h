@@ -20,9 +20,9 @@ protected:
 	SCORE						m_lMeMaxScore;						//最大下注
 	SCORE						m_lAreaLimitScore;					//区域限制
 	SCORE						m_lApplyBankerCondition;			//申请条件
-	int                             m_GameEndTime;
-	bool							m_blUsing;
-	ULONG_PTR m_gdiplusToken;
+	int                         m_GameEndTime;
+	bool						m_blUsing;
+	ULONG_PTR					m_gdiplusToken;
 	//个人下注
 protected:
 	SCORE						m_lUserJettonScore[AREA_COUNT+1];	//个人总注

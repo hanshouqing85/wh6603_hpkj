@@ -9,7 +9,7 @@
 
 //宏定义
 #define XOR_TIMES					8									//加密倍数
-#define MAX_SOURCE_LEN				64									//最大长度
+#define MAX_SOURCE_LEN				264									//最大长度
 #define MAX_ENCRYPT_LEN				(MAX_SOURCE_LEN*XOR_TIMES)			//最大长度
 
 //////////////////////////////////////////////////////////////////////////////////

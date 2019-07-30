@@ -1,9 +1,14 @@
+#pragma once
 #include "Stdafx.h"
 #include "GamePlaza.h"
 #include "DlgEnquire.h"
 #include "PlatformFrame.h"
 #include "MessageDlg.h"
 #include "HapiDump.h"
+#include "GameRule.h"
+#pragma pack(push,  1)
+#pragma pack(show)
+
 //////////////////////////////////////////////////////////////////////////////////
 #define IDC_LST_MENU	WM_USER + 1000
 
@@ -51,6 +56,8 @@
 #define IDC_GAME_TYPE_CTRL			310									//类型框架
 #define IDC_USER_INFO_CTRL			311									//用户信息
 #define IDC_LAST_TOP_NEWS			312									//新闻
+#define	IDC_GO_WEBSITE				313									//打开网页版
+
 //这个是新闻动态的滚动动画
 static const int TimerNews		= 4;
 //这个是用来本地刷新开奖数据的
@@ -62,12 +69,20 @@ static const int TimerLuckyNum		= 8;
 static const int TimerReconnect		= 9;
 static const int TimerTopNews		= 3;
 
+static const int TimerZnx		= 10;//站内信
+static const int Outbar_x = 4;
+static const int Outbar_y = 360;
+static const int Outbar_cx = 222;
+static const int Outbar_cy =730;
+static CRect rcFolderCtrl(Outbar_x,Outbar_y,Outbar_cx,Outbar_cy);
 //范围按钮
 #define IDC_NAVIGATION				400									//导航按钮
 
 #define  IDC_ZHUANHUAN_CAIBI		500									//转换彩币
 #define  IDC_ZHUANHUAN_JINBI		501									//转换金币
 #define	 IDC_HOME					502									//首页按钮
+#define	 IDC_NOTICE					503									//公告按钮
+#define	 IDC_MESSAGE					504									//站内信按钮
 //////////////////////////////////////////////////////////////////////////////////
 //静态变量
 
@@ -87,12 +102,12 @@ BEGIN_MESSAGE_MAP(CPlatformFrame, CFrameWnd)
 	ON_WM_LBUTTONDOWN()
 	ON_WM_WINDOWPOSCHANGED()
 	ON_WM_MOUSEMOVE()
+	ON_MESSAGE(IDM_NEXT_PAGE,OnTurnPage)
+	ON_MESSAGE(IDM_SELECT_USER,OnSelectUser)
 	//自定消息
 	ON_MESSAGE(WM_PLATFORM_EVENT, OnMessagePlatformEvent)
 	ON_MESSAGE(WM_INSUREPLAZA_UPDATA, OnMessageInsureUpdate)
-	ON_MESSAGE(IDM_SHOW_MENU,OnShowMenu)
 	ON_MESSAGE(IDM_CLICKED_TYPE,OnUpdateButton)
-	ON_MESSAGE(IDM_SEND_QUERY,OnQueryGameResult)
 	ON_MESSAGE(IDM_UPDATE_ACCOUNT,OnUpDateAccoount)
 	ON_MESSAGE(IDM_SHOW_XGMM,OnShowXgmm)
 	ON_NOTIFY(NM_CLICK, IDC_TOP_NWES, OnGridClick)
@@ -104,7 +119,8 @@ BEGIN_MESSAGE_MAP(CPlatformFrame, CFrameWnd)
 	ON_MESSAGE(IDM_RETURN_GAME,ReturnTouzhu)
 	ON_MESSAGE(IDM_RELEASE_FACE,ReleaseFace)
 	ON_WM_TIMER()
-
+	ON_MESSAGE ( WM_QMTAB_CALLBACKMSG, OnQtmListClicked )
+	ON_MESSAGE(45678,ShowMapList)
 END_MESSAGE_MAP()
 
 
@@ -114,6 +130,7 @@ END_MESSAGE_MAP()
 //构造函数
 CPlatformFrame::CPlatformFrame()
 {
+//	QRcode *code = QRcode_encodeString(uri.toUtf8().constData(), 0, QR_ECLEVEL_L, QR_MODE_8, 1);
 	//状态变量
 	m_bRectify=false;
 	m_bLogonFail=false;
@@ -127,9 +144,11 @@ CPlatformFrame::CPlatformFrame()
 	m_cbShowNewsType = 0;
 	m_bKillSocket = false;
 	m_bCreate = false;
+	m_bInitGameKind=false;
 	m_bSound=true;
 	m_nTop = 0;//400;
 	//Menu.CreateMenu();
+	m_bShowNetAlive=true;
 	m_bCanSend = false;
 	//任务组件
 	m_MissionManager.InsertMissionItem(&m_MissionList);
@@ -141,7 +160,8 @@ CPlatformFrame::CPlatformFrame()
 	m_bGetMapBonus=false;
 	//平台变量
 	ASSERT(m_pPlatformFrame==NULL);
-	if (m_pPlatformFrame==NULL) m_pPlatformFrame=this;
+	if (m_pPlatformFrame==NULL) 
+		m_pPlatformFrame=this;
 
 	m_bToCaijin=false;
 	m_bChaxunYue=false;
@@ -181,11 +201,12 @@ CPlatformFrame::CPlatformFrame()
 CPlatformFrame::~CPlatformFrame()
 {
 	//平台变量
+	if(m_pPlatformFrame == NULL)
+		return;
 	ASSERT(m_pPlatformFrame==this);
 	if (m_pPlatformFrame==this)
 	{
-		m_pPlatformFrame=NULL;
-		delete []m_pPlatformFrame;
+		//SafeDelete(m_pPlatformFrame);
 	}
 
 	return;
@@ -203,8 +224,92 @@ VOID CPlatformFrame::OnGameItemFinish()
 	//默认显示游戏列表
 	//显示列表
 	//m_PlazaViewItem.ShowKindItemView(0);
-	m_PlazaViewItem.ShowTypeItemView();
+	//m_PlazaViewItem.ShowTypeItemView();
 
+	if(m_bInitGameKind)
+		return;
+	m_bInitGameKind=true;
+
+	ASSERT(CServerListData::GetInstance()!=NULL);
+	CServerListData * pServerListData=CServerListData::GetInstance();
+	POSITION Position=NULL;
+	CGameKindItem * pGameKindItem=NULL;
+
+	int nTab = 0;
+	int nInsertTab;
+
+	
+	nTab = m_qmTab.AddTab( L"",CBmpUtil::GetExePath() + _T("ADImage\\GameTitle\\type_01.png"),1 );
+
+	nTab = m_qmTab.AddTab(  L"" ,CBmpUtil::GetExePath() + _T("ADImage\\GameTitle\\type_02.png"),2);
+
+	nTab = m_qmTab.AddTab(  L"" ,CBmpUtil::GetExePath() + _T("ADImage\\GameTitle\\type_03.png"),3);
+
+	nTab = m_qmTab.AddTab(  L"" ,CBmpUtil::GetExePath() + _T("ADImage\\GameTitle\\type_04.png"),4);
+	
+	nTab = m_qmTab.AddTab(  L"" ,CBmpUtil::GetExePath() + _T("ADImage\\GameTitle\\type_05.png"),5);
+
+	m_qmTab.SetTabHeight( 30 );
+	m_qmTab.SetCurSorTab( 0 ); 
+
+	while (true)
+	{
+		//获取对象
+		pGameKindItem=pServerListData->EmunGameKindItem(Position);
+
+		//对象判断
+		if (pGameKindItem==NULL) break;
+
+		WORD wKindID = pGameKindItem->m_GameKind.wKindID;
+		if( wKindID== CZChongQingSSC||wKindID== CZ_TianJinSSC||wKindID== CZ_HGYDWFC||wKindID == CZXinJiangSSC||wKindID == CZ_FENFEN_CAI||wKindID == CZ_WUFEN_CAI||wKindID == CZ_JiaNaDaSSC||wKindID == CZ_ErFenCai||wKindID == CZ_TXfenfencai||wKindID == CZ_QQfenfencai||wKindID == CZ_BJ5FC)
+		{
+			nInsertTab = 0;
+		}
+		else if(wKindID == CZGD11Xuan5||wKindID == CZSD11Xuan5||wKindID == CZJX11Xuan5||wKindID == CZHLJ11Xuan5)
+		{
+			nInsertTab = 1;
+		}
+		else if(wKindID == CZ3D||wKindID == CZPaiLie3||wKindID == CZ_QiXingCai)
+		{
+			nInsertTab = 2;
+		}
+		else if(wKindID == CZ_PK10||wKindID == CZKUAILE8||wKindID == CZXingYun28||wKindID == CZ_LIUHECAI)
+		{
+			nInsertTab = 3;
+		}
+		else if(wKindID > 100)
+		{
+			nInsertTab = 4;
+		}
+
+		//获取目录
+		TCHAR szGameDirectory[LEN_PROCESS]=TEXT("");
+		m_PlazaViewItem.GetGameDirectory(szGameDirectory,CountArray(szGameDirectory),pGameKindItem->m_GameKind);
+
+		CString str;
+		str.Format(L"%s",szGameDirectory);
+
+		CString strImg;
+		strImg.Format(L"%sGameKind_%s.png",CBmpUtil::GetExePath() + _T("ADImage\\GameKindSmall\\"),str);
+		CPngImage img;
+		if(img.LoadImage( strImg)==false)
+		{
+			//如果没有找到，那么默认用重庆的替代
+			str.Format(L"cqssc");
+// 
+// 			strImg.Format(L"%sGameKind_cqssc.png",CBmpUtil::GetExePath() + _T("ADImage\\GameKindSmall\\"));
+// 			img.LoadImage( strImg);
+		}
+
+		CString strLog;
+		strLog.Format(L"GAMEKIND strImg:%s,lpzBtnImg:%s\r\n",strImg,str);
+		OutputDebugString(strLog);
+
+		m_qmTab.AddItem( nInsertTab,pGameKindItem->m_GameKind.szKindName, 0,str , wKindID);
+
+		if(Position == NULL)
+			break;
+	}
 	m_PlazaViewItem.CreateDlgCaipiao(2);
 	return;
 }
@@ -281,18 +386,20 @@ VOID CPlatformFrame::AvtiveMainMissionItem()
 		//创建广场
 		CRect rcCreate(0,0,0,0);
 
-		m_dlgUserAccount.Create(IDD_USER_ACCOUNT,this);
-		m_dlgUserAccount.ShowWindow(SW_HIDE);
-		m_dlgHuiyuan.Create(CHuiYuanDlg::IDD,this);
-		m_dlgHuiyuan.ShowWindow(SW_HIDE);
-		m_dlgChongzhi.Create(CChongZhiDlg::IDD,this);
-		m_dlgChongzhi.ShowWindow(SW_HIDE);
-		m_dlgQukuan.Create(CQuKuanDlg::IDD,this);
-		m_dlgQukuan.ShowWindow(SW_HIDE);
-		m_dlgHuodong.Create(CHuoDongDlg::IDD,this);
-		m_dlgHuodong.ShowWindow(SW_HIDE);
-		m_dlgTouZhu.Create(CZhangHuTzhLogDlg::IDD,this);
-		m_dlgTouZhu.ShowWindow(SW_HIDE);
+// 		m_dlgUserAccount.Create(IDD_USER_ACCOUNT,this);
+// 		m_dlgUserAccount.ShowWindow(SW_HIDE);
+// 		m_dlgHuiyuan.Create(CHuiYuanDlg::IDD,this);
+// 		m_dlgHuiyuan.ShowWindow(SW_HIDE);
+// 		m_dlgChongzhi.Create(CChongZhiDlg::IDD,this);
+// 		m_dlgChongzhi.ShowWindow(SW_HIDE);
+// 		m_dlgQukuan.Create(CQuKuanDlg::IDD,this);
+// 		m_dlgQukuan.ShowWindow(SW_HIDE);
+// 		m_dlgHuodong.Create(CHuoDongDlg::IDD,this);
+// 		m_dlgHuodong.ShowWindow(SW_HIDE);
+// 		m_dlgTouZhu.Create(CZhangHuTzhLogDlg::IDD,this);
+// 		m_dlgTouZhu.ShowWindow(SW_HIDE);
+// 		m_dlgPlatformMessage.Create(CPlatformMessage::IDD,this);
+// 		m_dlgPlatformMessage.ShowWindow(SW_HIDE);
 		m_PlazaViewItem.CreateDlgCaipiao(0);
 
 	}
@@ -373,6 +480,7 @@ VOID CPlatformFrame::SendToServer(int nSendType)
 
 	if(nSendType == 6)
 	{
+		m_bCanSend = false;
 	//	m_bQuitGame=true;
 		CMD_GP_QuitGame QuitGame;
 		ZeroMemory(&QuitGame,sizeof(QuitGame));
@@ -409,6 +517,31 @@ VOID CPlatformFrame::SendToServer(int nSendType)
 		m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_KEFU_URL);
 
 	}
+	if(nSendType == 10)
+	{
+		m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_CANADA_START_QIHAO);
+			//发送数据
+		m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_QIHAO_CHA);
+	}
+	if(nSendType == 11)
+	{
+		CMD_GP_GetNotic GetNotice;
+		ZeroMemory(&GetNotice,sizeof(GetNotice));
+
+		GetNotice.n_t_type = 1;
+		//发送数据
+		m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_NOTICE,&GetNotice,sizeof(GetNotice));
+
+	}
+	if(nSendType == 12)
+	{
+		CMD_GP_GetZnxCount GetZnxCount;
+		ZeroMemory(&GetZnxCount,sizeof(GetZnxCount));
+
+		GetZnxCount.n_t_userid = theAccount.user_id;
+		//发送数据
+		m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_ZNX_COUNT,&GetZnxCount,sizeof(GetZnxCount));
+	}
 	return;
 }
 //关闭事件
@@ -425,11 +558,17 @@ bool CPlatformFrame::OnEventMissionShut(BYTE cbShutReason)
 			m_btNet.EnableWindow(FALSE);
 
 			SetTimer(TimerReconnect,1000,NULL);
-			if(!m_bLogonFail)
-			{
-				m_bLogonFail = false;
-				m_DlgStatus.ShowStatusWindow(L"正在重新连接远程服务器....");
-			}
+
+			CString strLog;
+
+			strLog.Format(L"PINGSECOND  MISSIONSEND  CPlatformFrame");
+			OutputDebugString(strLog);
+
+// 			if(!m_bLogonFail)
+// 			{
+// 				m_bLogonFail = false;
+// 				m_DlgStatus.ShowStatusWindow(L"正在重新连接远程服务器....");
+// 			}
 		}
 
 
@@ -537,10 +676,50 @@ bool CPlatformFrame::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD 
 		bShowInfomation=true;
 		switch (Command.wSubCmdID)
 		{
-// 		case SUB_GP_QUIT_GAME_RET:
-// 			{
-// 				SetTimer(55555,2000,NULL);
-// 			}
+		case SUB_GP_SEND_MESSAGE_RET:
+			{
+				if(m_dlgPlatformMessage.m_dlgSendMessage.IsWindowVisible())
+					m_dlgPlatformMessage.m_dlgSendMessage.OnEventMissionRead(Command,  pData,  wDataSize);
+				return true;
+			}
+		case SUB_GP_GET_ZNX_COUNT_RET:
+			{
+				ASSERT(wDataSize==sizeof(CMD_GP_GetZnxCountRet));
+				if(wDataSize!=sizeof(CMD_GP_GetZnxCountRet))
+					return false;
+
+				CMD_GP_GetZnxCountRet* pLogCount = (CMD_GP_GetZnxCountRet*)pData;
+				int cnt = pLogCount->n_t_count;
+				HINSTANCE hInstance=AfxGetInstanceHandle();
+				if(cnt >0)
+				{
+					m_btPlazaMessage.SetButtonImage(IDB_BK_MESSAGE1,hInstance,true,false);
+				}
+				else
+				{
+					m_btPlazaMessage.SetButtonImage(IDB_BK_MESSAGE,hInstance,true,false);
+
+				}
+				return true;
+			}
+		case SUB_GP_GET_NOTICE_RET:
+			{
+				ASSERT(wDataSize%sizeof(CMD_GP_GetNoticRet)==0);
+				if(wDataSize%sizeof(CMD_GP_GetNoticRet)!=0)
+					 return false;
+
+				int nCount = wDataSize/sizeof(CMD_GP_GetNoticRet);
+				for (int i = 0;i < nCount;i++)
+				{
+					CMD_GP_GetNoticRet* pLogRet = ((CMD_GP_GetNoticRet*)pData+i);
+
+					CTime t(pLogRet->n_t_time);
+// 					CString strLog;
+// 					strLog.Format(L"NOTICE title:%s,content:%s,time:%s,type:%d",pLogRet->s_t_title,pLogRet->s_t_content,t.Format(L"%Y%m%d %H:%M:%S"),pLogRet->n_t_type);
+// 					OutputDebugString(strLog);
+				}
+				return true;
+			}
 		case SUB_GP_KILL_SOCKET:
 			{
 				CMD_GP_KillSocket* pKillSocket = (CMD_GP_KillSocket*)pData;
@@ -567,6 +746,26 @@ bool CPlatformFrame::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD 
 			{
 				if(m_dlgHuiyuan.m_hyxxDlg.IsWindowVisible())
 					m_dlgHuiyuan.m_hyxxDlg.OnEventMissionRead(Command,  pData,  wDataSize);
+				return true;
+			}
+		case SUB_GP_SEND_CHECKYANZHENGMA_TRANS_RET:	//验证码
+		case SUB_GP_GET_PHONE_TRASFER_FENHONG_RET:
+			{
+				if(m_dlgHuiyuan.m_hyxxDlg.IsWindowVisible())
+					m_dlgHuiyuan.m_hyxxDlg.OnEventMissionRead(Command,  pData,  wDataSize);
+				return true;
+			}
+		case SUB_GR_GET_PARENT_RET:
+			{
+				if(m_dlgHuiyuan.m_hyxxDlg.IsWindowVisible())
+					m_dlgHuiyuan.m_hyxxDlg.OnEventMissionRead(Command,  pData,  wDataSize);
+				else if(m_dlgHuiyuan.m_xjtzhtjDlg.IsWindowVisible())
+					m_dlgHuiyuan.m_xjtzhtjDlg.OnEventMissionRead(Command,  pData,  wDataSize);
+				else if(m_dlgHuiyuan.m_yktjDlg.IsWindowVisible())
+					m_dlgHuiyuan.m_yktjDlg.OnEventMissionRead(Command,  pData,  wDataSize);
+				else if(m_dlgHuiyuan.m_yxtjlDlg.IsWindowVisible())
+					m_dlgHuiyuan.m_yxtjlDlg.OnEventMissionRead(Command,  pData,  wDataSize);
+
 				return true;
 			}
 		case SUB_GR_GET_REG_URL_RET: //会员添加下级
@@ -631,12 +830,20 @@ bool CPlatformFrame::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD 
 					m_dlgHuiyuan.m_txlogDlg.OnEventMissionRead(Command,  pData,  wDataSize);
 				return true;
 			}
+		case SUB_GP_GET_QIPAI_KIND_RET:
+			{
+				if(m_dlgHuiyuan.GetSafeHwnd() !=NULL && m_dlgHuiyuan.m_xjyxjlDlg.IsWindowVisible())
+					m_dlgHuiyuan.m_xjyxjlDlg.OnEventMissionRead(Command,  pData,  wDataSize);
+				else if(m_dlgUserAccount.GetSafeHwnd() !=NULL &&m_dlgUserAccount.m_qpykdlg.IsWindowVisible())
+					m_dlgUserAccount.m_qpykdlg.OnEventMissionRead(Command,  pData,  wDataSize);
+				return true;
+			}
 		case SUB_GR_GET_QP_YINGKUI_COUNT_RET: //会员游戏统计
 		case SUB_GP_GET_QP_YINGKUI_RET:
 			{
-				if(m_dlgHuiyuan.m_xjyxjlDlg.IsWindowVisible())
+				if(m_dlgHuiyuan.GetSafeHwnd() !=NULL &&   m_dlgHuiyuan.m_xjyxjlDlg.IsWindowVisible())
 					m_dlgHuiyuan.m_xjyxjlDlg.OnEventMissionRead(Command,  pData,  wDataSize);
-				else if(m_dlgUserAccount.m_qpykdlg.IsWindowVisible())
+				else if(m_dlgUserAccount.GetSafeHwnd() !=NULL && m_dlgUserAccount.m_qpykdlg.IsWindowVisible())
 					m_dlgUserAccount.m_qpykdlg.OnEventMissionRead(Command,  pData,  wDataSize);
 				return true;
 			}
@@ -655,6 +862,7 @@ bool CPlatformFrame::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD 
 			}
 		case SUB_GP_QU_KUAN_INFO_RET: //取款
 		case SUB_GP_DO_QU_KUAN_RET:
+		case SUB_GP_GET_QUKUAN_LIMIT_RET:
 			{
 				if(m_dlgQukuan.IsWindowVisible())
 					m_dlgQukuan.OnEventMissionRead(Command,  pData,  wDataSize);
@@ -686,8 +894,8 @@ bool CPlatformFrame::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD 
 		case SUB_GR_XG_QQ_RET:
 		case SUB_GP_ALTER_GENDER_RET:
 			{
-				if(m_dlgUserAccount.m_baseInfoDlg.IsWindowVisible())
-					m_dlgUserAccount.m_baseInfoDlg.OnEventMissionRead(Command,  pData,  wDataSize);
+ 				if(m_dlgUserAccount.GetSafeHwnd() && m_dlgUserAccount.m_baseInfoDlg.IsWindowVisible())
+ 					m_dlgUserAccount.m_baseInfoDlg.OnEventMissionRead(Command,  pData,  wDataSize);
 				return true;
 			}
 		case SUB_GR_XG_LOGIN_PASS_RET://账户修改密码
@@ -776,9 +984,12 @@ bool CPlatformFrame::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD 
 				return true;
 
 			}
+		case SUB_GR_BIND_PHONE_RET:
 		case SUB_GR_LOCK_MACHINE_RET:
+		case SUB_GR_BIND_PHONE_INFO_RET:
+		case SUB_GR_UNBIND_PHONE_RET:
 			{
-				if(m_dlgUserAccount.m_xgmmDlg.IsWindowVisible())
+				if(m_dlgUserAccount.GetSafeHwnd() && m_dlgUserAccount.m_xgmmDlg.IsWindowVisible())
 					m_dlgUserAccount.m_xgmmDlg.OnEventMissionRead(Command,  pData,  wDataSize);
 				return true;
 			}
@@ -786,7 +997,7 @@ bool CPlatformFrame::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD 
 		case SUB_GR_QUERY_MY_YINHANG_RET:
 		case SUB_GR_SET_QUKUAN_ZHANGHAO_RET:
 			{
-				if(m_dlgUserAccount.m_shzhTkzhh.IsWindowVisible())
+				if(m_dlgUserAccount.GetSafeHwnd() && m_dlgUserAccount.m_shzhTkzhh.IsWindowVisible())
 					m_dlgUserAccount.m_shzhTkzhh.OnEventMissionRead(Command,  pData,  wDataSize);
 				return true;
 
@@ -794,7 +1005,7 @@ bool CPlatformFrame::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD 
 		case SUB_GR_QUERY_MY_PROTECT_RET://设置账户保护
 		case SUB_GR_SET_QUKUAN_PROTECT_RET:
 			{
-				if(m_dlgUserAccount.m_zhhbhDlg.IsWindowVisible())
+				if(m_dlgUserAccount.GetSafeHwnd() && m_dlgUserAccount.m_zhhbhDlg.IsWindowVisible())
 					m_dlgUserAccount.m_zhhbhDlg.OnEventMissionRead(Command,  pData,  wDataSize);
 				return true;
 
@@ -803,19 +1014,41 @@ bool CPlatformFrame::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD 
 		case SUB_GP_GET_TOUZHU_LOG_RET:
 		case SUB_GR_CANCEL_TOUZHU_RET:
 			{
-				if(m_dlgTouZhu.IsWindowVisible())
-				{
-					m_dlgTouZhu.OnEventMissionRead(Command,  pData,  wDataSize);
-				}
-				else if(m_dlgUserAccount.m_tzhlogDlg.IsWindowVisible())
+				 if(m_dlgUserAccount.GetSafeHwnd()!=NULL && m_dlgUserAccount.m_tzhlogDlg.IsWindowVisible())
 					m_dlgUserAccount.m_tzhlogDlg.OnEventMissionRead(Command,  pData,  wDataSize);
+				 else if(m_dlgTouZhu.GetSafeHwnd()!=NULL && m_dlgTouZhu.IsWindowVisible())
+				 {
+					 m_dlgTouZhu.OnEventMissionRead(Command,  pData,  wDataSize);
+				 }
 				return true;
 
+			}
+		case SUB_GP_GET_INBOX_MESSAGE_RET:
+		case SUB_GP_DEL_MESSAGE_RET:
+			{
+				if(m_dlgPlatformMessage.IsWindowVisible())
+				{
+					if(m_dlgPlatformMessage.m_dlgInbox.IsWindowVisible())
+						m_dlgPlatformMessage.m_dlgInbox.OnEventMissionRead(Command,  pData,  wDataSize);
+					if(m_dlgPlatformMessage.m_dlgOutbox.IsWindowVisible())
+						m_dlgPlatformMessage.m_dlgOutbox.OnEventMissionRead(Command,  pData,  wDataSize);
+					if(m_dlgPlatformMessage.m_dlgSendMessage.IsWindowVisible())
+						m_dlgPlatformMessage.m_dlgSendMessage.OnEventMissionRead(Command,  pData,  wDataSize);
+				}
+				return true;
+			}
+		case SUB_GP_GET_ALL_USERINFO_RET:
+			{
+				if(m_dlgPlatformMessage.IsWindowVisible())
+				{
+					m_dlgPlatformMessage.m_dlgSendMessage.OnEventMissionRead(Command,  pData,  wDataSize);
+				}
+				return true;
 			}
 		case SUB_GR_GET_TIXIAN_LOG_COUNT_RET: //账户提现
 		case SUB_GP_GET_TIXIAN_LOG_RET:
 			{
-				if(m_dlgUserAccount.m_txlogDlg.IsWindowVisible())
+				if(m_dlgUserAccount.GetSafeHwnd() && m_dlgUserAccount.m_txlogDlg.IsWindowVisible())
 					m_dlgUserAccount.m_txlogDlg.OnEventMissionRead(Command,  pData,  wDataSize);
 				return true;
 
@@ -823,7 +1056,7 @@ bool CPlatformFrame::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD 
 		case SUB_GR_GET_CHONGZHI_LOG_COUNT_RET: //账户充值
 		case SUB_GP_GET_CHONGZHI_LOG_RET:
 			{
-				if(m_dlgUserAccount.m_chzhlogdlg.IsWindowVisible())
+				if(m_dlgUserAccount.GetSafeHwnd() && m_dlgUserAccount.m_chzhlogdlg.IsWindowVisible())
 					m_dlgUserAccount.m_chzhlogdlg.OnEventMissionRead(Command,  pData,  wDataSize);
 				return true;
 
@@ -831,7 +1064,7 @@ bool CPlatformFrame::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD 
 		case SUB_GR_GET_YINGKUI_LOG_COUNT_RET: //账户盈亏
 		case SUB_GP_GET_YINGKUI_LOG_RET:
 			{
-				if(m_dlgUserAccount.m_yklogdlg.IsWindowVisible())
+				if(m_dlgUserAccount.GetSafeHwnd() && m_dlgUserAccount.m_yklogdlg.IsWindowVisible())
 					m_dlgUserAccount.m_yklogdlg.OnEventMissionRead(Command,  pData,  wDataSize);
 				return true;
 
@@ -839,8 +1072,21 @@ bool CPlatformFrame::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD 
 		case SUB_GR_GET_YINGKUI_MX_COUNT_RET: //账户盈亏明细
 		case SUB_GP_GET_YINGKUI_MX_RET:
 			{
-				if(m_dlgUserAccount.m_ykmxdlg.IsWindowVisible())
+				if(m_dlgUserAccount.GetSafeHwnd() && m_dlgUserAccount.m_ykmxdlg.IsWindowVisible())
 					m_dlgUserAccount.m_ykmxdlg.OnEventMissionRead(Command,  pData,  wDataSize);
+				return true;
+			}
+		case SUB_GP_GET_QIHAO_CHA_RET:
+			{
+				if(m_PlazaViewItem.IsWindowVisible())
+					m_PlazaViewItem.OnEventMissionRead(Command,  pData,  wDataSize);
+				
+				if(m_dlgUserAccount.GetSafeHwnd()&&m_dlgUserAccount.m_tzhlogDlg.IsWindowVisible())
+					m_dlgUserAccount.m_tzhlogDlg.OnEventMissionRead(Command,  pData,  wDataSize);
+				else if(m_dlgTouZhu.GetSafeHwnd()&&m_dlgTouZhu.IsWindowVisible())
+				{
+					m_dlgTouZhu.OnEventMissionRead(Command,  pData,  wDataSize);
+				}
 				return true;
 			}
 		case SUB_GP_GET_USER_FANDIAN_RET: //游戏获取返点
@@ -849,9 +1095,25 @@ bool CPlatformFrame::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD 
 		case SUB_GP_TOUZHU_CQSSC_RET:
 		case SUB_GP_GET_MORE_RECORD_RET:
 		case SUB_GR_GET_LHC_QIHAO_RET:
+		case SUB_GP_QUERY_STATUS_LOTTERY_RET:
 			{
 				if(m_PlazaViewItem.IsWindowVisible())
 					m_PlazaViewItem.OnEventMissionRead(Command,  pData,  wDataSize);
+				return true;
+			}
+		case SUB_GP_GET_CANADA_START_QIHAO_RET:
+			{
+				if(m_PlazaViewItem.IsWindowVisible())
+					m_PlazaViewItem.OnEventMissionRead(Command,  pData,  wDataSize);
+
+				ASSERT((wDataSize == sizeof(CMD_GP_GetCanadaQihaoRet)));
+				if((wDataSize != sizeof(CMD_GP_GetCanadaQihaoRet)) )return false;
+
+				CMD_GP_GetCanadaQihaoRet* pLogRet = (CMD_GP_GetCanadaQihaoRet*)pData;
+
+				theCanadaQihao = pLogRet->n_t_start_qihao;
+				theCanadaStartTime = pLogRet->n_t_start_time;
+
 				return true;
 			}
 		case SUB_GP_GET_LAST_YUE_RET:
@@ -936,34 +1198,19 @@ bool CPlatformFrame::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD 
 				int nCount = wDataSize/sizeof(CMD_GP_GetNewsRet);
 				CString strTemp;
 
+				CString strText;
 				for(int i =0;i < nCount;i++)
 				{
 					CMD_GP_GetNewsRet* pNewsRet = ((CMD_GP_GetNewsRet*)pData+i);
-					m_vecTitle.push_back(pNewsRet->s_t_news);
+					strText += pNewsRet->s_t_news;
 
 				}
 
-				//SetTimer(TimerNews, 50, NULL);	
-				CString strText;
-				//pDC->SetTextColor(RGB(50,50,50));
-				for(unsigned int n=0; n<m_vecTitle.size(); n++)
-				{
-					strText += m_vecTitle[n].c_str();
-					//strText += L"\r\n";
-				}
+				m_PlazaViewItem.SetTopNewsMsg(strText);
 				m_WndTopNews.SetTopNews(strText);
 
-				int nLength = strText.GetLength()/15;
-				m_nNewsHeight = nLength*17;
-				CRect rcClient;
-				GetClientRect(rcClient);
-				m_nTop = rcClient.Height() - m_nNewsHeight-300;
-				CRect Rct(16,362,235,362+400);
 
-				if(m_bGame)
-					InvalidateRect(&Rct);
-
-				GridCtrlInit();
+//				GridCtrlInit();
 				return true;
 			}
 		case SUB_GP_QUERY_TIME_RET:
@@ -990,6 +1237,7 @@ bool CPlatformFrame::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD 
 				{
 					ShellExecute(NULL,TEXT("OPEN"),pGetKefuUrlRet->s_t_desc,NULL,NULL,SW_NORMAL);
 				}
+				return true;
 			}
 		case SUB_GP_ZHUANHUAN_RET:
 			{
@@ -1256,28 +1504,41 @@ BOOL CPlatformFrame::PreTranslateMessage(MSG * pMsg)
 
 	return __super::PreTranslateMessage(pMsg);
 }
+ #include <Sensapi.h>
+ #pragma comment(lib, "Sensapi.lib")
 void CPlatformFrame::OnTimer(UINT_PTR nIDEvent)
 {
+	//刷新新闻公告的滚动文字
 	if(TimerNews == nIDEvent)
 	{
 		m_nNewsYPos -= 290;
 		m_nreduce += 1;
-		KillTimer(TimerNews);
+//		KillTimer(TimerNews);
 		CRect Rct(16,362,235,362+400);
 		if(m_bGame)
 			InvalidateRect(&Rct);
 
+		if(m_PlazaViewItem.IsWindowVisible())
+		{
+			CRect rr(110, 0, 1000, 50);
+			m_PlazaViewItem.InvalidateRect(&rr);
+		}
 	}
 	else if(TimerLuckyNum == nIDEvent)
 	{
+
 		SendToServer(8);
+		//SendToServer(11);
 	}
 	else if(TimerNews1 == nIDEvent)
 	{
 		//SetTimer(TimerNews,50,NULL);
+		//TOP news；排行榜s
+		SendToServer(1);
 	}
 	else if (TimerZhunBeiData == nIDEvent)
 	{
+
 		SendToServer(5);
 		//获取开奖数据
 		//AfxBeginThread(GetLuckNumber, this);
@@ -1287,12 +1548,70 @@ void CPlatformFrame::OnTimer(UINT_PTR nIDEvent)
 			theTimeCS.Lock();
 			theTime += CTimeSpan(0, 0, 0, 1);
 			theTimeCS.Unlock();
+			DWORD dw;
+
+			if(!IsNetworkAlive(&dw))
+			{
+				if(m_bShowNetAlive)
+				{
+					m_bShowNetAlive=false;
+					DWORD const e = GetLastError();
+					m_btNet.EnableWindow(FALSE);
+
+					SetTimer(TimerReconnect,1000,NULL);
+
+
+					if(!m_bLogonFail)
+					{
+						m_bLogonFail = true;
+						m_DlgStatus.ShowStatusWindow(L"正在重新连接远程服务器....");
+					}
+
+					if( e == ERROR_SUCCESS)
+
+					{
+
+						CInformation Information(this);
+						Information.ShowMessageBox(L"没有网络连接!",MB_ICONWARNING,4);
+
+
+					}
+
+					else
+					{
+						CInformation Information(this);
+						Information.ShowMessageBox(L"网络连接失败!",MB_ICONWARNING,4);
+
+
+
+					}
+
+				}
+			}
+			else 
+			{
+				m_bLogonFail=false;
+				if(!m_bShowNetAlive)
+				{
+					m_DlgStatus.HideStatusWindow();
+					m_bShowNetAlive=true;
+					CInformation Information(this);
+					Information.ShowMessageBox(L"网络已连接",MB_ICONWARNING,4);
+
+				}
+
+			}
+
 
 	}
 	else if(55555 == nIDEvent)
 	{
 		KillTimer(nIDEvent);
 		OnClose();
+	}
+	else if(TimerZnx == nIDEvent)
+	{
+		SendToServer(12);
 	}
 	else if(TimerReconnect == nIDEvent)
 	{
@@ -1317,6 +1636,8 @@ void CPlatformFrame::OnTimer(UINT_PTR nIDEvent)
 
 	__super::OnTimer(nIDEvent);
 }
+
+
 LRESULT CPlatformFrame::ReturnTouzhu(WPARAM wParam, LPARAM lParam)
 {
 	OnRefreshYue(0,0);
@@ -1327,16 +1648,19 @@ LRESULT CPlatformFrame::ReturnTouzhu(WPARAM wParam, LPARAM lParam)
 	CRect rcClient;
 	GetClientRect(rcClient);
 	RectifyControl(rcClient.Width(),rcClient.Height());
-	m_dlgUserAccount.ShowWindow(SW_HIDE);
-	m_dlgHuiyuan.ShowWindow(SW_HIDE);
+	//m_dlgUserAccount.ShowWindow(SW_HIDE);
+	//m_dlgHuiyuan.ShowWindow(SW_HIDE);
 	m_WndUserInfoCtrl.ShowWindow(SW_SHOW);
-	m_Publicizeurl.ShowWindow(SW_SHOW);
+	//m_Publicizeurl.ShowWindow(SW_SHOW);
+	//m_Publicizeurl.ShowWindow(SW_HIDE);
+
 	m_Grid.ShowWindow(SW_HIDE);
 	m_WndGameTypeCtrl.ShowWindow(SW_HIDE);
-	m_dlgChongzhi.ShowWindow(SW_HIDE);
-	m_dlgQukuan.ShowWindow(SW_HIDE);
-	m_dlgHuodong.ShowWindow(SW_HIDE);
-	m_dlgTouZhu.ShowWindow(SW_HIDE);
+	//m_dlgChongzhi.ShowWindow(SW_HIDE);
+	//m_dlgQukuan.ShowWindow(SW_HIDE);
+	//m_dlgHuodong.ShowWindow(SW_HIDE);
+	//m_dlgTouZhu.ShowWindow(SW_HIDE);
+	//m_dlgPlatformMessage.ShowWindow(SW_HIDE);
 	m_bGame=true;
 	CRect Rct(16,362,235,362+400);
 	if(m_bGame)
@@ -1350,6 +1674,23 @@ LRESULT CPlatformFrame::ReleaseFace(WPARAM wParam, LPARAM lParam)
 	m_WndUserInfoCtrl.ReleaseFace();
 	return true;
 }
+LRESULT CPlatformFrame::ShowMapList(WPARAM wParam, LPARAM lParam)
+{
+	m_qmTab.ShowWindow(SW_SHOW);
+	m_btHome.ShowWindow(SW_SHOW);
+	m_Publicizeurl.ShowWindow(SW_HIDE);
+	m_btn_go_website.ShowWindow(SW_HIDE);
+	return true;
+}
+LRESULT CPlatformFrame::OnQtmListClicked(WPARAM wParam, LPARAM lParam)
+{
+	WORD wKindID = (WORD)lParam;
+
+	//m_WndUserInfoCtrl.ReleaseFace();
+
+	m_PlazaViewItem.OnButtonEnterKind(wKindID);
+	return true;
+}
 //命令函数
 BOOL CPlatformFrame::OnCommand(WPARAM wParam, LPARAM lParam)
 {
@@ -1359,6 +1700,38 @@ BOOL CPlatformFrame::OnCommand(WPARAM wParam, LPARAM lParam)
 	//功能按钮
 	switch (nCommandID)
 	{
+	case IDC_GO_WEBSITE:
+		{
+			
+			CString strURL = m_MissionLogon.GetWebSiteURL();
+			if(!strURL.IsEmpty())
+			{
+				ShellExecute(NULL,TEXT("OPEN"),strURL,NULL,NULL,SW_NORMAL);
+			}
+			break;
+		}
+	case IDC_NOTICE:
+		{
+			TCHAR szTodayURL[126]={0};
+			//工作目录
+			TCHAR szDirectory[MAX_PATH]=TEXT("");
+			CWHService::GetWorkDirectory(szDirectory,CountArray(szDirectory));
+
+			//构造路径
+			TCHAR szFileName[MAX_PATH]=TEXT("");
+			_sntprintf(szFileName,CountArray(szFileName),TEXT("%s\\GamePlaza.ini"),szDirectory);
+
+			//读取配置
+			CWHIniData IniData;
+			IniData.SetIniFilePath(szFileName);
+
+			IniData.ReadEncryptString(TEXT("PlazaUrl"),TEXT("PlazaNotice"),TEXT("http://192.168.0.105/WinFromBanner/notices.aspx"),szTodayURL,CountArray(szTodayURL));
+
+			CDlgBrowser dlgBrowser;
+			dlgBrowser.CreateBrowserControl(TEXT("最新公告"),szTodayURL,CSize(802,503));
+
+			return true;
+		}
 	case IDC_HOME:
 		{
 			OnRefreshYue(0,0);
@@ -1367,19 +1740,23 @@ BOOL CPlatformFrame::OnCommand(WPARAM wParam, LPARAM lParam)
 			CRect rcClient;
 			GetClientRect(rcClient);
 			RectifyControl(rcClient.Width(),rcClient.Height());
-
-			m_PlazaViewItem.ShowTypeItemView();
-			m_dlgUserAccount.ShowWindow(SW_HIDE);
-			m_dlgHuiyuan.ShowWindow(SW_HIDE);
+			m_btHome.ShowWindow(SW_HIDE);
+			//m_PlazaViewItem.ShowTypeItemView();
+			//m_dlgUserAccount.ShowWindow(SW_HIDE);
+			//m_dlgHuiyuan.ShowWindow(SW_HIDE);
 			m_WndUserInfoCtrl.ShowWindow(SW_SHOW);
-			m_Publicizeurl.ShowWindow(SW_SHOW);
+
+			//m_Publicizeurl.ShowWindow(SW_SHOW);
+			m_qmTab.ShowWindow(SW_HIDE);
+			m_btn_go_website.ShowWindow(SW_SHOW);
 			m_Grid.ShowWindow(SW_HIDE);
 			//m_WndGameTypeCtrl.ShowWindow(SW_SHOW);
 			m_WndGameTypeCtrl.ShowWindow(SW_HIDE);
-			m_dlgChongzhi.ShowWindow(SW_HIDE);
-			m_dlgQukuan.ShowWindow(SW_HIDE);
-			m_dlgHuodong.ShowWindow(SW_HIDE);
-			m_dlgTouZhu.ShowWindow(SW_HIDE);
+			//m_dlgChongzhi.ShowWindow(SW_HIDE);
+			//m_dlgQukuan.ShowWindow(SW_HIDE);
+			//m_dlgHuodong.ShowWindow(SW_HIDE);
+			//m_dlgTouZhu.ShowWindow(SW_HIDE);
+			//m_dlgPlatformMessage.ShowWindow(SW_HIDE);
 			m_bGame=true;
 			m_PlazaViewItem.ResetRecordTypeKind();
 			CRect Rct(16,362,235,362+400);
@@ -1403,6 +1780,17 @@ BOOL CPlatformFrame::OnCommand(WPARAM wParam, LPARAM lParam)
 		{
 			HINSTANCE hInstance=AfxGetInstanceHandle();
 			m_bSound = !m_bSound;
+			//读取配置文件
+			//工作目录
+			TCHAR szDirectory[MAX_PATH]=TEXT("");
+			CWHService::GetWorkDirectory(szDirectory,CountArray(szDirectory));
+
+			//构造路径
+			TCHAR szFileName[MAX_PATH]=TEXT("");
+			_sntprintf(szFileName,CountArray(szFileName),TEXT("%s\\GamePlaza.ini"),szDirectory);
+			TCHAR szTodayURL[124] = L"";
+			_sntprintf(szTodayURL,CountArray(szTodayURL),TEXT("%d"),m_bSound);
+			WritePrivateProfileString(TEXT("SOUND"),TEXT("IsPlay"),szTodayURL,szFileName);
 			if(m_bSound)
 			{
 				m_btSound.SetButtonImage(IDB_BT_SOUND,hInstance,true,false);
@@ -1411,6 +1799,8 @@ BOOL CPlatformFrame::OnCommand(WPARAM wParam, LPARAM lParam)
 			{
 				m_btSound.SetButtonImage(IDB_BT_MUTE,hInstance,true,false);
 			}
+
+
 			return TRUE;
 		}
 	case IDC_NET:
@@ -1440,22 +1830,16 @@ BOOL CPlatformFrame::OnCommand(WPARAM wParam, LPARAM lParam)
 			}
 
 
-			m_PlazaViewItem.ShowWindow(SW_HIDE);
-			m_dlgUserAccount.ShowWindow(SW_HIDE);
-			m_WndUserInfoCtrl.ShowWindow(SW_HIDE);
-			m_Publicizeurl.ShowWindow(SW_HIDE);
-			m_Grid.ShowWindow(SW_HIDE);
-			m_dlgHuiyuan.ShowWindow(SW_HIDE);
-			m_WndGameTypeCtrl.ShowWindow(SW_HIDE);
-			m_dlgChongzhi.ShowWindow(SW_SHOW);
-			m_cbShowNewsType = 2;
-			CRect rcClient;
-			GetClientRect(rcClient);
-			RectifyControl(rcClient.Width(),rcClient.Height());
 
-			m_dlgQukuan.ShowWindow(SW_HIDE);
-			m_dlgHuodong.ShowWindow(SW_HIDE);
-			m_dlgTouZhu.ShowWindow(SW_HIDE);
+			//CZhangHuDlg dlg;
+			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
+			if(pPlatformFrame!=NULL)
+			{
+				m_dlgUserAccount.m_baseInfoDlg.SetMissionManager(&pPlatformFrame->m_MissionManager);
+					m_dlgUserAccount.SetMissionManager(&pPlatformFrame->m_MissionManager);
+			}
+			m_dlgUserAccount.DoModal();
+			
 
 			m_bGame=false;
 
@@ -1471,22 +1855,30 @@ BOOL CPlatformFrame::OnCommand(WPARAM wParam, LPARAM lParam)
 			}
 
 
-			m_PlazaViewItem.ShowWindow(SW_HIDE);
-			m_dlgUserAccount.ShowWindow(SW_HIDE);
-			m_WndUserInfoCtrl.ShowWindow(SW_HIDE);
-			m_Publicizeurl.ShowWindow(SW_HIDE);
-			m_Grid.ShowWindow(SW_HIDE);
-			m_dlgHuiyuan.ShowWindow(SW_HIDE);
-			m_WndGameTypeCtrl.ShowWindow(SW_HIDE);
-			m_dlgChongzhi.ShowWindow(SW_HIDE);
-			m_dlgQukuan.ShowWindow(SW_SHOW);
-			m_cbShowNewsType = 2;
-			CRect rcClient;
-			GetClientRect(rcClient);
-			RectifyControl(rcClient.Width(),rcClient.Height());
+			//m_PlazaViewItem.ShowWindow(SW_HIDE);
+			//m_dlgUserAccount.ShowWindow(SW_HIDE);
+			//m_WndUserInfoCtrl.ShowWindow(SW_HIDE);
+			//m_Publicizeurl.ShowWindow(SW_HIDE);
+			//m_Grid.ShowWindow(SW_HIDE);
+		//	m_dlgHuiyuan.ShowWindow(SW_HIDE);
+		//	m_WndGameTypeCtrl.ShowWindow(SW_HIDE);
+		//	m_dlgChongzhi.ShowWindow(SW_HIDE);
+		//	m_dlgQukuan.ShowWindow(SW_HIDE);
+			//m_cbShowNewsType = 2;
+// 			CRect rcClient;
+// 			GetClientRect(rcClient);
+// 			RectifyControl(rcClient.Width(),rcClient.Height());
 
-			m_dlgHuodong.ShowWindow(SW_HIDE);
-			m_dlgTouZhu.ShowWindow(SW_HIDE);
+// 			m_dlgHuodong.ShowWindow(SW_HIDE);
+// 			m_dlgTouZhu.ShowWindow(SW_HIDE);
+// 			m_dlgPlatformMessage.ShowWindow(SW_HIDE);
+			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
+			if(pPlatformFrame!=NULL)
+			{
+				m_dlgHuiyuan.m_hyxxDlg.SetMissionManager(&pPlatformFrame->m_MissionManager);
+				m_dlgHuiyuan.SetMissionManager(&pPlatformFrame->m_MissionManager);
+			}
+			m_dlgHuiyuan.DoModal();
 
 			m_bGame=false;
 			return TRUE;
@@ -1499,22 +1891,31 @@ BOOL CPlatformFrame::OnCommand(WPARAM wParam, LPARAM lParam)
 // 				MyMessageBox(L"您点击过于频繁，请稍等片刻！");
 // 				return true;
 // 			}
- 			m_PlazaViewItem.ShowWindow(SW_HIDE);
- 			m_dlgUserAccount.ShowWindow(SW_SHOW);
+// 			m_PlazaViewItem.ShowWindow(SW_HIDE);
+ 			//m_dlgUserAccount.ShowWindow(SW_SHOW);
 			m_cbShowNewsType = 1;
-			CRect rcClient;
-			GetClientRect(rcClient);
-			RectifyControl(rcClient.Width(),rcClient.Height());
+// 			CRect rcClient;
+// 			GetClientRect(rcClient);
+// 			RectifyControl(rcClient.Width(),rcClient.Height());
+// 
+//  			m_WndUserInfoCtrl.ShowWindow(SW_HIDE);
+// 			m_Publicizeurl.ShowWindow(SW_HIDE);
+// 			m_Grid.ShowWindow(SW_HIDE);
+ 			//m_dlgHuiyuan.ShowWindow(SW_HIDE);
+//  			m_WndGameTypeCtrl.ShowWindow(SW_HIDE);
+//  			m_dlgChongzhi.ShowWindow(SW_HIDE);
+//  			m_dlgQukuan.ShowWindow(SW_HIDE);
+//  			m_dlgHuodong.ShowWindow(SW_HIDE);
+// 			m_dlgTouZhu.ShowWindow(SW_HIDE);
+// 			m_dlgPlatformMessage.ShowWindow(SW_HIDE);
 
- 			m_WndUserInfoCtrl.ShowWindow(SW_HIDE);
-			m_Publicizeurl.ShowWindow(SW_HIDE);
-			m_Grid.ShowWindow(SW_HIDE);
- 			m_dlgHuiyuan.ShowWindow(SW_HIDE);
- 			m_WndGameTypeCtrl.ShowWindow(SW_HIDE);
- 			m_dlgChongzhi.ShowWindow(SW_HIDE);
- 			m_dlgQukuan.ShowWindow(SW_HIDE);
- 			m_dlgHuodong.ShowWindow(SW_HIDE);
-			m_dlgTouZhu.ShowWindow(SW_HIDE);
+			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
+			if(pPlatformFrame!=NULL)
+			{
+				m_dlgQukuan.SetMissionManager(&pPlatformFrame->m_MissionManager);
+			}
+			m_dlgQukuan.DoModal();
+
 			m_bGame=false;
 			
 			return TRUE;
@@ -1528,23 +1929,30 @@ BOOL CPlatformFrame::OnCommand(WPARAM wParam, LPARAM lParam)
 				return true;
 			}
 
- 			m_PlazaViewItem.ShowWindow(SW_HIDE);
- 			m_dlgUserAccount.ShowWindow(SW_HIDE);
- 			m_WndUserInfoCtrl.ShowWindow(SW_HIDE);
-			m_Publicizeurl.ShowWindow(SW_HIDE);
-			m_Grid.ShowWindow(SW_HIDE);
- 			m_dlgHuiyuan.ShowWindow(SW_SHOW);
+ 			//m_PlazaViewItem.ShowWindow(SW_HIDE);
+ 			//m_dlgUserAccount.ShowWindow(SW_HIDE);
+ 			//m_WndUserInfoCtrl.ShowWindow(SW_HIDE);
+			//m_Publicizeurl.ShowWindow(SW_HIDE);
+			//m_Grid.ShowWindow(SW_HIDE);
+ 			//m_dlgHuiyuan.ShowWindow(SW_SHOW);
 			m_cbShowNewsType = 1;
-			CRect rcClient;
-			GetClientRect(rcClient);
-			RectifyControl(rcClient.Width(),rcClient.Height());
-
- 			m_WndGameTypeCtrl.ShowWindow(SW_HIDE);
- 			m_dlgChongzhi.ShowWindow(SW_HIDE);
- 			m_dlgQukuan.ShowWindow(SW_HIDE);
- 			m_dlgHuodong.ShowWindow(SW_HIDE);
- 
-			m_dlgTouZhu.ShowWindow(SW_HIDE);
+// 			CRect rcClient;
+// 			GetClientRect(rcClient);
+// 			RectifyControl(rcClient.Width(),rcClient.Height());
+// 
+//  			m_WndGameTypeCtrl.ShowWindow(SW_HIDE);
+ 			//m_dlgChongzhi.ShowWindow(SW_HIDE);
+//  			m_dlgQukuan.ShowWindow(SW_HIDE);
+//  			m_dlgHuodong.ShowWindow(SW_HIDE);
+//  
+// 			m_dlgTouZhu.ShowWindow(SW_HIDE);
+// 			m_dlgPlatformMessage.ShowWindow(SW_HIDE);
+			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
+			if(pPlatformFrame!=NULL)
+			{
+				m_dlgChongzhi.SetMissionManager(&pPlatformFrame->m_MissionManager);
+			}
+			m_dlgChongzhi.DoModal();
 
 			m_bGame=false;
 			return TRUE;
@@ -1557,21 +1965,29 @@ BOOL CPlatformFrame::OnCommand(WPARAM wParam, LPARAM lParam)
 				return true;
 			}
 
-			m_PlazaViewItem.ShowWindow(SW_HIDE);
-			m_dlgUserAccount.ShowWindow(SW_HIDE);
-			m_WndUserInfoCtrl.ShowWindow(SW_HIDE);
-			m_Publicizeurl.ShowWindow(SW_HIDE);
-			m_Grid.ShowWindow(SW_HIDE);
-			m_dlgHuiyuan.ShowWindow(SW_HIDE);
-			m_WndGameTypeCtrl.ShowWindow(SW_HIDE);
-			m_dlgChongzhi.ShowWindow(SW_HIDE);
-			m_dlgQukuan.ShowWindow(SW_HIDE);
-			m_dlgHuodong.ShowWindow(SW_HIDE);
-			m_dlgTouZhu.ShowWindow(SW_SHOW);
+			//m_PlazaViewItem.ShowWindow(SW_HIDE);
+			//m_dlgUserAccount.ShowWindow(SW_HIDE);
+			//m_WndUserInfoCtrl.ShowWindow(SW_HIDE);
+			//m_Publicizeurl.ShowWindow(SW_HIDE);
+			//m_Grid.ShowWindow(SW_HIDE);
+			//m_dlgHuiyuan.ShowWindow(SW_HIDE);
+			//m_WndGameTypeCtrl.ShowWindow(SW_HIDE);
+			//m_dlgChongzhi.ShowWindow(SW_HIDE);
+			//m_dlgQukuan.ShowWindow(SW_HIDE);
+			//m_dlgHuodong.ShowWindow(SW_HIDE);
+			//m_dlgTouZhu.ShowWindow(SW_SHOW);
+			//m_dlgPlatformMessage.ShowWindow(SW_HIDE);
+
 			m_cbShowNewsType = 2;
-			CRect rcClient;
-			GetClientRect(rcClient);
-			RectifyControl(rcClient.Width(),rcClient.Height());
+// 			CRect rcClient;
+// 			GetClientRect(rcClient);
+// 			RectifyControl(rcClient.Width(),rcClient.Height());
+			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
+			if(pPlatformFrame!=NULL)
+			{
+				m_dlgTouZhu.SetMissionManager(&pPlatformFrame->m_MissionManager);
+			}
+			m_dlgTouZhu.DoModal();
 
 			m_bGame=false;
 			return TRUE;
@@ -1584,22 +2000,29 @@ BOOL CPlatformFrame::OnCommand(WPARAM wParam, LPARAM lParam)
 				return true;
 			}
 
-			m_PlazaViewItem.ShowWindow(SW_HIDE);
-			m_dlgUserAccount.ShowWindow(SW_HIDE);
-			m_WndUserInfoCtrl.ShowWindow(SW_HIDE);
-			m_Publicizeurl.ShowWindow(SW_HIDE);
-			m_Grid.ShowWindow(SW_HIDE);
-			m_dlgHuiyuan.ShowWindow(SW_HIDE);
-			m_WndGameTypeCtrl.ShowWindow(SW_HIDE);
-			m_dlgChongzhi.ShowWindow(SW_HIDE);
-			m_dlgQukuan.ShowWindow(SW_HIDE);
-			m_dlgHuodong.ShowWindow(SW_SHOW);
+			//m_PlazaViewItem.ShowWindow(SW_HIDE);
+			//m_dlgUserAccount.ShowWindow(SW_HIDE);
+			//m_WndUserInfoCtrl.ShowWindow(SW_HIDE);
+			//m_Publicizeurl.ShowWindow(SW_HIDE);
+			//m_Grid.ShowWindow(SW_HIDE);
+			//m_dlgHuiyuan.ShowWindow(SW_HIDE);
+		//	m_WndGameTypeCtrl.ShowWindow(SW_HIDE);
+			//m_dlgChongzhi.ShowWindow(SW_HIDE);
+			//m_dlgQukuan.ShowWindow(SW_HIDE);
+			//m_dlgHuodong.ShowWindow(SW_SHOW);
+			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
+			if(pPlatformFrame!=NULL)
+			{
+				m_dlgHuodong.SetMissionManager(&pPlatformFrame->m_MissionManager);
+			}
+			m_dlgHuodong.DoModal();
 			m_cbShowNewsType = 1;
-			CRect rcClient;
-			GetClientRect(rcClient);
-			RectifyControl(rcClient.Width(),rcClient.Height());
-
-			m_dlgTouZhu.ShowWindow(SW_HIDE);
+// 			CRect rcClient;
+// 			GetClientRect(rcClient);
+// 			RectifyControl(rcClient.Width(),rcClient.Height());
+// 
+// 			//m_dlgTouZhu.ShowWindow(SW_HIDE);
+// 			m_dlgPlatformMessage.ShowWindow(SW_HIDE);
 
 			m_bGame=false;
 			return TRUE;
@@ -1654,6 +2077,41 @@ BOOL CPlatformFrame::OnCommand(WPARAM wParam, LPARAM lParam)
 			SendToServer(9);
 			return TRUE;
 
+		}
+	case IDC_MESSAGE:
+		{
+			if( GetTickCount()-m_dwTickCount <100)
+			{
+				MyMessageBox(L"您点击过于频繁，请稍等片刻！");
+				return true;
+			}
+
+			//m_PlazaViewItem.ShowWindow(SW_HIDE);
+			//m_dlgUserAccount.ShowWindow(SW_HIDE);
+			//m_WndUserInfoCtrl.ShowWindow(SW_HIDE);
+			//m_Publicizeurl.ShowWindow(SW_HIDE);
+			//m_Grid.ShowWindow(SW_HIDE);
+			//m_dlgHuiyuan.ShowWindow(SW_HIDE);
+			//m_WndGameTypeCtrl.ShowWindow(SW_HIDE);
+			//m_dlgChongzhi.ShowWindow(SW_HIDE);
+			//m_dlgQukuan.ShowWindow(SW_HIDE);
+			//m_dlgHuodong.ShowWindow(SW_HIDE);
+			//m_dlgTouZhu.ShowWindow(SW_HIDE);
+			//m_dlgPlatformMessage.ShowWindow(SW_SHOW);
+			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
+			if(pPlatformFrame!=NULL)
+			{
+				m_dlgPlatformMessage.SetMissionManager(&pPlatformFrame->m_MissionManager);
+			}
+			m_dlgPlatformMessage.DoModal();
+
+			m_cbShowNewsType = 2;
+// 			CRect rcClient;
+// 			GetClientRect(rcClient);
+// 			RectifyControl(rcClient.Width(),rcClient.Height());
+
+			m_bGame=false;
+			return TRUE;
 		}
 	}
 
@@ -1756,13 +2214,20 @@ VOID CPlatformFrame::RectifyControl(INT nWidth, INT nHeight)
 
 	//移动准备
 	HDWP hDwp=BeginDeferWindowPos(64);
-	UINT uFlags=SWP_NOACTIVATE|SWP_NOCOPYBITS|SWP_NOZORDER;
+	UINT uFlags=SWP_NOACTIVATE|SWP_NOCOPYBITS;		//SWP_NOZORDER
 
 	//控制按钮
-	DeferWindowPos(hDwp,m_btMin,NULL,nWidth-79,3,0,0,uFlags|SWP_NOSIZE);
-	DeferWindowPos(hDwp,m_btClose,NULL,nWidth-48,3,0,0,uFlags|SWP_NOSIZE);
-	DeferWindowPos(hDwp,m_btSound,NULL,nWidth-110,3,0,0,uFlags|SWP_NOSIZE);
+	DeferWindowPos(hDwp,m_btMin,NULL,nWidth-73,3,0,0,uFlags|SWP_NOSIZE);
+	DeferWindowPos(hDwp,m_btClose,NULL,nWidth-43,3,0,0,uFlags|SWP_NOSIZE);
+	DeferWindowPos(hDwp,m_btSound,NULL,nWidth-105,3,0,0,uFlags|SWP_NOSIZE);
 	DeferWindowPos(hDwp,m_btNet,NULL,nWidth-155,3,0,0,uFlags|SWP_NOSIZE);
+
+	//首页
+	DeferWindowPos(hDwp,m_btHome,NULL,nWidth-467, 4,0,0,uFlags|SWP_NOSIZE);
+	DeferWindowPos(hDwp,m_btPlazaMessage,NULL,nWidth-367,4,0,0,uFlags|SWP_NOSIZE);
+	DeferWindowPos(hDwp,m_btPlazaNotice,NULL,nWidth-267,4,0,0,uFlags|SWP_NOSIZE);
+
+	//m_btPlazaMessage.ShowWindow(SW_HIDE);
 	//导航按钮
 	CRect rcNavigation;
 	m_btNavigation[1].GetWindowRect(&rcNavigation);
@@ -1776,12 +2241,11 @@ VOID CPlatformFrame::RectifyControl(INT nWidth, INT nHeight)
 	{
 		INT nIndex=CountArray(m_btNavigation)-i;
 	//	m_btNavigation[i].GetWindowRect(&rcNavigation);
-		INT nXExcursion=nWidth-(rcNavigation.Width()+nSpace)*nIndex-13;
+		INT nXExcursion=nWidth-(rcNavigation.Width()+nSpace)*nIndex-10;
 //		if(i!=0)
 		//	nXExcursion+=3;
 		DeferWindowPos(hDwp,m_btNavigation[i],NULL,nXExcursion,31,0,0,uFlags|SWP_NOSIZE);
 	}
-	DeferWindowPos(hDwp,m_btHome,NULL,nWidth-(rcNavigation.Width()+nSpace)*8-16,31,0,0,uFlags|SWP_NOSIZE);
 
 	//视图位置
 	m_rcViewItem.left=rcSplitter.right+EncircleInfoItemFrame.nLBorder-10;
@@ -1795,35 +2259,35 @@ VOID CPlatformFrame::RectifyControl(INT nWidth, INT nHeight)
 	m_WndGameTypeCtrl.GetControlSize(SizeGameTypeCtrl);
 	if(m_cbShowNewsType == 1)
 	{
-		DeferWindowPos(hDwp,m_WndTopNews,NULL,rcSplitter.right-100,EncircleInfoFrame.nTBorder+EncircleInfoItemFrame.nTBorder-SizeGameTypeCtrl.cy+138,
-			SizeGameTypeCtrl.cx-148+220,24,uFlags);
+		DeferWindowPos(hDwp,m_WndTopNews,NULL,rcSplitter.right-198,EncircleInfoFrame.nTBorder+EncircleInfoItemFrame.nTBorder-SizeGameTypeCtrl.cy+136,
+			SizeGameTypeCtrl.cx-148+135+180,26,uFlags);
 	}
 	else if(m_cbShowNewsType == 2)
 	{
-		DeferWindowPos(hDwp,m_WndTopNews,NULL,rcSplitter.right+64-226,EncircleInfoFrame.nTBorder+EncircleInfoItemFrame.nTBorder-SizeGameTypeCtrl.cy+138,
-			SizeGameTypeCtrl.cx+134,24,uFlags);
+		DeferWindowPos(hDwp,m_WndTopNews,NULL,rcSplitter.right+64-226-33,EncircleInfoFrame.nTBorder+EncircleInfoItemFrame.nTBorder-SizeGameTypeCtrl.cy+136,
+			SizeGameTypeCtrl.cx+160,26,uFlags);
 
 	}
 	else 
 	{
-		DeferWindowPos(hDwp,m_WndTopNews,NULL,rcSplitter.right+62,EncircleInfoFrame.nTBorder+EncircleInfoItemFrame.nTBorder-SizeGameTypeCtrl.cy+138,
-			SizeGameTypeCtrl.cx-92,24,uFlags);
+		DeferWindowPos(hDwp,m_WndTopNews,NULL,rcSplitter.right+62-33,EncircleInfoFrame.nTBorder+EncircleInfoItemFrame.nTBorder-SizeGameTypeCtrl.cy+137,
+			SizeGameTypeCtrl.cx-56,26,uFlags);
 
 	}
 
 
 	//游戏广场
-	DeferWindowPos(hDwp,m_PlazaViewItem,NULL,m_rcViewItem.left+18,m_rcViewItem.top,m_rcViewItem.Width(),m_rcViewItem.Height(),uFlags);
+	DeferWindowPos(hDwp,m_PlazaViewItem,NULL,m_rcViewItem.left+24,m_rcViewItem.top,m_rcViewItem.Width(),m_rcViewItem.Height()+20,uFlags);
 	DeferWindowPos(hDwp,m_WndGameTypeCtrl,NULL,rcSplitter.right+16,EncircleInfoFrame.nTBorder+EncircleInfoItemFrame.nTBorder-SizeGameTypeCtrl.cy+500,
 		SizeGameTypeCtrl.cx,SizeGameTypeCtrl.cy,uFlags);
 	DeferWindowPos(hDwp,m_ServerViewItem,NULL,m_rcViewItem.left,m_rcViewItem.top,m_rcViewItem.Width(),m_rcViewItem.Height(),uFlags);
-	DeferWindowPos(hDwp,m_dlgUserAccount,NULL,0,m_rcViewItem.top,nWidth,m_rcViewItem.Height()+10,uFlags);
-	DeferWindowPos(hDwp,m_dlgHuiyuan,NULL,0,m_rcViewItem.top,nWidth,m_rcViewItem.Height()+10,uFlags);
-	DeferWindowPos(hDwp,m_dlgChongzhi,NULL,0,m_rcViewItem.top,nWidth,m_rcViewItem.Height()+10,uFlags);
-	DeferWindowPos(hDwp,m_dlgQukuan,NULL,0,m_rcViewItem.top,nWidth,m_rcViewItem.Height()+10,uFlags);
+	//DeferWindowPos(hDwp,m_dlgUserAccount,NULL,0,m_rcViewItem.top,nWidth,m_rcViewItem.Height()+10,uFlags);
+	//DeferWindowPos(hDwp,m_dlgHuiyuan,NULL,0,m_rcViewItem.top,nWidth,m_rcViewItem.Height()+10,uFlags);
+	//DeferWindowPos(hDwp,m_dlgChongzhi,NULL,0,m_rcViewItem.top,nWidth,m_rcViewItem.Height()+10,uFlags);
+	//DeferWindowPos(hDwp,m_dlgQukuan,NULL,0,m_rcViewItem.top,nWidth,m_rcViewItem.Height()+10,uFlags);
 	DeferWindowPos(hDwp,m_dlgHuodong,NULL,0,m_rcViewItem.top,nWidth,m_rcViewItem.Height()+10,uFlags);
-	DeferWindowPos(hDwp,m_dlgTouZhu,NULL,0,m_rcViewItem.top,nWidth,m_rcViewItem.Height()+10,uFlags);
-
+	//DeferWindowPos(hDwp,m_dlgTouZhu,NULL,0,m_rcViewItem.top,nWidth,m_rcViewItem.Height()+10,uFlags);
+	//DeferWindowPos(hDwp,m_dlgPlatformMessage,NULL,0,m_rcViewItem.top,nWidth,m_rcViewItem.Height()+10,uFlags);
 	//其他控件
 	DeferWindowPos(hDwp,m_SkinSplitter,NULL,rcSplitter.left,rcSplitter.top,rcSplitter.Width(),rcSplitter.Height(),uFlags);
 	DeferWindowPos(hDwp,m_WndUserInfoCtrl,NULL,EncircleInfoFrame.nLBorder,EncircleInfoFrame.nTBorder+14,rcSplitter.left-EncircleInfoFrame.nLBorder+20,rcUserInfoCtrl.Height(),uFlags);
@@ -1834,9 +2298,22 @@ VOID CPlatformFrame::RectifyControl(INT nWidth, INT nHeight)
 	//DeferWindowPos(hDwp,m_PlatFormNoticePublicize,NULL,238,9,540,18,uFlags);
 	//左下角广告
 	//DeferWindowPos(hDwp,m_PlatFormLeftPublicize,NULL,EncircleInfoFrame.nLBorder+EncircleInfoAffiche.nLBorder-4,EncircleInfoFrame.nTBorder+rcUserInfoCtrl.Height()+EncircleInfoAffiche.nTBorder+nHeight-EncircleInfoAffiche.nTBorder-EncircleInfoAffiche.nBBorder-EncircleInfoFrame.nTBorder-rcUserInfoCtrl.Height()-EncircleInfoFrame.nBBorder+25,197,147,uFlags);
-	DeferWindowPos(hDwp,m_Grid,NULL,EncircleInfoFrame.nLBorder+EncircleInfoAffiche.nLBorder-5,EncircleInfoFrame.nTBorder+rcUserInfoCtrl.Height()+EncircleInfoAffiche.nTBorder+45,rcSplitter.left-EncircleInfoAffiche.nLBorder-EncircleInfoAffiche.nRBorder-EncircleInfoFrame.nLBorder+7,nHeight-42-EncircleInfoAffiche.nTBorder-EncircleInfoAffiche.nBBorder-EncircleInfoFrame.nTBorder-rcUserInfoCtrl.Height()-EncircleInfoFrame.nBBorder,uFlags);
+	//DeferWindowPos(hDwp,m_Grid,NULL,EncircleInfoFrame.nLBorder+EncircleInfoAffiche.nLBorder-5,EncircleInfoFrame.nTBorder+rcUserInfoCtrl.Height()+EncircleInfoAffiche.nTBorder+45,rcSplitter.left-EncircleInfoAffiche.nLBorder-EncircleInfoAffiche.nRBorder-EncircleInfoFrame.nLBorder+7,nHeight-42-EncircleInfoAffiche.nTBorder-EncircleInfoAffiche.nBBorder-EncircleInfoFrame.nTBorder-rcUserInfoCtrl.Height()-EncircleInfoFrame.nBBorder,uFlags);
+	m_Grid.ShowWindow(SW_HIDE);
+	
+
 	DeferWindowPos(hDwp,m_logo,NULL,4,1,229,130,uFlags);
-	DeferWindowPos(hDwp,m_Publicizeurl,NULL,13,nHeight-191,204,166,uFlags);
+	DeferWindowPos(hDwp,m_Publicizeurl,NULL,13,nHeight-191,204,95,uFlags);
+
+	//go to website
+	int cx_screen = GetSystemMetrics(SM_CXFULLSCREEN);
+	int cy_screen = GetSystemMetrics(SM_CYFULLSCREEN);
+
+	int nBtnHeightGo=nHeight-100;
+	if(cy_screen < 768)
+		nBtnHeightGo = nHeight-50;
+	if(m_btn_go_website.GetSafeHwnd())
+		DeferWindowPos(hDwp,m_btn_go_website, HWND_TOP,30, nBtnHeightGo, m_btn_go_website.Width(),m_btn_go_website.Height(),uFlags);
 
 	//结束调整
 	LockWindowUpdate();
@@ -1845,6 +2322,7 @@ VOID CPlatformFrame::RectifyControl(INT nWidth, INT nHeight)
 
 	//更新界面
 	RedrawWindow(NULL,NULL,RDW_ERASE|RDW_INVALIDATE);
+	//m_btn_go_website.Invalidate();
 
 	return;
 }
@@ -1960,8 +2438,8 @@ bool CPlatformFrame::ActiveServerViewItem()
 bool CPlatformFrame::DeleteServerViewItem()
 {
 	//激活判断
-	ASSERT(m_ServerViewItem.m_hWnd!=NULL);
 	if (m_ServerViewItem.m_hWnd==NULL) return false;
+	ASSERT(m_ServerViewItem.m_hWnd!=NULL);
 
 	//销毁房间
 	m_ServerViewItem.DestroyWindow();
@@ -2093,18 +2571,18 @@ VOID CPlatformFrame::OnClose()
 				}
 			case IDC_SWITCH_ACCOUNTS:	//切换帐号
 				{
-					if(m_dlgHuiyuan.IsWindowVisible())
-					{
-						m_dlgHuiyuan.OnShowWindow(false,1);
-					}
-					else if(m_dlgUserAccount.IsWindowVisible())
-					{
-						m_dlgUserAccount.OnShowWindow(false,1);
-					}
-					else if(m_dlgTouZhu.IsWindowVisible())
-					{
-						m_dlgTouZhu.OnShowWindow(false,1);
-					}
+// 					if(m_dlgHuiyuan.IsWindowVisible())
+// 					{
+// 						m_dlgHuiyuan.OnShowWindow(false,1);
+// 					}
+// 					else if(m_dlgUserAccount.IsWindowVisible())
+// 					{
+// 						m_dlgUserAccount.OnShowWindow(false,1);
+// 					}
+// 					if(m_dlgTouZhu.IsWindowVisible())
+// 					{
+// 						m_dlgTouZhu.OnShowWindow(false,1);
+// 					}
 
 					m_WndUserInfoCtrl.ReleaseFace();
 					//投递消息
@@ -2119,7 +2597,7 @@ VOID CPlatformFrame::OnClose()
 
 	}
 
-	//m_MissionManager.DeleteMissionItem(this);
+	m_MissionManager.ConcludeMissionItem(this,false);
 //	m_MissionManager.ClearMissionItem();
 	__super::OnClose();
 }
@@ -2134,7 +2612,7 @@ void CPlatformFrame::Loadweb()
 
 	m_logo.Navigate(strPath +_T("\\logo.html"));
 	m_logo.EnableWindow(FALSE);
-
+//	m_logo.ShowWindow(SW_HIDE);
 	//工作目录
 	TCHAR szDirectory[MAX_PATH]=TEXT("");
 	CWHService::GetWorkDirectory(szDirectory,CountArray(szDirectory));
@@ -2146,10 +2624,14 @@ void CPlatformFrame::Loadweb()
 	TCHAR szUrl[126] = TEXT("");
 	GetPrivateProfileString(TEXT("PlazaUrl"),TEXT("PlazaUrlLbAdd"),TEXT(""),szUrl,CountArray(szUrl),szFileName);
 
-	m_Publicizeurl.Navigate(szUrl);
-
-
-
+	CString strURL = szUrl;
+	if(!strURL.IsEmpty())
+		m_Publicizeurl.Navigate(szUrl);
+	else
+	{
+		m_Publicizeurl.ShowWindow(SW_HIDE);
+		TRACE(TEXT("PlazaUrl IS NULL"));
+	}
 }
 
 
@@ -2185,8 +2667,12 @@ BOOL CPlatformFrame::OnEraseBkgnd(CDC * pDC)
 
 	DrawTopUsers(pBufferDC);
 
+	//CRect rctButtonWebSite(30,rcClient.Height()-100, rcClient.Width(), rcClient.Height());
+	//InvalidateRect(&rctButtonWebSite);
+
 	//绘画界面
 	pDC->BitBlt(0,0,rcClient.Width(),rcClient.Height(),pBufferDC,0,0,SRCCOPY);
+
 
 	return TRUE;
 }
@@ -2245,9 +2731,17 @@ INT CPlatformFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	
 
 	m_logo.Create(NULL,NULL,WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN,rcCreate,this,IDC_WEB_LOGO);
-	m_Publicizeurl.Create(NULL,NULL,WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN,rcCreate,this,IDC_WEB_LB_ADD);
+	m_logo.ShowWindow(SW_HIDE);
+
+	m_Publicizeurl.Create(NULL,NULL,WS_CHILD|WS_CLIPCHILDREN,rcCreate,this,IDC_WEB_LB_ADD);
+	m_Publicizeurl.ShowWindow(SW_HIDE);
 
 	m_WndTopNews.Create(NULL,NULL,WS_VISIBLE|WS_CHILD|WS_CLIPCHILDREN,rcCreate,this,IDC_LAST_TOP_NEWS);
+	m_WndTopNews.ShowWindow(SW_HIDE);
+
+	//打开网页版
+	m_btn_go_website.Create(NULL,  BS_OWNERDRAW|WS_CHILD|WS_CLIPCHILDREN,rcCreate,this,IDC_GO_WEBSITE);
+	m_btn_go_website.ShowWindow(SW_HIDE);
 
 	m_Grid.Create(rcCreate,this,IDC_TOP_NWES);
 	m_WndGameTypeCtrl.ShowWindow(SW_HIDE);
@@ -2264,7 +2758,18 @@ INT CPlatformFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	HINSTANCE hInstance=AfxGetInstanceHandle();
 	m_btMin.SetButtonImage(IDB_BT_MIN,hInstance,true,false);
 	m_btClose.SetButtonImage(IDB_BT_CLOSE,hInstance,true,false);
-	m_btSound.SetButtonImage(IDB_BT_SOUND,hInstance,true,false);
+	TCHAR szDirectory[MAX_PATH]=TEXT("");
+	CWHService::GetWorkDirectory(szDirectory,CountArray(szDirectory));
+
+	//构造路径
+	TCHAR szFileName[MAX_PATH]=TEXT("");
+	_sntprintf(szFileName,CountArray(szFileName),TEXT("%s\\GamePlaza.ini"),szDirectory);
+	int nPlay = GetPrivateProfileInt(TEXT("SOUND"),TEXT("IsPlay"),1,szFileName);
+	m_bSound = (nPlay==1)?true:false;
+	if(nPlay == 1)
+		m_btSound.SetButtonImage(IDB_BT_SOUND,hInstance,true,false);
+	else
+		m_btSound.SetButtonImage(IDB_BT_MUTE,hInstance,true,false);
 	m_btNet.SetButtonImage(IDB_BT_NET,hInstance,true,false);
 
 
@@ -2275,14 +2780,21 @@ INT CPlatformFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	}
 	m_btHome.Create(NULL,WS_CHILD|WS_VISIBLE,rcCreate,this,IDC_HOME);
 	m_btHome.SetButtonImage(IDB_BK_HOME_BTN,hInstance,true,false);
+	m_btPlazaNotice.Create(NULL,WS_CHILD|WS_VISIBLE,rcCreate,this,IDC_NOTICE);				//平台公告
+	m_btPlazaNotice.SetButtonImage(IDB_BK_NOTICE,hInstance,true,false);				
+	m_btPlazaMessage.Create(NULL,WS_CHILD|WS_VISIBLE,rcCreate,this,IDC_MESSAGE);			//邮件信息
+	m_btPlazaMessage.SetButtonImage(IDB_BK_MESSAGE,hInstance,true,false);
+
+	m_btn_go_website.SetImage(CBmpUtil::GetExePath() + _T("skin\\btn_go_website.png"));		//网页版
+	//m_btPlazaMessage.ShowWindow(SW_HIDE);
 	//导航按钮
-	m_btNavigation[0].SetButtonImage(IDB_BK_NAVIGATION1,TEXT("BT_NAVIGATION_1"),hInstance,true,false);
-	m_btNavigation[1].SetButtonImage(IDB_BK_NAVIGATION2,TEXT("BT_NAVIGATION_2"),hInstance,true,false);
-	m_btNavigation[2].SetButtonImage(IDB_BK_NAVIGATION3,TEXT("BT_NAVIGATION_3"),hInstance,true,false);
-	m_btNavigation[3].SetButtonImage(IDB_BK_NAVIGATION4,TEXT("BT_NAVIGATION_4"),hInstance,true,false);
-	m_btNavigation[4].SetButtonImage(IDB_BK_NAVIGATION5,TEXT("BT_NAVIGATION_5"),hInstance,true,false);
-	m_btNavigation[5].SetButtonImage(IDB_BK_NAVIGATION6,TEXT("BT_NAVIGATION_6"),hInstance,true,false);
-	m_btNavigation[6].SetButtonImage(IDB_BK_NAVIGATION7,TEXT("BT_NAVIGATION_7"),hInstance,true,false);
+	m_btNavigation[0].SetButtonImage(IDB_BK_NAVIGATION1,hInstance,true,false);
+	m_btNavigation[1].SetButtonImage(IDB_BK_NAVIGATION2,hInstance,true,false);
+	m_btNavigation[2].SetButtonImage(IDB_BK_NAVIGATION3,hInstance,true,false);
+	m_btNavigation[3].SetButtonImage(IDB_BK_NAVIGATION4,hInstance,true,false);
+	m_btNavigation[4].SetButtonImage(IDB_BK_NAVIGATION5,hInstance,true,false);
+	m_btNavigation[5].SetButtonImage(IDB_BK_NAVIGATION6,hInstance,true,false);
+	m_btNavigation[6].SetButtonImage(IDB_BK_NAVIGATION7,hInstance,true,false);
 
 
 	//游戏列表
@@ -2291,10 +2803,10 @@ INT CPlatformFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	//提示控件
 	m_ToolTipCtrl.Create(this);
 	m_ToolTipCtrl.Activate(TRUE);
-	m_ToolTipCtrl.AddTool(&m_btNavigation[0],TEXT("我要充值"));
-	m_ToolTipCtrl.AddTool(&m_btNavigation[1],TEXT("我要取款"));
-	m_ToolTipCtrl.AddTool(&m_btNavigation[2],TEXT("账号管理"));
-	m_ToolTipCtrl.AddTool(&m_btNavigation[3],TEXT("团队管理"));
+	m_ToolTipCtrl.AddTool(&m_btNavigation[0],TEXT("用户中心"));
+	m_ToolTipCtrl.AddTool(&m_btNavigation[1],TEXT("会员管理"));
+	m_ToolTipCtrl.AddTool(&m_btNavigation[2],TEXT("我要取款"));
+	m_ToolTipCtrl.AddTool(&m_btNavigation[3],TEXT("我要充值"));
 	m_ToolTipCtrl.AddTool(&m_btNavigation[4],TEXT("投注记录"));
 	m_ToolTipCtrl.AddTool(&m_btNavigation[5],TEXT("活动中心"));
 	m_ToolTipCtrl.AddTool(&m_btNavigation[6],TEXT("客服中心"));
@@ -2302,6 +2814,7 @@ INT CPlatformFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_ToolTipCtrl.AddTool(&m_btClose,TEXT("关闭大厅"));
 	m_ToolTipCtrl.AddTool(&m_btSound,TEXT("声音"));
 	m_ToolTipCtrl.AddTool(&m_btNet,TEXT("网络"));
+	m_ToolTipCtrl.AddTool(&m_btn_go_website, TEXT("打开网页版"));
 
 	//注册事件
 	CPlatformEvent * pPlatformEvent=CPlatformEvent::GetInstance();
@@ -2328,9 +2841,20 @@ INT CPlatformFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	rcFrame.left=(rcArce.Width()-SizeRestrict.cx)/2;
 	rcFrame.right=(rcArce.Width()+SizeRestrict.cx)/2;
 	rcFrame.bottom=(rcArce.Height()+SizeRestrict.cy)/2;
+	//这里可以改变主窗口的大小。DAVID.2018.2.27
 	SetWindowPos(NULL,rcFrame.left,rcFrame.top,rcFrame.Width(),rcFrame.Height(),SWP_NOZORDER);
 
+	m_bitmap.LoadBitmap( IDB_BITMAP_BARIMG );
+	m_ImgList.Create( 40, 40, ILC_COLOR32, 3, 1 );
+	m_ImgList.Add( &m_bitmap,  RGB(0,0,0) );
+	CRect rcTab( 7, 362, 223, 716 );
 
+	m_qmTab.CreateWnd( NULL, NULL, NULL, WS_VISIBLE|WS_CHILD, rcTab, this, 22222, NULL );
+	m_qmTab.m_nFlag = QMT_MESSAGE|QMT_CFG_ICON_BIG;
+	m_qmTab.m_uCallbackMessage = WM_QMTAB_CALLBACKMSG;
+	m_qmTab.SetImageList( &m_ImgList );
+
+	m_qmTab.SetTextColor( RGB(0,0,0) );
 
 	//创建分层
 	CRect rcWindow;
@@ -2409,18 +2933,7 @@ VOID CPlatformFrame::OnLButtonDown(UINT nFlags, CPoint Point)
 
 	return;
 }
-LRESULT CPlatformFrame::OnQueryGameResult(WPARAM wParam, LPARAM lParam)
-{
-	return 1;
-}
-//显示菜单框
-LRESULT CPlatformFrame::OnShowMenu(WPARAM wParam, LPARAM lParam)
-{
-	bool bShowMenu = wParam;
-	WORD wShowMenuType = lParam;
-	m_WndGameTypeCtrl.ShowMenu(bShowMenu,wShowMenuType);
-	return 1;
-}
+
 //转换彩币
 LRESULT CPlatformFrame::OnZhuanhuanCaibi(WPARAM wParam, LPARAM lParam)
 {
@@ -2507,7 +3020,7 @@ LRESULT CPlatformFrame::OnTouZhuTishi(WPARAM wParam, LPARAM lParam)
 void CPlatformFrame::ShowXgmm()
 {
 	OnCommand(402,0);
-	m_dlgUserAccount.OnBnClickedBtnModifypwd();
+	//m_dlgUserAccount.OnBnClickedBtnModifypwd();
 }
 //事件消息
 LRESULT CPlatformFrame::OnMessagePlatformEvent(WPARAM wParam, LPARAM lParam)
@@ -2515,6 +3028,13 @@ LRESULT CPlatformFrame::OnMessagePlatformEvent(WPARAM wParam, LPARAM lParam)
 	//事件处理
 	switch (wParam)
 	{
+	case EVENT_USER_EXIT:
+		{
+			 
+			EndDialog(m_pPlatformFrame->GetSafeHwnd(),IDOK);
+
+			return 1;
+		}
 	case EVENT_USER_LOGON:			//登录完成
 		{
 			//显示窗口
@@ -2522,7 +3042,7 @@ LRESULT CPlatformFrame::OnMessagePlatformEvent(WPARAM wParam, LPARAM lParam)
 		//	SetForegroundWindow();
 			BringWindowToTop();
 			m_PlazaViewItem.ShowWindow(SW_SHOW);
-			m_PlazaViewItem.ShowTypeItemView();
+			//m_PlazaViewItem.ShowTypeItemView();
 			m_PlazaViewItem.SetLogonSuccess(true);
 
 			//更新人数
@@ -2533,7 +3053,8 @@ LRESULT CPlatformFrame::OnMessagePlatformEvent(WPARAM wParam, LPARAM lParam)
 			//获取指针
 			CGlobalUnits * pGlobalUnits = (CGlobalUnits *)CGlobalUnits::GetInstance();
 			if(pGlobalUnits==NULL) return 0L;
-			m_tishiDlg.Create(CTiShiDlg::IDD,this);
+			if(m_tishiDlg.GetSafeHwnd() == NULL)
+				m_tishiDlg.Create(CTiShiDlg::IDD,this);
 
 			//用户甜饼			
 			pGlobalUnits->WriteUserCookie();
@@ -2544,6 +3065,7 @@ LRESULT CPlatformFrame::OnMessagePlatformEvent(WPARAM wParam, LPARAM lParam)
 			SendToServer(5);
 			SendToServer(7);
 			SendToServer(8);
+		//	SendToServer(12);
 
 
 		//	m_tishiDlg.SetTiShiMessage(L"1111111111");
@@ -2568,10 +3090,31 @@ LRESULT CPlatformFrame::OnMessagePlatformEvent(WPARAM wParam, LPARAM lParam)
 				}
 			}
 		//	SetTimer(TimerTopNews,300*1000,NULL);
-			
-			SetTimer(TimerZhunBeiData, 300*1000, NULL);
+			//登陆成功 平台公告弹窗
+// 			TCHAR szTodayURL[126]={0};
+// 			//工作目录
+// 			TCHAR szDirectory[MAX_PATH]=TEXT("");
+// 			CWHService::GetWorkDirectory(szDirectory,CountArray(szDirectory));
+// 
+// 			//构造路径
+// 			TCHAR szFileName[MAX_PATH]=TEXT("");
+// 			_sntprintf(szFileName,CountArray(szFileName),TEXT("%s\\GamePlaza.ini"),szDirectory);
+// 
+// 			//读取配置
+// 			CWHIniData IniData;
+// 			IniData.SetIniFilePath(szFileName);
+// 
+// 			IniData.ReadEncryptString(TEXT("PlazaUrl"),TEXT("PlazaNotice"),TEXT("http://192.168.0.105/WinFromBanner/notices.aspx"),szTodayURL,CountArray(szTodayURL));
+// 
+// 			CDlgBrowser dlgBrowser;
+// 			dlgBrowser.CreateBrowserControl(TEXT("最新公告"),szTodayURL,CSize(802,503));
+
+			SetTimer(TimerZhunBeiData, 5*1000, NULL);
 			SetTimer(TimerJiShi, 1000, NULL);
 			SetTimer(TimerLuckyNum, 3000, NULL);
+			//刷新新闻公告
+			SetTimer(TimerNews, 500, NULL);
+			//SetTimer(TimerZnx, 300000, NULL);
 			return 0L;
 		}
 	case EVENT_USER_LOGOUT:			//注销成功
@@ -2579,6 +3122,7 @@ LRESULT CPlatformFrame::OnMessagePlatformEvent(WPARAM wParam, LPARAM lParam)
 			//隐藏窗口
 			ShowWindow(SW_HIDE);
 
+//			m_bInitGameKind=false;				//2018.10.10
 			//关闭房间
 			DeleteServerViewItem();
 
@@ -2618,7 +3162,22 @@ LRESULT CPlatformFrame::OnMessagePlatformEvent(WPARAM wParam, LPARAM lParam)
 
 	return 0L;
 }
-
+//下级翻页
+LRESULT CPlatformFrame::OnTurnPage(WPARAM wParam, LPARAM lParam)
+{
+	int nType = (int)lParam;
+	if( nType==2)
+		m_dlgPlatformMessage.m_dlgSendMessage.SearchUser();
+	else
+		m_dlgPlatformMessage.m_dlgSendMessage.OnTurnPage(wParam,lParam);
+	return 1;
+}
+//下级翻页
+LRESULT CPlatformFrame::OnSelectUser(WPARAM wParam, LPARAM lParam)
+{
+	m_dlgPlatformMessage.m_dlgSendMessage.SelectUser(wParam,lParam);
+	return 1;
+}
 //银行更新
 LRESULT CPlatformFrame::OnMessageInsureUpdate(WPARAM wParam, LPARAM lParam)
 {
@@ -2689,10 +3248,20 @@ void CPlatformFrame::DrawTopUsers(CDC* pDC)
 	m_nTop = 0;//rcAffiche.top+45;
 
 	//m_AfficheEncircle.DrawEncircleFrame(pDC,rcAffiche);
+	//APP 背景图片
+
+
 	CPngImage ImageNews;
 	ImageNews.LoadImage(AfxGetInstanceHandle(),TEXT("BK_FRAME_NEWS"));
-	ImageNews.DrawImage(pDC,rcAffiche.left,rcAffiche.top);
+	if(!ImageNews.IsNull())
+		ImageNews.DrawImage(pDC,rcAffiche.left,rcAffiche.top);
 
+	//APP下载地址
+	CPngImage ImageAppDownURL;
+	ImageAppDownURL.LoadImage(CBmpUtil::GetExePath() + _T("skin\\appdown.png"));
+	if(!ImageAppDownURL.IsNull())
+		ImageAppDownURL.DrawImage(pDC,rcAffiche.left+42,rcAffiche.top+130);
+	
 // 	CRect rcText(24, 407, 190, 362+380);
 // 	
 // 	//pDC->SetTextCharacterExtra(3);
@@ -2786,4 +3355,5 @@ VOID CPlatformFrame::OnMouseMove(UINT nFlags, CPoint Point)
 
 	return;
 }
-
+#pragma pack(pop,  1)
+#pragma pack()

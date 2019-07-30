@@ -81,12 +81,13 @@ bool CGameClientDlg::OnInitGameEngine()
 	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
     Gdiplus::GdiplusStartup(&m_gdiplusToken, &gdiplusStartupInput, NULL);
 	//加载声音
-// 	VERIFY(m_DTSDBackground.Create(TEXT("BACK_GROUND")));
-// 	VERIFY(m_DITDXuanzhuan.Create(TEXT("KCYY")));
-// 	//VERIFY(m_DTSDCheer[0].Create(TEXT("CHEER1")));
-// 	VERIFY(m_DTSDCheer[1].Create(TEXT("CHEER2")));
-// 	VERIFY(m_DTSDCheer[2].Create(TEXT("CHEER3")));
-// 	VERIFY(m_DTSDCheer[3].Create(TEXT("SPEEKSOUNDWAV")));
+ 	VERIFY(m_DTSDBackground.Create(TEXT("BACK_GROUND")));
+ 	VERIFY(m_DITDXuanzhuan.Create(TEXT("KCYY")));
+ 	VERIFY(m_DTSDCheer[0].Create(TEXT("CHEER1")));
+ 	VERIFY(m_DTSDCheer[1].Create(TEXT("CHEER2")));
+ 	VERIFY(m_DTSDCheer[2].Create(TEXT("CHEER3")));
+ 	VERIFY(m_DTSDCheer[3].Create(TEXT("SPEEKSOUNDWAV")));
+
 	m_bAllowBackSound= CGlobalUnits::GetInstance()->m_bAllowSound;
 	if(m_bAllowBackSound)
 	{
@@ -117,7 +118,7 @@ bool CGameClientDlg::OnInitGameEngine()
 }
 
 //重置框架
-	bool CGameClientDlg::OnResetGameEngine()
+bool CGameClientDlg::OnResetGameEngine()
 {
 	//限制信息
 	m_lMeMaxScore=0L;			

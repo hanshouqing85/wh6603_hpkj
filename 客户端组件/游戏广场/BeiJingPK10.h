@@ -19,7 +19,6 @@ class CPlazaViewItem;
 
 #define IDM_LUCKY_NUM_SSC			10001
 #define IDM_SHOW_MENU_SSC				11110								//显示菜单
-#define IDM_CLICKED_TYPE_SSC			11111								//点击游戏
 #define IDM_SHOW_MENU				11112								//显示菜单
 #define IDM_UPDATE_ACCOUNT			11113								//更新玩家资料
 #define IDM_SHOW_XGMM				11117								//修改密码
@@ -62,14 +61,18 @@ public:
 	TCHAR				m_szMD5Haoma[33];
 	HBRUSH hBrush;
 public:
-	void ConnectMainDlg(CPlazaViewItem* luckMeDlg);
+	
 	void FlushZongjine();
 	bool	CheckInput();
 	CImageButton m_btnMoreRecord;
+	CImageButton m_btnQushi;
+
 	COpenRecord						m_DlgOpenRecord;					//更多开奖记录
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
 	afx_msg void OnBnClickedBtnMoreRecord();
+	afx_msg void OnBnClickedBtnQuShi();
+
 	afx_msg void OnPaint();
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
@@ -208,7 +211,9 @@ protected:
 
 	afx_msg void OnBnClickedBtnZhuihao();
 	afx_msg void OnBnClickedBtnTouzhu();
-
+	afx_msg void OnBnClickedBtnTouzhuOneKey();
+	void OnBnClickedBtnTouzhuQ();
+	
 	afx_msg void OnBnClickedBtnDelSel();
 	afx_msg void OnBnClickedBtnClsList();
 
@@ -237,9 +242,7 @@ protected:
 	WORD							m_wViewItemDown;					//点击子项
 
 	CFanDian						m_FandianView;						//返点
-	//对象索引
-	WORD GetGameHoverIndex(CPoint MousePoint);
-
+	BYTE m_cbIfTs;
 
 	//鼠标移动
 	VOID OnMouseMove(UINT nFlags, CPoint Point);
@@ -249,9 +252,6 @@ protected:
 	VOID OnLButtonDown(UINT nFlags, CPoint Point);
 	//鼠标离开
 	LRESULT OnMouseLeave(WPARAM wParam, LPARAM lParam);
-// 	//鼠标离开
-// 	LRESULT OnMouseLeave(WPARAM wParam, LPARAM lParam);
-// 
 
 private:
 	long GetKjShjDiff();
@@ -513,29 +513,30 @@ private:
 	int				m_nFrameIndex;				//GIF动画的当前帧数
 	int				m_nFrameCount;				//GIF动画总共帧数
 	//CStatic m_staticDanShi;
-	CEdit m_editDanShiHaoMa;
-	CRichEditCtrl m_richDanshiHaoma;
+	CSkinEditEx		m_editDanShiHaoMa;
+	CRichEditCtrl	m_richDanshiHaoma;
 
-	CImgStatic m_staticWan;
-	CImgStatic m_staticQian;
-	CImgStatic m_staticBai;
-	CImgStatic m_staticShi;
-	CImgStatic m_staticGe;
-	CImgStatic m_staticLiu;
-	CImgStatic m_staticQi;
-	CImgStatic m_staticBa;
-	CImgStatic m_staticJiu;
-	CImgStatic m_staticShi10;
+	CImgStatic		m_staticWan;
+	CImgStatic		m_staticQian;
+	CImgStatic		m_staticBai;
+	CImgStatic		m_staticShi;
+	CImgStatic		m_staticGe;
+	CImgStatic		m_staticLiu;
+	CImgStatic		m_staticQi;
+	CImgStatic		m_staticBa;
+	CImgStatic		m_staticJiu;
+	CImgStatic		m_staticShi10;
 
-	CImageButton m_btnDelSel;
-	CImageButton m_btnClsList;
-	CImageButton m_btnTouZhu;
-	CImageButton m_btnZhuiHao;
+	CImageButton	m_btnDelSel;
+	CImageButton	m_btnClsList;
+	CImageButton	m_btnTouZhu;
+	CImageButton	m_btnZhuiHao;
+	CImageButton	m_btnTouZhuOnekey;
 
-	CSkinEditEx m_editBeiTou;
+	CSkinEditEx		m_editBeiTou;
 
-	CImageButton m_btnChqAdd;
-	CTextButton m_btnLock;
+	CImageButton	m_btnChqAdd;
+	CTextButton		m_btnLock;
 
 	CTextButton m_btnHouSanZhiXuan;
 	CTextButton m_btnQianSanZhiXuan;
@@ -601,7 +602,7 @@ private:
 	CImgRioButton m_rioZsHunhe;				//中三混合
 	CImgRioButton m_rioHsHunhe;				//后三混合
 
-	CStatic		m_staticHunheTip;
+	CImgStatic		m_staticHunheTip;
 
 	//大小单双
 	CNumerButton m_btnDaGUAN;
@@ -663,7 +664,6 @@ private:
 	afx_msg void OnBnClickedChkShi();
 	afx_msg void OnBnClickedChkge();
 	afx_msg void OnBnClickedBtnLock();
-	CPlazaViewItem* m_pLuckMeDlg;
 	afx_msg void OnBnClickedBeiTouJia();
 	afx_msg void OnBnClickedBeiTouJian();
 	CImageButton m_btnBeiTouJia;

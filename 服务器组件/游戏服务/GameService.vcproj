@@ -241,7 +241,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../../../运行/Debug/Unicode/GameServiceD.dll"
+				OutputFile="../../运行/Debug/Unicode/GameServiceD.dll"
 				LinkIncremental="2"
 				ModuleDefinitionFile=".\GameServiceD.def"
 				GenerateDebugInformation="true"
@@ -272,7 +272,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="mkdir ..\..\..\发布组件\服务器组件\Debug\Unicode&#x0D;&#x0A;copy /y ..\..\..\运行\Debug\Unicode\$(TargetFileName) ..\..\..\发布组件\服务器组件\Debug\Unicode\$(TargetFileName)&#x0D;&#x0A;"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration

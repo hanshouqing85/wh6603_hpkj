@@ -29,7 +29,14 @@ Message::~Message() {
 bool Message::LoadGameResource() {
   hgeResourceManager* resource_manager = GameManager::GetInstance().GetResourceManager();
   spr_message_bg_ = resource_manager->GetSprite("message_bg");
-  message_bg_color_ = spr_message_bg_->GetColor();
+  if(spr_message_bg_ == NULL)
+  {
+//	spr_message_bg_  = new hgeSprite();
+  }
+  if(spr_message_bg_)
+		message_bg_color_ = spr_message_bg_->GetColor();
+  else
+	  message_bg_color_=0;
   return spr_message_bg_ != NULL;
 }
 

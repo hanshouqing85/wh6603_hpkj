@@ -10,7 +10,7 @@ using namespace MSXML2;
 
 #define IDC_LOGON_LOGO 1112615
 //////////////////////////////////////////////////////////////////////////////////
-
+int CDlgLogon::m_nLoadServer = 0;
 //圆角大小
 #define ROUND_CX					7									//圆角宽度
 #define ROUND_CY					7									//圆角高度
@@ -55,6 +55,7 @@ BEGIN_MESSAGE_MAP(CDlgLogon, CDialog)
 	ON_BN_CLICKED(IDC_KEFU, OnBnClickedKeFu)
 	ON_BN_CLICKED(IDC_RUBBISH, OnBnClickedDelete)
 	ON_CBN_SELCHANGE(IDC_ACCOUNTS, OnSelchangeAccounts)
+	ON_CBN_SELCHANGE(IDC_LOGON_SERVER, OnSelchangeServer)
 
 	//ON_EN_CHANGE(IDC_ACCOUNTS, OnEnChangeAccounts)
 	ON_WM_LBUTTONUP()
@@ -166,6 +167,7 @@ CDlgLogon::CDlgLogon() : CDialog(IDD_DLG_LOGON)
 	m_szPassword[0]=0;
 	m_szLogonServer[0]=0;
 	m_bCreatePlazaview = true;
+	m_nLoadServer = 0;
 	//创建画刷
 	m_brBrush.CreateSolidBrush(RGB(215,223,228));
 
@@ -175,6 +177,8 @@ CDlgLogon::CDlgLogon() : CDialog(IDD_DLG_LOGON)
 //析构函数
 CDlgLogon::~CDlgLogon()
 {
+	m_Destroyed=true;		////	已经销毁的标识
+
 	//销毁资源
 	if (m_brBrush.GetSafeHandle()!=NULL)
 	{
@@ -205,6 +209,39 @@ VOID CDlgLogon::DoDataExchange(CDataExchange * pDX)
 	DDX_Control(pDX, IDC_PASSWORD, m_PasswordControl);
 	DDX_Control(pDX, IDC_LOGON_SERVER, m_ServerControl);
 }
+VOID CDlgLogon::OnSelchangeServer()
+{
+	if(m_ServerControl.GetSafeHwnd())
+		m_nLoadServer = m_ServerControl.GetCurSel();
+	else
+		return;
+
+
+	//读取配置文件
+	//工作目录
+	TCHAR szDirectory[MAX_PATH]=TEXT("");
+	CWHService::GetWorkDirectory(szDirectory,CountArray(szDirectory));
+
+	//构造路径
+	TCHAR szFileName[MAX_PATH]=TEXT("");
+	_sntprintf(szFileName,CountArray(szFileName),TEXT("%s\\GamePlaza.ini"),szDirectory);
+
+	//读取配置
+	CWHIniData IniData;
+	IniData.SetIniFilePath(szFileName);
+
+	TCHAR szTodayURL[124] = L"";
+	TCHAR szKeyBoard[124]=L"";
+	_sntprintf(szKeyBoard,CountArray(szKeyBoard),_T("LogonServer%d"),m_nLoadServer);
+	IniData.ReadEncryptString(TEXT("PlazaUrl"),szKeyBoard,TEXT(""),szTodayURL,CountArray(szTodayURL));
+	CString strLog;
+
+	strLog.Format(L"PINGSECOND  CurSel: %s ",szTodayURL);
+	OutputDebugString(strLog);
+
+	_sntprintf(m_szLogonServer,CountArray(m_szLogonServer),_T("%s"),szTodayURL);
+}
+
 //选择改变
 VOID CDlgLogon::OnSelchangeAccounts()
 {
@@ -251,7 +288,9 @@ BOOL CDlgLogon::OnInitDialog()
 	//设置标题
 	SetWindowText(TEXT("用户登录"));	
 
-	//注册表记录一下当前SERVER
+	m_Destroyed=false;
+
+//注册表记录一下当前SERVER
 // 	CWHRegKey RegServerAddr;
 // 	if(RegServerAddr.OpenRegKey(TEXT("CurrentLogonServer"), false))
 // 	{
@@ -275,7 +314,7 @@ BOOL CDlgLogon::OnInitDialog()
 
 	CRect rcBtn(0,0,0,0);
 	m_btForgetPass.Create(NULL,WS_CHILD|WS_VISIBLE,rcBtn,this,IDC_FORGET_PASS);
-	m_btKeFu.Create(NULL,WS_CHILD|WS_VISIBLE,rcBtn,this,IDC_KEFU);
+//	m_btKeFu.Create(NULL,WS_CHILD|WS_VISIBLE,rcBtn,this,IDC_KEFU);
 	m_btDeleteRecord.Create(NULL,WS_CHILD|WS_VISIBLE,rcBtn,this,IDC_RUBBISH);
 	//边框设置
 	m_ServerControl.SetDrawBorad(false);
@@ -284,19 +323,34 @@ BOOL CDlgLogon::OnInitDialog()
 	m_AccountsControl.SetDrawBorad(false);
 	m_AccountsControl.SetRenderImage(false);
 
-	m_PasswordControl.SetEnableColor(RGB(254,254,254),RGB(40,29,27),RGB(40,29,27));
-	m_PasswordControl.SetWindowPos(NULL,263,148,188,20,SWP_NOZORDER|SWP_NOREDRAW);
-	m_edAccounts.SetWindowPos(NULL,320,100,124,20,SWP_NOZORDER|SWP_NOREDRAW);
+	m_PasswordControl.SetEnableColor(RGB(254,254,254),RGB(41,51,97),RGB(41,51,97));
+	if(m_edAccounts.GetSafeHwnd())
+	{
+		m_edAccounts.SetWindowPos(NULL,320,100,124,20,SWP_NOZORDER|SWP_NOREDRAW);
+		m_edAccounts.SetFont(&m_Font);
+
+		m_edAccounts.SetEnableColor(RGB(0,0,0),RGB(255,255,0),RGB(255,255,255));
+		m_edAccounts.ShowWindow(SW_HIDE);
+	}
+
 	m_PasswordControl.SetFont(&m_Font);
-	m_edAccounts.SetEnableColor(RGB(0,0,0),RGB(255,255,255),RGB(255,255,255));
-	m_edAccounts.ShowWindow(SW_HIDE);
-	//m_edAccounts.SetFont(&m_Font);
-	m_AccountsControl.SetBackColor(RGB(73,62,61));
+	m_AccountsControl.SetBackColor(RGB(41,51,97));
 	m_AccountsControl.SetFont(&m_Font);
-	if(m_AccountsControl.m_hWnd)m_AccountsControl.MoveWindow(128+22+137,100,180+28,20,SWP_NOZORDER|SWP_NOMOVE);
-	m_ServerControl.SetBackColor(RGB(73,62,61));
+	m_ServerControl.SetBackColor(RGB(41,51,97));
 	m_ServerControl.SetFont(&m_Font);
-	if(m_ServerControl.m_hWnd)m_ServerControl.MoveWindow(128+22+137,54,180+28,20,SWP_NOZORDER|SWP_NOMOVE);
+	
+	
+	//m_ServerControl:登录地址、IP
+	if(m_ServerControl.GetSafeHwnd())
+		m_ServerControl.SetWindowPos(NULL, 88+20,122,180,28 +200,SWP_NOZORDER|SWP_NOREDRAW);
+	//登录账号
+	if(m_AccountsControl.GetSafeHwnd())
+		m_AccountsControl.SetWindowPos(NULL, 88+16,168,180,28 + 200,SWP_NOZORDER|SWP_NOREDRAW);
+
+	//登录密码框
+	if(m_PasswordControl.GetSafeHwnd())
+		m_PasswordControl.SetWindowPos(NULL,88,212,188,28,SWP_NOZORDER|SWP_NOREDRAW);
+
 
 	TCHAR szPlatformUrl1[124] = L"";
 
@@ -309,7 +363,7 @@ BOOL CDlgLogon::OnInitDialog()
 	TCHAR szFileName[MAX_PATH]=TEXT("");
 	_sntprintf(szFileName,CountArray(szFileName),TEXT("%s\\GamePlaza.ini"),szDirectory);
 
-	for(int i = 0;i < 19;i++)
+	for(int i = 0;i < 10;i++)
 	{
 		TCHAR szKey[33] = TEXT("");
 
@@ -321,25 +375,60 @@ BOOL CDlgLogon::OnInitDialog()
 		m_ServerControl.AddString(szDesc);
 
 	}
-	//设置按钮
+
+	TCHAR szPlatformUrl[124] = L"";
+	//TCHAR szPlatformUrl1[124] = L"";
+
+
+	//读取配置
+	CWHIniData IniData;
+	IniData.SetIniFilePath(szFileName);
+
+	// 			CTime time = CTime::GetCurrentTime();
+	TCHAR szTodayURL[124] = L"";
+	int nUrlID = 0;//GetPrivateProfileInt(time.Format(L"%Y-%m-%d"),TEXT("TodayURLID"),0,szFileName);
+	// 			int nUrlCanUse = GetPrivateProfileInt(time.Format(L"%Y-%m-%d"),TEXT("TodayCanUse"),0,szFileName);
+	int nCur = 0;
+	srand((DWORD)time(NULL));
+	nCur = rand()%5;
+	m_nLoadServer = nCur;
+	m_ServerControl.SetCurSel(nCur);
+
+	TCHAR szKeyBoard[124]=L"";
+	_sntprintf(szKeyBoard,CountArray(szKeyBoard),_T("LogonServer%d"),nCur);
+	IniData.ReadEncryptString(TEXT("PlazaUrl"),szKeyBoard,TEXT(""),szTodayURL,CountArray(szTodayURL));
+	_sntprintf(m_szLogonServer,CountArray(m_szLogonServer),_T("%s"),szTodayURL);
+
+	//设置关闭按钮
 	HINSTANCE hInstance=AfxGetInstanceHandle();
-	m_btQuit.SetButtonImage(IDB_BT_LOGON_QUIT,TEXT("BT_LOGON_QUIT"),hInstance,false,false);
+	m_btQuit.SetButtonImage(IDB_BT_LOGON_QUIT,hInstance,true,false);
 	m_btQuit.GetClientRect(rcBtn);
-	m_btQuit.SetWindowPos(NULL,505,5,rcBtn.Width(),rcBtn.Height(),SWP_NOZORDER|SWP_NOSIZE);
+	m_btQuit.SetWindowPos(NULL,500,11,rcBtn.Width(),rcBtn.Height(),SWP_NOZORDER|SWP_NOSIZE);
 
-	m_btEnter.SetButtonImage(IDB_BT_LOGON,TEXT("BT_LOGON_ENTER"),hInstance,false,false);
+	//登录按钮
+	m_btEnter.SetButtonImage(IDB_BT_LOGON,hInstance,false,false);
+	m_btEnter.SetWindowPos(NULL,59,306,rcBtn.Width(),rcBtn.Height(),SWP_NOZORDER|SWP_NOSIZE);
 
-	m_btEnter.SetWindowPos(NULL,254,216,rcBtn.Width(),rcBtn.Height(),SWP_NOZORDER|SWP_NOSIZE);
-	m_btForgetPass.SetButtonImage(IDB_BTN_FORGET_PASS,TEXT("BTN_FORGET_PASS"),hInstance,false,false);
+	//记住密码
+	m_RemPwdControl.LoadCheckImage(TEXT("BT_CHECK_BUTTON_BACK"));
+	m_RemPwdControl.SetControlBenchmark(20,257);
+	m_RemPwdControl.SetParentWndSink(this);
+
+	//忘记密码
+	m_btForgetPass.SetButtonImage(IDB_BTN_FORGET_PASS,hInstance,true,false);
 	m_btForgetPass.GetClientRect(rcBtn);
+	m_btForgetPass.SetWindowPos(NULL,265,257,rcBtn.Width(),rcBtn.Height(),SWP_NOZORDER|SWP_NOSIZE);
 
-	m_btForgetPass.SetWindowPos(NULL,442,185,rcBtn.Width(),rcBtn.Height(),SWP_NOZORDER|SWP_NOSIZE);
-	m_btKeFu.SetButtonImage(IDB_KEFU,hInstance,false,false);
-	m_btKeFu.GetClientRect(rcBtn);
-	m_btKeFu.SetWindowPos(NULL,28,221,rcBtn.Width(),rcBtn.Height(),SWP_NOZORDER|SWP_NOSIZE);
-	m_btDeleteRecord.SetButtonImage(IDB_BT_RUBBISH,hInstance,false,false);
+
+	//客服按钮
+//	m_btKeFu.SetButtonImage(IDB_BTN_KEFU,hInstance,true,false);
+//	m_btKeFu.GetClientRect(rcBtn);
+//	m_btKeFu.SetWindowPos(NULL,444,193,rcBtn.Width(),rcBtn.Height(),SWP_NOZORDER|SWP_NOSIZE);
+
+	//删除账户历史记录
+	m_btDeleteRecord.SetButtonImage(IDB_BT_RUBBISH,hInstance,true,false);
 	m_btDeleteRecord.GetClientRect(rcBtn);
-	m_btDeleteRecord.SetWindowPos(NULL,509,99,rcBtn.Width(),rcBtn.Height(),SWP_NOZORDER|SWP_NOSIZE);
+	m_btDeleteRecord.SetWindowPos(NULL,300,170,rcBtn.Width(),rcBtn.Height(),SWP_NOZORDER|SWP_NOSIZE);
 	//CRect rcCreate(0,0,0,0);
 
 	//Loadweb();
@@ -356,28 +445,10 @@ BOOL CDlgLogon::OnInitDialog()
 	//CGlobalUnits * pGlobalUnits = (CGlobalUnits *)CGlobalUnits::GetInstance();
 	//ASSERT(pGlobalUnits!=NULL);
 
-	//记住密码
-	m_RemPwdControl.LoadCheckImage(TEXT("BT_CHECK_BUTTON_BACK"));
-	m_RemPwdControl.SetControlBenchmark(260,187);
-	m_RemPwdControl.SetParentWndSink(this);
 
 	//工作目录
 	//TCHAR szDirectory[MAX_PATH]=TEXT("");
 	//CWHService::GetWorkDirectory(szDirectory,CountArray(szDirectory));
-
-	//构造地址
-	//TCHAR szBillUrl[256]=TEXT("");
-	//_sntprintf(szBillUrl,CountArray(szBillUrl),TEXT("%s\\Web\\LobbyTopNotice.htm"),szDirectory);
-
-	//设置广告
-	//if(pGlobalUnits!=NULL && pGlobalUnits->LocalFileExist(szBillUrl))
-	//{
-// 		m_PlatformPublicize.SetBackColor(RGB(43,93,128));
-// 		m_PlatformPublicize.Navigate(szPlatformTopPublicize);
-// 		m_PlatformPublicize.SetWindowPos(NULL,43,9,SizeWindow.cx-87,18,SWP_NOZORDER|SWP_NOCOPYBITS|SWP_NOACTIVATE);
-	//}
-	//else
-	//	m_PlatformPublicize.SetWindowPos(NULL,43,9,SizeWindow.cx-87,18,SWP_HIDEWINDOW|SWP_NOZORDER|SWP_NOCOPYBITS|SWP_NOACTIVATE);
 
 
 	//配置信息
@@ -396,6 +467,12 @@ BOOL CDlgLogon::OnInitDialog()
 	{
 		//设置焦点
 		m_AccountsControl.SetFocus();
+	}
+
+	//客服底图
+	if(m_png_Kefu.IsNull())
+	{
+		bool bLoaded = m_png_Kefu.LoadImage(AfxGetInstanceHandle(),TEXT("IDB_PNG_BG_KEFU"));
 	}
 
 	//居中窗口
@@ -420,9 +497,9 @@ BOOL CDlgLogon::OnInitDialog()
 	//设置区域
 	SetWindowRgn(RgnWindow,FALSE);
 	CRect rcCreate(0,0,0,0);
-	m_logo.Create(NULL,NULL,WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN,rcCreate,this,IDC_LOGON_LOGO);
+//	m_logo.Create(NULL,NULL,WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN,rcCreate,this,IDC_LOGON_LOGO);
 
-	m_logo.SetWindowPos(NULL,38,34,132,184,SWP_NOACTIVATE|SWP_NOCOPYBITS|SWP_NOZORDER);
+//	m_logo.SetWindowPos(NULL,5,3,149,187,SWP_NOACTIVATE|SWP_NOCOPYBITS|SWP_NOZORDER);
 
 	//分层窗口
 	m_SkinLayered.CreateLayered(this,rcWindow);
@@ -439,8 +516,8 @@ void CDlgLogon::Loadweb()
 	int pos = strPath.ReverseFind('\\'); 
 	strPath = strPath.Left(pos); 
 
-	m_logo.Navigate(strPath +_T("\\logon.html"));
-	m_logo.EnableWindow(FALSE);
+//	m_logo.Navigate(strPath +_T("\\logon.html"));
+//	m_logo.EnableWindow(FALSE);
 }
 
 //消息解释
@@ -463,44 +540,43 @@ VOID CDlgLogon::OnOK()
 
 	//隐藏窗口
 	ShowWindow(SW_HIDE);
-
-	CString strSiteURL;
-	//工作目录
-	TCHAR szDirectory[MAX_PATH]=TEXT("");
-	CWHService::GetWorkDirectory(szDirectory,CountArray(szDirectory));
-	m_strCurrentDir = szDirectory;
-	m_strCurrentDir += L"\\";
-
-	//构造路径
-	TCHAR szFileName[MAX_PATH]=TEXT("");
-	_sntprintf(szFileName,CountArray(szFileName),TEXT("%s\\Update\\update.ini"),szDirectory);
-	//构造地址
-	TCHAR szNavigation[256]=TEXT("");
-
-	GetPrivateProfileString(TEXT("SERVER"),TEXT("SERVER1"),TEXT(""),szNavigation,CountArray(szNavigation),szFileName);
-	strSiteURL = szNavigation;
-	m_strSiteUrl = szNavigation;
-	strSiteURL+=_T("/update/update.xml");
-	m_strSiteUrl+=_T("\\");
-	//EWIN网络 科技
-	if(lstrcmp(AfxGetApp()->m_lpCmdLine,TEXT("UPDATED"))!=0 && CheckVersionUpdate(strSiteURL))
-	{
-		//启动程序
-		CHAR szModuleName[MAX_PATH]={0};
-		GetModuleFileNameA(AfxGetInstanceHandle(), szModuleName, MAX_PATH);
-		PathRemoveFileSpecA(szModuleName);
-		strcat(szModuleName, "\\Update.exe");
-		WinExec(szModuleName, SW_SHOWDEFAULT);
-
-
-		return ;
-
-	}
+// 
+// 	CString strSiteURL;
+// 	//工作目录
+// 	TCHAR szDirectory[MAX_PATH]=TEXT("");
+// 	CWHService::GetWorkDirectory(szDirectory,CountArray(szDirectory));
+// 	m_strCurrentDir = szDirectory;
+// 	m_strCurrentDir += L"\\";
+// 
+// 	//构造路径
+// 	TCHAR szFileName[MAX_PATH]=TEXT("");
+// 	_sntprintf(szFileName,CountArray(szFileName),TEXT("%s\\Update\\update.ini"),szDirectory);
+// 	//构造地址
+// 	TCHAR szNavigation[256]=TEXT("");
+// 
+// 	GetPrivateProfileString(TEXT("SERVER"),TEXT("SERVER1"),TEXT(""),szNavigation,CountArray(szNavigation),szFileName);
+// 	strSiteURL = szNavigation;
+// 	m_strSiteUrl = szNavigation;
+// 	strSiteURL+=_T("/update/update.xml");
+// 	m_strSiteUrl+=_T("\\");
+// 	//EWIN网络 科技
+// 	if(lstrcmp(AfxGetApp()->m_lpCmdLine,TEXT("UPDATED"))!=0 && CheckVersionUpdate(strSiteURL))
+// 	{
+// 		//启动程序
+// 		CHAR szModuleName[MAX_PATH]={0};
+// 		GetModuleFileNameA(AfxGetInstanceHandle(), szModuleName, MAX_PATH);
+// 		PathRemoveFileSpecA(szModuleName);
+// 		strcat(szModuleName, "\\Update.exe");
+// 		WinExec(szModuleName, SW_SHOWDEFAULT);
+// 
+// 
+// 		return ;
+// 
+// 	}
 
 	//执行登录
 	CMissionLogon * pMissionLogon=CMissionLogon::GetInstance();
 	if (pMissionLogon!=NULL) pMissionLogon->PerformLogonMission(m_RemPwdControl.GetButtonChecked()==TRUE);
-
 	return;
 }
 BOOL CDlgLogon::CheckVersionUpdate(CString& strUpdateURL)
@@ -526,22 +602,52 @@ BOOL CDlgLogon::CheckVersionUpdate(CString& strUpdateURL)
 
 		hr = pHttpRequest->open(TEXT("GET"), (_bstr_t)strUpdateURL, false);
 		if( FAILED(hr) )
+		{
+			CString strLog;
+			strLog.Format(_T("\nUPDATE Get %s  failed"),strUpdateURL);
+			OutputDebugString(strLog);
+
 			_com_issue_error(hr);
+		}
 
 		hr = pHttpRequest->send();
 		if( FAILED(hr) )
+		{
+			CString strLog;
+			strLog.Format(_T("\nUPDATE Send %s  failed"),strUpdateURL);
+			OutputDebugString(strLog);
+
+
 			_com_issue_error(hr);
+		}
 
 		if (pHttpRequest->Getstatus() != 200)
+		{
+			CString strLog;
+			strLog.Format(_T("\nUPDATE Send %s  != 200"),strUpdateURL);
+			OutputDebugString(strLog);
+
 			throw (0);
+		}
 
 		pDispatch = pHttpRequest->GetresponseXML();
 		hr = pDispatch->QueryInterface(pXmlDoc.GetIID(), (void**)&pXmlDoc);
 		if( FAILED(hr) )
+		{
+			CString strLog;
+			strLog.Format(_T("\nUPDATE _com_issue_error  error"));
+			OutputDebugString(strLog);
+
 			_com_issue_error(hr);
+		}
 
 		pList = pXmlDoc->selectNodes("/manifest/filelist/file");
 		lElementCount = pList->Getlength();
+		CString strLog;
+		strLog.Format(_T("\nUPDATE lElementCount :%d"),lElementCount);
+		OutputDebugString(strLog);
+
+
 		for( LONG i = 0; i < lElementCount; i++ )
 		{
 			pChild = pList->Getitem(i);
@@ -600,13 +706,44 @@ BOOL CDlgLogon::CheckVersionUpdate(CString& strUpdateURL)
 //取消消息
 VOID CDlgLogon::OnCancel()
 {
-	//关闭窗口
-	DestroyWindow();
+	m_Destroyed=true;
+	//关闭窗口2018.9.1  changed to hide windows
+	ShowWindow(SW_HIDE);
+//	DestroyWindow();
 	AfxGetMainWnd()->PostMessage(WM_CLOSE,0,0);
 
 	return;
 }
-
+int StrToBin(TCHAR* inWord, BYTE* OutBin, int source_len)
+{
+	int t;
+	int t2;
+	int count = 0;
+	BYTE temBin[2];
+	temBin[0] = 1;
+	temBin[1] = 1;
+	if (source_len < 1)
+		return 0;
+	for(t = 0 ;t < source_len; t ++)
+	{   
+		t2 = inWord[t];
+		if( t2 > 127 )
+		{
+			temBin[0] =  t2 >> 8 ;/// 256;
+			temBin[1] =  t2;
+			OutBin[count] = temBin[0];
+			count += 1;
+			OutBin[count] = temBin[1];
+			count += 1;
+		}
+		else
+		{
+			OutBin[count] = t2;
+			count += 1;
+		}
+	}
+	return count;
+}
 //构造数据
 WORD CDlgLogon::ConstructLogonPacket(BYTE cbBuffer[], WORD wBufferSize)
 {
@@ -617,8 +754,35 @@ WORD CDlgLogon::ConstructLogonPacket(BYTE cbBuffer[], WORD wBufferSize)
 	CWHService::GetMachineID(pLogonAccounts->szMachineID);
 	CWHEncrypt::MD5Encrypt(m_szPassword,pLogonAccounts->szPassword);
 
+	TCHAR szDirectory[MAX_PATH]=TEXT("");
+	CWHService::GetWorkDirectory(szDirectory,CountArray(szDirectory));
+
+	//构造路径
+	TCHAR szFileName[MAX_PATH]=TEXT("");
+	_sntprintf(szFileName,CountArray(szFileName),TEXT("%s\\GamePlaza.ini"),szDirectory);
+
+	//读取配置
+	CWHIniData IniData;
+	IniData.SetIniFilePath(szFileName);
+
+	TCHAR szMain[12] = L"";
+	IniData.ReadEncryptString(TEXT("MainVersion"),TEXT("MAIN"),TEXT("28"),szMain,CountArray(szMain));
+	
+	int nMain = _ttoi(szMain);
+	IniData.ReadEncryptString(TEXT("MainVersion"),TEXT("SUB"),TEXT("1"),szMain,CountArray(szMain));
+	int nSub = _ttoi(szMain);
+	IniData.ReadEncryptString(TEXT("MainVersion"),TEXT("PRO"),TEXT("17"),szMain,CountArray(szMain));
+	int nPro = _ttoi(szMain);
+
+// 	BYTE cbMain = 0;
+// 	StrToBin(szMain,&cbMain,24);
+
 	//登录信息
-	pLogonAccounts->dwPlazaVersion=VERSION_PLAZA;
+	pLogonAccounts->dwPlazaVersion=PROCESS_VERSION(nMain,nSub,nPro);//(VERSION_PLAZA;
+	BYTE cbBuild = GetBuildVer(pLogonAccounts->dwPlazaVersion);
+	BYTE cbMain = GetMainVer(pLogonAccounts->dwPlazaVersion);
+	BYTE cbSub = GetSubVer(pLogonAccounts->dwPlazaVersion);
+	BYTE cbPro = GetProductVer(pLogonAccounts->dwPlazaVersion);
 	lstrcpyn(pLogonAccounts->szAccounts,m_szAccounts,CountArray(pLogonAccounts->szAccounts));
 
 	//保存密码
@@ -705,16 +869,131 @@ VOID CDlgLogon::LoadAccountsInfo()
 
 	return;
 }
+UINT CDlgLogon::GetBestUrl(LPVOID lpParam)
+{
+	CDlgLogon* pLogon = (CDlgLogon*)lpParam;
+	if(pLogon->GetSafeHwnd() == NULL)
+		return 0;
+	int nLoadServer = 0;
+			//读取配置文件
+			//工作目录
+			TCHAR szDirectory[MAX_PATH]=TEXT("");
+			CWHService::GetWorkDirectory(szDirectory,CountArray(szDirectory));
 
+			//构造路径
+			TCHAR szFileName[MAX_PATH]=TEXT("");
+			_sntprintf(szFileName,CountArray(szFileName),TEXT("%s\\GamePlaza.ini"),szDirectory);
+
+			//读取配置
+			CWHIniData IniData;
+			IniData.SetIniFilePath(szFileName);
+			TCHAR szKeyBoard[124]=L"";
+			TCHAR szTodayURL[124] = L"";
+
+			int nTTL = 10000;
+			CPing ping;
+			PingReply reply;
+
+			for(int i = 0;i < 5;i++)
+			{
+				memset(&reply, 0, sizeof(PingReply));
+				_sntprintf(szKeyBoard,CountArray(szKeyBoard),_T("LogonServer%d"),i);
+				IniData.ReadEncryptString(TEXT("PlazaUrl"),szKeyBoard,TEXT(""),szTodayURL,CountArray(szTodayURL));
+
+				USES_CONVERSION;
+				int nValidHostName = inet_addr(W2A(szTodayURL));
+
+				if(nValidHostName == -1)
+				{
+					DWORD dwServerAddr = 0;
+					LPHOSTENT lpHost=gethostbyname(CT2CA(szTodayURL));
+					if (lpHost!=NULL) 
+						dwServerAddr=((LPIN_ADDR)lpHost->h_addr)->s_addr;
+					in_addr t1;
+					t1.S_un.S_addr = dwServerAddr;
+					char* pTrueAddr = inet_ntoa(t1);
+
+					ping.Ping(dwServerAddr,&reply);
+
+				}
+				else
+				{
+					char szUrl[124] = "";
+					int iLength ;  
+					//获取字节长度   
+					iLength = WideCharToMultiByte(CP_ACP, 0, szTodayURL, -1, NULL, 0, NULL, NULL);  
+					//将tchar值赋给_char    
+					WideCharToMultiByte(CP_ACP, 0, szTodayURL, -1, szUrl, iLength, NULL, NULL);   
+					ping.Ping(szUrl,&reply);
+				}
+				CString strLog;
+				
+				strLog.Format(L"PINGSECOND  MISSIONSEND  %s   %d",szTodayURL,reply.m_dwRoundTripTime);
+				OutputDebugString(strLog);
+
+				if (nTTL > reply.m_dwRoundTripTime&&reply.m_dwRoundTripTime!=0)
+				{
+					nTTL = reply.m_dwRoundTripTime;
+					nLoadServer = i;
+
+				}
+
+			}
+			pLogon->SetCurServer(nLoadServer);
+
+	return nLoadServer;
+}
+void CDlgLogon::SetCurServer(int nLoad)
+{
+	if(m_Destroyed)
+		return;
+
+	if(!IsWindow(this->m_hWnd ))
+		return;
+	if(!IsWindow(m_ServerControl.GetSafeHwnd()))
+		return;
+	if(m_ServerControl.GetSafeHwnd())
+		m_ServerControl.SetCurSel(nLoad);
+	m_nLoadServer = nLoad;
+	//读取配置文件
+	//工作目录
+	TCHAR szDirectory[MAX_PATH]=TEXT("");
+	CWHService::GetWorkDirectory(szDirectory,CountArray(szDirectory));
+
+	//构造路径
+	TCHAR szFileName[MAX_PATH]=TEXT("");
+	_sntprintf(szFileName,CountArray(szFileName),TEXT("%s\\GamePlaza.ini"),szDirectory);
+
+	//读取配置
+	CWHIniData IniData;
+	IniData.SetIniFilePath(szFileName);
+
+	TCHAR szTodayURL[124] = L"";
+	TCHAR szKeyBoard[124]=L"";
+	_sntprintf(szKeyBoard,CountArray(szKeyBoard),_T("LogonServer%d"),nLoad);
+	IniData.ReadEncryptString(TEXT("PlazaUrl"),szKeyBoard,TEXT(""),szTodayURL,CountArray(szTodayURL));
+	CString strLog;
+
+	strLog.Format(L"PINGSECOND  MISSIONSEND CurSel: %s ",szTodayURL);
+	OutputDebugString(strLog);
+
+	_sntprintf(m_szLogonServer,CountArray(m_szLogonServer),_T("%s"),szTodayURL);
+}
 //地址信息
 VOID CDlgLogon::LoadLogonServerInfo()
 {
 
+	return;
+
+	CWinThread *pThread =  AfxBeginThread(GetBestUrl, this);
+
+
+	return;
 //	if (m_ServerControl.GetCurSel()==LB_ERR)
 	{
 	//	if (m_ServerControl.GetCount()==0L)
 		{
-			m_DlgStatus.ShowStatusWindow(L"正在搜索最优主站...");
+			//m_DlgStatus.ShowStatusWindow(L"正在搜索最优主站...");
 			
 			TCHAR szPlatformUrl[124] = L"";
 			TCHAR szPlatformUrl1[124] = L"";
@@ -732,113 +1011,114 @@ VOID CDlgLogon::LoadLogonServerInfo()
 			CWHIniData IniData;
 			IniData.SetIniFilePath(szFileName);
 
-			CTime time = CTime::GetCurrentTime();
-			TCHAR szTodayURL[124] = L"";
-			int nUrlID = GetPrivateProfileInt(time.Format(L"%Y-%m-%d"),TEXT("TodayURLID"),0,szFileName);
-			int nUrlCanUse = GetPrivateProfileInt(time.Format(L"%Y-%m-%d"),TEXT("TodayCanUse"),0,szFileName);
+// 			CTime time = CTime::GetCurrentTime();
+ 			TCHAR szTodayURL[124] = L"";
+ 			int nUrlID = 0;//GetPrivateProfileInt(time.Format(L"%Y-%m-%d"),TEXT("TodayURLID"),0,szFileName);
+// 			int nUrlCanUse = GetPrivateProfileInt(time.Format(L"%Y-%m-%d"),TEXT("TodayCanUse"),0,szFileName);
 			TCHAR szKeyBoard[124]=L"";
-			_sntprintf(szKeyBoard,CountArray(szKeyBoard),_T("LogonServer%d"),nUrlID);
+			_sntprintf(szKeyBoard,CountArray(szKeyBoard),_T("LogonServer%d"),m_nLoadServer);
 			IniData.ReadEncryptString(TEXT("PlazaUrl"),szKeyBoard,TEXT(""),szTodayURL,CountArray(szTodayURL));
-			CString strUrl;
-			strUrl.Format(L"%s",szTodayURL);
 
-
-			int nUrl=0;
-			TCHAR szKey[32];
-
-			if(strUrl.IsEmpty())
-			{
-				int nTTL = 10000;
-				CPing ping;
-				PingReply reply;
-				for(int i = 0;i < 4;i++)
-				{
-// 					if(!strUrl.IsEmpty()&&(i == nUrlID))
+// 			CString strUrl;
+// 			strUrl.Format(L"%s",szTodayURL);
+// 
+// 
+// 			int nUrl=0;
+// 			TCHAR szKey[32];
+// 
+// 			if(strUrl.IsEmpty())
+// 			{
+// 				int nTTL = 10000;
+// 				CPing ping;
+// 				PingReply reply;
+// 				for(int i = 0;i < 4;i++)
+// 				{
+// // 					if(!strUrl.IsEmpty()&&(i == nUrlID))
+// // 					{
+// // 						continue;
+// // 					}
+// 					memset(&reply, 0, sizeof(PingReply));
+// 			//		TCHAR szKey[32];
+// 					ZeroMemory(&szKey,sizeof(szKey));
+// 					_sntprintf(szKey,CountArray(szKey),_T("LogonServer%d"),i);
+// 					//读取配置
+// 					IniData.ReadEncryptString(TEXT("PlazaUrl"),szKey,NULL,szPlatformUrl1,CountArray(szPlatformUrl1));
+// 
+// 					USES_CONVERSION;
+// 					int nValidHostName = inet_addr(W2A(szPlatformUrl1));
+// 
+// 					if(nValidHostName == -1)
 // 					{
-// 						continue;
+// 						DWORD dwServerAddr = 0;
+// 						LPHOSTENT lpHost=gethostbyname(CT2CA(szPlatformUrl1));
+// 						if (lpHost!=NULL) 
+// 							dwServerAddr=((LPIN_ADDR)lpHost->h_addr)->s_addr;
+// 						in_addr t1;
+// 						t1.S_un.S_addr = dwServerAddr;
+// 						char* pTrueAddr = inet_ntoa(t1);
+// 						OutputDebugStringA(pTrueAddr);
+// 
+// 						ping.Ping(dwServerAddr,&reply);
+// 
 // 					}
-					memset(&reply, 0, sizeof(PingReply));
-			//		TCHAR szKey[32];
-					ZeroMemory(&szKey,sizeof(szKey));
-					_sntprintf(szKey,CountArray(szKey),_T("LogonServer%d"),i);
-					//读取配置
-					IniData.ReadEncryptString(TEXT("PlazaUrl"),szKey,NULL,szPlatformUrl1,CountArray(szPlatformUrl1));
-
-					USES_CONVERSION;
-					int nValidHostName = inet_addr(W2A(szPlatformUrl1));
-
-					if(nValidHostName == -1)
-					{
-						DWORD dwServerAddr = 0;
-						LPHOSTENT lpHost=gethostbyname(CT2CA(szPlatformUrl1));
-						if (lpHost!=NULL) 
-							dwServerAddr=((LPIN_ADDR)lpHost->h_addr)->s_addr;
-						in_addr t1;
-						t1.S_un.S_addr = dwServerAddr;
-						char* pTrueAddr = inet_ntoa(t1);
-						OutputDebugStringA(pTrueAddr);
-
-						ping.Ping(dwServerAddr,&reply);
-
-					}
-					else
-					{
-						char szUrl[124] = "";
-						int iLength ;  
-						//获取字节长度   
-						iLength = WideCharToMultiByte(CP_ACP, 0, szPlatformUrl1, -1, NULL, 0, NULL, NULL);  
-						//将tchar值赋给_char    
-						WideCharToMultiByte(CP_ACP, 0, szPlatformUrl1, -1, szUrl, iLength, NULL, NULL);   
-						ping.Ping(szUrl,&reply);
-					}
-
-
-
-					//CString strTmp;
-					if((reply.m_dwRoundTripTime < nTTL) || lstrlen(szPlatformUrl) == 0)
-					{
-						lstrcpyn(szPlatformUrl,szPlatformUrl1,CountArray(szPlatformUrl));
-						nUrl = i;
-//						if(reply.m_dwRoundTripTime > 0 && reply.m_dwRoundTripTime < 10000)
-//						{
-// 							//如果PING通了，注册表记录一下当前SERVER
-// 							CWHRegKey RegServerAddr;
-// 							RegServerAddr.OpenRegKey(TEXT("CurrentLogonServer"),true);
-// 							RegServerAddr.WriteString(TEXT("CurrentIpAddress"),szPlatformUrl);
-//						}
-						nTTL = reply.m_dwRoundTripTime;
-					}
-				}
-
-			}
-			else if(nUrlCanUse==0)
-			{
-				nUrl = (nUrlID+1)%5;
-				ZeroMemory(&szKey,sizeof(szKey));
-				_sntprintf(szKey,CountArray(szKey),_T("LogonServer%d"),nUrl);
-				//读取配置
-				IniData.ReadEncryptString(TEXT("PlazaUrl"),szKey,NULL,szPlatformUrl,CountArray(szPlatformUrl));
-
-			}
-			else
-			{
+// 					else
+// 					{
+// 						char szUrl[124] = "";
+// 						int iLength ;  
+// 						//获取字节长度   
+// 						iLength = WideCharToMultiByte(CP_ACP, 0, szPlatformUrl1, -1, NULL, 0, NULL, NULL);  
+// 						//将tchar值赋给_char    
+// 						WideCharToMultiByte(CP_ACP, 0, szPlatformUrl1, -1, szUrl, iLength, NULL, NULL);   
+// 						ping.Ping(szUrl,&reply);
+// 					}
+// 
+// 
+// 
+// 					//CString strTmp;
+// 					if((reply.m_dwRoundTripTime < nTTL) || lstrlen(szPlatformUrl) == 0)
+// 					{
+// 						lstrcpyn(szPlatformUrl,szPlatformUrl1,CountArray(szPlatformUrl));
+// 						nUrl = i;
+// //						if(reply.m_dwRoundTripTime > 0 && reply.m_dwRoundTripTime < 10000)
+// //						{
+// // 							//如果PING通了，注册表记录一下当前SERVER
+// // 							CWHRegKey RegServerAddr;
+// // 							RegServerAddr.OpenRegKey(TEXT("CurrentLogonServer"),true);
+// // 							RegServerAddr.WriteString(TEXT("CurrentIpAddress"),szPlatformUrl);
+// //						}
+// 						nTTL = reply.m_dwRoundTripTime;
+// 					}
+// 				}
+// 
+// 			}
+// 			else if(nUrlCanUse==0)
+// 			{
+// 				nUrl = (nUrlID+1)%5;
+// 				ZeroMemory(&szKey,sizeof(szKey));
+// 				_sntprintf(szKey,CountArray(szKey),_T("LogonServer%d"),nUrl);
+// 				//读取配置
+// 				IniData.ReadEncryptString(TEXT("PlazaUrl"),szKey,NULL,szPlatformUrl,CountArray(szPlatformUrl));
+// 
+// 			}
+// 			else
+//			{
 				lstrcpyn(szPlatformUrl,szTodayURL,CountArray(szPlatformUrl));
-			}
+//			}
 
-			ZeroMemory(&szKey,sizeof(szKey));
-			_sntprintf(szKey,CountArray(szKey),_T("LogonServer%d"),nUrl);
-
-			GetPrivateProfileString(TEXT("PlazaUrl"),szKey,NULL,szTodayURL,CountArray(szTodayURL),szFileName);
-
-			WritePrivateProfileString(time.Format(L"%Y-%m-%d"),TEXT("TodayURL"),szTodayURL,szFileName);
-			_sntprintf(szKey,CountArray(szKey),_T("%d"),nUrl);
-			WritePrivateProfileString(time.Format(L"%Y-%m-%d"),TEXT("TodayURLID"),szKey,szFileName);
-			_sntprintf(szKey,CountArray(szKey),_T("%d"),1);
-			WritePrivateProfileString(time.Format(L"%Y-%m-%d"),TEXT("TodayCanUse"),szKey,szFileName);
-		
+// 			ZeroMemory(&szKey,sizeof(szKey));
+// 			_sntprintf(szKey,CountArray(szKey),_T("LogonServer%d"),nUrl);
+// 
+// 			GetPrivateProfileString(TEXT("PlazaUrl"),szKey,NULL,szTodayURL,CountArray(szTodayURL),szFileName);
+// 
+// 			WritePrivateProfileString(time.Format(L"%Y-%m-%d"),TEXT("TodayURL"),szTodayURL,szFileName);
+// 			_sntprintf(szKey,CountArray(szKey),_T("%d"),nUrl);
+// 			WritePrivateProfileString(time.Format(L"%Y-%m-%d"),TEXT("TodayURLID"),szKey,szFileName);
+// 			_sntprintf(szKey,CountArray(szKey),_T("%d"),1);
+// 			WritePrivateProfileString(time.Format(L"%Y-%m-%d"),TEXT("TodayCanUse"),szKey,szFileName);
+// 		
 
 			_sntprintf(m_szLogonServer,CountArray(m_szLogonServer),_T("%s"),szPlatformUrl);
-			m_ServerControl.SetCurSel(nUrl);
+			m_ServerControl.SetCurSel(nUrlID);
 			m_DlgStatus.HideStatusWindow();
 		}
 // 		else
@@ -922,42 +1202,6 @@ bool CDlgLogon::GetInformation()
 //注册帐号
 VOID CDlgLogon::OnBnClickedRegister()
 {
-	//隐藏窗口
-	ShowWindow(SW_HIDE);
-
-	//获取地址
-	CString strLogonServer;
-	GetDlgItemText(IDC_LOGON_SERVER,strLogonServer);
-
-	//构造地址
-	strLogonServer.TrimLeft();
-	strLogonServer.TrimRight();
-	TCHAR szPlatformUrl[124] = L"";
-
-	//读取配置文件
-	//工作目录
-	TCHAR szDirectory[MAX_PATH]=TEXT("");
-	CWHService::GetWorkDirectory(szDirectory,CountArray(szDirectory));
-
-	//构造路径
-	TCHAR szFileName[MAX_PATH]=TEXT("");
-	_sntprintf(szFileName,CountArray(szFileName),TEXT("%s\\GamePlaza.ini"),szDirectory);
-
-	//读取配置
-	CWHIniData IniData;
-	IniData.SetIniFilePath(szFileName);
-
-	TCHAR szKey[20];
-	ZeroMemory(&szKey,sizeof(szKey));
-	_sntprintf(szKey,CountArray(szKey),_T("LogonServer%d"),rand()%20);
-	//读取配置
-	IniData.ReadEncryptString(TEXT("PlazaUrl"),szKey,NULL,szPlatformUrl,CountArray(szPlatformUrl));
-
-	lstrcpyn(m_szLogonServer,(strLogonServer.IsEmpty()==true)?szPlatformUrl:strLogonServer,CountArray(m_szLogonServer));
-
-	//显示注册
-	ASSERT(CMissionLogon::GetInstance()!=NULL);
-	if (CMissionLogon::GetInstance()!=NULL) CMissionLogon::GetInstance()->ShowRegister();
 
 	return;
 }
@@ -1132,11 +1376,11 @@ VOID CDlgLogon::OnPaint()
 	int Height = rect.bottom - rect.top;
 
 	CDC *pDC = this->GetDC();
- 	Image image(CBmpUtil::GetExePath() + _T("skin\\DLG_LOGON_BACK.png"));
- 
- 	UINT width = image.GetWidth();
- 
- 	UINT height = image.GetHeight();
+//  	Image image(CBmpUtil::GetExePath() + _T("skin\\DLG_LOGON_BACK.png"));
+//  
+//  	UINT width = image.GetWidth();
+//  
+//  	UINT height = image.GetHeight();
 // 	CDC MenmDC;
 // 	CBitmap MemBitmap;
 // 	MenmDC.CreateCompatibleDC(NULL);
@@ -1155,6 +1399,9 @@ VOID CDlgLogon::OnPaint()
 
 	//pDC->BitBlt(0, 0, width, height, &MenmDC, 0, 0, SRCCOPY);
 	m_RemPwdControl.OnDrawControl(pDC);
+
+	if(!m_png_Kefu.IsNull())
+		m_png_Kefu.DrawImage(pDC,300, 200);
 
 // 	MenmDC.SelectObject(pOldBit);
 // 	MemBitmap.DeleteObject();
@@ -1176,7 +1423,6 @@ VOID CDlgLogon::OnShowWindow(BOOL bShow, UINT nStatus)
 		{
 			LoadLogonServerInfo();
 			Loadweb();
-
 		}
 	}
 

@@ -72,8 +72,7 @@ bool CD3DTexture::LoadImage( CD3DDevice * pD3DDevice, HINSTANCE hInstance, LPCTS
 		if( FAILED( D3DXCreateTextureFromFileInMemoryEx(pD3DDevice->GetDirect3DDevice(), ResourceInfo.pcbBuffer, ResourceInfo.dwSize,D3DX_DEFAULT,D3DX_DEFAULT,1,0,
 			fmt2,D3DPOOL_MANAGED,D3DX_FILTER_NONE,D3DX_DEFAULT,dwColorKey,&ImageInfo,NULL,&m_pITexture) ) )
 		{		
-			TraceService->TraceString(TraceLevel_Game_Warning,TEXT("[Texture] load Resource [ %s ] failed"),pszResource);
-
+			ASSERT(FALSE);//TraceService->TraceString(TraceLevel_Warning,TEXT("[Texture] load Resource [ %s ] failed"),pszResource);
 			return false;
 		}
 	}
@@ -84,8 +83,7 @@ bool CD3DTexture::LoadImage( CD3DDevice * pD3DDevice, HINSTANCE hInstance, LPCTS
 	m_MemorySize.SetSize(Desc.Width,Desc.Height);
 	m_ImageSize.SetSize(ImageInfo.Width,ImageInfo.Height);
 
-	TraceService->TraceString(TraceLevel_Game_Normal,TEXT("[Texture] load Resource [ %s ] success"),pszResource);
-
+	//TraceService->TraceString(TraceLevel_Normal,TEXT("[Texture] load Resource [ %s ] success"),pszResource);
 	return true;
 }
 
@@ -100,7 +98,7 @@ bool CD3DTexture::LoadImage( CD3DDevice * pD3DDevice, LPCTSTR pszFileName,DWORD 
 	if( FAILED( D3DXCreateTextureFromFileEx(pD3DDevice->GetDirect3DDevice(),pszFileName,D3DX_DEFAULT,D3DX_DEFAULT,1,0,
 		D3DFMT_A8R8G8B8,D3DPOOL_MANAGED,D3DX_FILTER_NONE,D3DX_DEFAULT,dwColorKey,&ImageInfo,NULL,&m_pITexture) ) )
 	{
-		TraceService->TraceString(TraceLevel_Game_Warning,TEXT("[Texture] load file [ %s ] failed"),pszFileName);
+		ASSERT(FALSE);//TraceService->TraceString(TraceLevel_Warning,TEXT("[Texture] load file [ %s ] failed"),pszFileName);
 		return false;
 	}
 
@@ -110,53 +108,21 @@ bool CD3DTexture::LoadImage( CD3DDevice * pD3DDevice, LPCTSTR pszFileName,DWORD 
 	m_MemorySize.SetSize(Desc.Width,Desc.Height);
 	m_ImageSize.SetSize(ImageInfo.Width,ImageInfo.Height);
 
-	TraceService->TraceString(TraceLevel_Game_Normal,TEXT("[Texture] load file [ %s ] success"),pszFileName);
-
+	//TraceService->TraceString(TraceLevel_Normal,TEXT("[Texture] load file [ %s ] success"),pszFileName);
 	return true;
 }
 
 bool CD3DTexture::DrawImage( CD3DDevice * pD3DDevice, INT nXDest, INT nYDest )
 {
-	ASSERT( pD3DDevice!= NULL );
-	if ( pD3DDevice == NULL ) return false;
-
-	IDirect3DDevice9 *pDevice = pD3DDevice->GetDirect3DDevice();
-
-	//处理png透明色
- 	pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
- 	pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
- 	pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-	
-	pD3DDevice->SetRenderState( D3DRS_ZENABLE, D3DZB_FALSE ); 
-
-	SetProjectionMatrix(pD3DDevice);
-	
-	tagD3DTextureVertex D3DTextureVertex[4];
-	ZeroMemory(&D3DTextureVertex,sizeof D3DTextureVertex);
-
-	SetWindowPos(D3DTextureVertex,nXDest,nYDest,m_MemorySize.cx,m_MemorySize.cy);
-	SetTexturePos(pD3DDevice,D3DTextureVertex,0,0,m_MemorySize.cx,m_MemorySize.cy);
-
-	//创建顶点缓冲区---下方的DrawImage采用另外的方式进行图形绘制
-	pDevice->CreateVertexBuffer( sizeof(D3DTextureVertex),
-		D3DUSAGE_WRITEONLY, D3DFVF_TEXTURE,
-		D3DPOOL_MANAGED, &m_pIVertexBuffer,NULL );
-	
-	//填充顶点缓冲区
-	VOID* pVertices;
-	m_pIVertexBuffer->Lock( 0, sizeof(D3DTextureVertex), (void**)&pVertices, 0 ) ;
-	memcpy( pVertices, D3DTextureVertex, sizeof(D3DTextureVertex) );
-	m_pIVertexBuffer->Unlock();
-	
-	pDevice->SetStreamSource( 0, m_pIVertexBuffer, 0, sizeof(tagD3DTextureVertex) );
-	pDevice->SetFVF( D3DFVF_XYZ|D3DFVF_TEX1 );
-	pDevice->SetTexture(0,m_pITexture);
-	pDevice->DrawPrimitive( D3DPT_TRIANGLESTRIP, 0, 2);
-	
-	return true;
+	return DrawImage(pD3DDevice,nXDest,nYDest,m_ImageSize.cx,m_ImageSize.cy,0,0);
 }
 
 bool CD3DTexture::DrawImage( CD3DDevice * pD3DDevice, INT nXDest, INT nYDest, INT nDestWidth, INT nDestHeight, INT nXSource, INT nYSource )
+{
+	return DrawImage(pD3DDevice,nXDest,nYDest,nDestWidth,nDestHeight,nXSource,nYSource,nDestWidth,nDestHeight);
+}
+
+bool CD3DTexture::DrawImage( CD3DDevice * pD3DDevice, INT nXDest, INT nYDest, INT nDestWidth, INT nDestHeight, INT nXSource, INT nYSource, INT nSourceWidth, INT nSourceHeight )
 {
 	ASSERT( pD3DDevice!= NULL );
 	if ( pD3DDevice == NULL ) return false;
@@ -176,36 +142,7 @@ bool CD3DTexture::DrawImage( CD3DDevice * pD3DDevice, INT nXDest, INT nYDest, IN
 	ZeroMemory(&D3DTextureVertex,sizeof D3DTextureVertex);
 
 	SetWindowPos(D3DTextureVertex,nXDest,nYDest,nDestWidth,nDestHeight);
-	SetTexturePos(pD3DDevice,D3DTextureVertex,nXSource,nYSource,nDestWidth,nDestHeight);
-
-	pDevice->SetTexture(0, m_pITexture);
-
-	pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP,2 /*_countof(D3DTextureVertex) - 2*/, D3DTextureVertex, sizeof(D3DTextureVertex[0]));
-
-	return true;
-}
-
-bool CD3DTexture::DrawImage( CD3DDevice * pD3DDevice, INT nXDest, INT nYDest, INT nDestWidth, INT nDestHeight, INT nXSource, INT nYSource, INT nSourceWidth, INT nSourceHeight )
-{
-	ASSERT( pD3DDevice!= NULL );
-	if ( pD3DDevice == NULL ) return false;
-
-	IDirect3DDevice9 *pDevice = pD3DDevice->GetDirect3DDevice();
-	
-	//处理png透明色
-	pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
-	pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-
-	SetProjectionMatrix(pD3DDevice);
-
-	pDevice->SetFVF(D3DFVF_TEXTURE);
-
-	tagD3DTextureVertex D3DTextureVertex[4];
-	ZeroMemory(&D3DTextureVertex,sizeof D3DTextureVertex);
-
- 	SetWindowPos(D3DTextureVertex,nXDest,nYDest,nDestWidth,nDestHeight);
- 	SetTexturePos(pD3DDevice,D3DTextureVertex,nXSource,nYSource,nSourceWidth,nSourceHeight);
+	SetTexturePos(pD3DDevice,D3DTextureVertex,nXSource,nYSource,nSourceWidth,nSourceHeight);
 
 	pDevice->SetTexture(0, m_pITexture);
 
@@ -322,240 +259,6 @@ bool CD3DTexture::DrawImage( CD3DDevice * pD3DDevice, INT nXDest, INT nYDest, IN
 	return true;
 }
 
-bool CD3DTexture::DrawImage( CD3DDevice * pD3DDevice, CPoint ptRotationOffset, FLOAT fRadian, CHAR chDirection, INT nXDest, INT nYDest )
-{
-	ASSERT( pD3DDevice!= NULL );
-	if ( pD3DDevice == NULL ) return false;
-
-	IDirect3DDevice9 *pDevice = pD3DDevice->GetDirect3DDevice();
-
-	//处理png透明色
-	pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
-	pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-
-	pD3DDevice->SetRenderState( D3DRS_ZENABLE, D3DZB_FALSE ); 
-
-	SetProjectionMatrix(pD3DDevice);
-
-	pDevice->SetFVF(D3DFVF_TEXTURE);
-
-	tagD3DTextureVertex D3DTextureVertex[4];
-	ZeroMemory(&D3DTextureVertex,sizeof D3DTextureVertex);
-
-	SetWindowPos(D3DTextureVertex,nXDest,nYDest,m_MemorySize.cx,m_MemorySize.cy);
-	SetTexturePos(pD3DDevice,D3DTextureVertex,0,0,m_MemorySize.cx,m_MemorySize.cy);
-
-	//设置参数
-	D3DXMATRIX matView;
-	D3DXMatrixIdentity(&matView);
-
-	//最后的参数是图片的绘制位置
-	D3DXMatrixTransformation2D(	&matView,NULL,1.0f,NULL,&D3DXVECTOR2((FLOAT)ptRotationOffset.x,(FLOAT)ptRotationOffset.y),fRadian*M_PI/180,NULL);
-	pDevice->SetTransform(D3DTS_VIEW, &matView);
-
-	pDevice->SetTexture(0, m_pITexture);
-	pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP,2 , D3DTextureVertex, sizeof(D3DTextureVertex[0]));
-
-	return true;
-}
-
-bool CD3DTexture::DrawImage( CD3DDevice * pD3DDevice, CPoint ptRotationOffset, FLOAT fRadian, CHAR chDirection, INT nXDest, INT nYDest, INT nDestWidth, INT nDestHeight, INT nXSource, INT nYSource )
-{
-	ASSERT( pD3DDevice!= NULL );
-	if ( pD3DDevice == NULL ) return false;
-
-	IDirect3DDevice9 *pDevice = pD3DDevice->GetDirect3DDevice();
-
-	//处理png透明色
-	pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
-	pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-
-	pD3DDevice->SetRenderState( D3DRS_ZENABLE, D3DZB_FALSE ); 
-
-	SetProjectionMatrix(pD3DDevice);
-
-	pDevice->SetFVF(D3DFVF_TEXTURE);
-
-	tagD3DTextureVertex D3DTextureVertex[4];
-	ZeroMemory(&D3DTextureVertex,sizeof D3DTextureVertex);
-
-	SetWindowPos(D3DTextureVertex,nXDest,nYDest,nDestWidth,nDestHeight);
-	SetTexturePos(pD3DDevice,D3DTextureVertex,nXSource,nYSource,nDestWidth,nDestHeight);
-
-	//设置参数
-	D3DXMATRIX matView;
-	D3DXMatrixIdentity(&matView);
-
-	//最后的参数是图片的绘制位置
-	D3DXMatrixTransformation2D(	&matView,NULL,1.0f,NULL,&D3DXVECTOR2((FLOAT)ptRotationOffset.x,(FLOAT)ptRotationOffset.y),fRadian*M_PI/180,NULL);
-	pDevice->SetTransform(D3DTS_VIEW, &matView);
-
-	pDevice->SetTexture(0, m_pITexture);
-	pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP,2 , D3DTextureVertex, sizeof(D3DTextureVertex[0]));
-
-	return true;
-}
-
-bool CD3DTexture::DrawImage( CD3DDevice * pD3DDevice, CPoint ptRotationOffset, FLOAT fRadian, CHAR chDirection, INT nXDest, INT nYDest, INT nDestWidth, INT nDestHeight, INT nXSource, INT nYSource, INT nSourceWidth, INT nSourceHeight )
-{
-	ASSERT( pD3DDevice!= NULL );
-	if ( pD3DDevice == NULL ) return false;
-
-	IDirect3DDevice9 *pDevice = pD3DDevice->GetDirect3DDevice();
-
-	//处理png透明色
-	pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
-	pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-
-	pD3DDevice->SetRenderState( D3DRS_ZENABLE, D3DZB_FALSE ); 
-
-	SetProjectionMatrix(pD3DDevice);
-
-	pDevice->SetFVF(D3DFVF_TEXTURE);
-
-	tagD3DTextureVertex D3DTextureVertex[4];
-	ZeroMemory(&D3DTextureVertex,sizeof D3DTextureVertex);
-
-	SetWindowPos(D3DTextureVertex,nXDest,nYDest,nDestWidth,nDestHeight);
-	SetTexturePos(pD3DDevice,D3DTextureVertex,nXSource,nYSource,nSourceWidth,nSourceHeight);
-
-	//设置参数
-	D3DXMATRIX matView;
-	D3DXMatrixIdentity(&matView);
-
-	//最后的参数是图片的绘制位置
-	D3DXMatrixTransformation2D(	&matView,NULL,1.0f,NULL,&D3DXVECTOR2((FLOAT)ptRotationOffset.x,(FLOAT)ptRotationOffset.y),fRadian*M_PI/180,NULL);
-	pDevice->SetTransform(D3DTS_VIEW, &matView);
-
-	pDevice->SetTexture(0, m_pITexture);
-	pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP,2 , D3DTextureVertex, sizeof(D3DTextureVertex[0]));
-
-	return true;
-}
-
-bool CD3DTexture::DrawImage( CD3DDevice * pD3DDevice, CPoint ptRotationOffset, FLOAT fRadian, CHAR chDirection, INT nXDest, INT nYDest, BYTE cbAlpha )
-{
-	ASSERT( pD3DDevice!= NULL );
-	if ( pD3DDevice == NULL ) return false;
-
-	IDirect3DDevice9 *pDevice = pD3DDevice->GetDirect3DDevice();
-
-	//处理png透明色
-	pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
-	pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-	pDevice->SetRenderState (D3DRS_TEXTUREFACTOR, D3DCOLOR_RGBA (255, 255, 255, cbAlpha));
-
-	SetProjectionMatrix(pD3DDevice);
-
-	pDevice->SetFVF(D3DFVF_TEXTURE);
-
-	tagD3DTextureVertex D3DTextureVertex[4];
-	ZeroMemory(&D3DTextureVertex,sizeof D3DTextureVertex);
-
-	SetWindowPos(D3DTextureVertex,nXDest,nYDest,m_MemorySize.cx,m_MemorySize.cy);
-	SetTexturePos(pD3DDevice,D3DTextureVertex,0,0,m_MemorySize.cx,m_MemorySize.cy);
-
-	//设置参数
-	D3DXMATRIX matView;
-	D3DXMatrixIdentity(&matView);
-
-	//最后的参数是图片的绘制位置
-	D3DXMatrixTransformation2D(	&matView,NULL,1.0f,NULL,&D3DXVECTOR2((FLOAT)ptRotationOffset.x,(FLOAT)ptRotationOffset.y),fRadian*M_PI/180,NULL);
-	pDevice->SetTransform(D3DTS_VIEW, &matView);
-
-	pDevice->SetTexture(0, m_pITexture);
-	pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP,2 , D3DTextureVertex, sizeof(D3DTextureVertex[0]));
-
-	//恢复状态
-	pDevice->SetRenderState (D3DRS_TEXTUREFACTOR, D3DCOLOR_RGBA (255, 255, 255, 255));
-
-	return true;
-}
-
-bool CD3DTexture::DrawImage( CD3DDevice * pD3DDevice, CPoint ptRotationOffset, FLOAT fRadian, CHAR chDirection, INT nXDest, INT nYDest, INT nDestWidth, INT nDestHeight, INT nXSource, INT nYSource, BYTE cbAlpha )
-{
-	ASSERT( pD3DDevice!= NULL );
-	if ( pD3DDevice == NULL ) return false;
-
-	IDirect3DDevice9 *pDevice = pD3DDevice->GetDirect3DDevice();
-
-	//处理png透明色
-	pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
-	pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-	pDevice->SetRenderState (D3DRS_TEXTUREFACTOR, D3DCOLOR_RGBA (255, 255, 255, cbAlpha));
-
-	SetProjectionMatrix(pD3DDevice);
-
-	pDevice->SetFVF(D3DFVF_TEXTURE);
-
-	tagD3DTextureVertex D3DTextureVertex[4];
-	ZeroMemory(&D3DTextureVertex,sizeof D3DTextureVertex);
-
-	SetWindowPos(D3DTextureVertex,nXDest,nYDest,nDestWidth,nDestHeight);
-	SetTexturePos(pD3DDevice,D3DTextureVertex,nXSource,nYSource,nDestWidth,nDestHeight);
-
-	//设置参数
-	D3DXMATRIX matView;
-	D3DXMatrixIdentity(&matView);
-
-	//最后的参数是图片的绘制位置
-	D3DXMatrixTransformation2D(	&matView,NULL,1.0f,NULL,&D3DXVECTOR2((FLOAT)ptRotationOffset.x,(FLOAT)ptRotationOffset.y),fRadian*M_PI/180,NULL);
-	pDevice->SetTransform(D3DTS_VIEW, &matView);
-
-	pDevice->SetTexture(0, m_pITexture);
-	pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP,2 , D3DTextureVertex, sizeof(D3DTextureVertex[0]));
-
-	//恢复状态
-	pDevice->SetRenderState (D3DRS_TEXTUREFACTOR, D3DCOLOR_RGBA (255, 255, 255, 255));
-
-	return true;
-}
-
-bool CD3DTexture::DrawImage( CD3DDevice * pD3DDevice, CPoint ptRotationOffset, FLOAT fRadian, CHAR chDirection, INT nXDest, INT nYDest, INT nDestWidth, INT nDestHeight, INT nXSource, INT nYSource, INT nSourceWidth, INT nSourceHeight, BYTE cbAlpha )
-{
-	ASSERT( pD3DDevice!= NULL );
-	if ( pD3DDevice == NULL ) return false;
-
-	IDirect3DDevice9 *pDevice = pD3DDevice->GetDirect3DDevice();
-
-	//处理png透明色
-	pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
-	pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-	pDevice->SetRenderState (D3DRS_TEXTUREFACTOR, D3DCOLOR_RGBA (255, 255, 255, cbAlpha));
-
-	SetProjectionMatrix(pD3DDevice);
-
-	pDevice->SetFVF(D3DFVF_TEXTURE);
-
-	tagD3DTextureVertex D3DTextureVertex[4];
-	ZeroMemory(&D3DTextureVertex,sizeof D3DTextureVertex);
-
-	SetWindowPos(D3DTextureVertex,nXDest,nYDest,nDestWidth,nDestHeight);
-	SetTexturePos(pD3DDevice,D3DTextureVertex,nXSource,nYSource,nSourceWidth,nSourceHeight);
-
-	//设置参数
-	D3DXMATRIX matView;
-	D3DXMatrixIdentity(&matView);
-
-	//最后的参数是图片的绘制位置
-	D3DXMatrixTransformation2D(	&matView,NULL,1.0f,NULL,&D3DXVECTOR2((FLOAT)ptRotationOffset.x,(FLOAT)ptRotationOffset.y),fRadian*M_PI/180,NULL);
-	pDevice->SetTransform(D3DTS_VIEW, &matView);
-
-	pDevice->SetTexture(0, m_pITexture);
-	pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP,2 , D3DTextureVertex, sizeof(D3DTextureVertex[0]));
-
-	//恢复状态
-	pDevice->SetRenderState (D3DRS_TEXTUREFACTOR, D3DCOLOR_RGBA (255, 255, 255, 255));
-
-	return true;
-}
-
 bool CD3DTexture::DrawImage( CD3DDevice * pD3DDevice, INT nXDest, INT nYDest, INT nDestWidth, INT nDestHeight, DWORD* dwData, INT nImageWidth, INT nImageHeight )
 {
 	ASSERT( pD3DDevice!= NULL );
@@ -573,7 +276,6 @@ bool CD3DTexture::DrawImage( CD3DDevice * pD3DDevice, INT nXDest, INT nYDest, IN
 		pVertices[i].z = 1.0f;
 		pVertices[i].h = 1.0f;
 	}
-
 	IDirect3DVertexDeclaration9* pDecl = NULL;
 	pDevice->GetVertexDeclaration( &pDecl ); 
 	pDevice->SetFVF( D3DFVF_COLOR );
@@ -606,6 +308,7 @@ bool CD3DTexture::GetResourceInfo( HINSTANCE hInstance, LPCTSTR pszResource, LPC
 
 	return true;
 }
+
 
 VOID CD3DTexture::SetMatrix( CD3DDevice * pD3DDevice, INT nXDest, INT nYDest, INT nDestWidth, INT nDestHeight )
 {

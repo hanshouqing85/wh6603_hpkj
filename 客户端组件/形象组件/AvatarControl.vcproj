@@ -241,7 +241,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../../../运行/Debug/Unicode/AvatarControlD.dll"
+				OutputFile="../../运行/Debug/Unicode/AvatarControlD.dll"
 				LinkIncremental="2"
 				ModuleDefinitionFile=".\AvatarControlD.def"
 				GenerateDebugInformation="true"
@@ -272,7 +272,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="mkdir ..\..\..\发布组件\客户端组件\Debug\Unicode&#x0D;&#x0A;copy /y ..\..\..\运行\Debug\Unicode\$(TargetFileName) ..\..\..\发布组件\客户端组件\Debug\Unicode\$(TargetFileName)&#x0D;&#x0A;"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration

@@ -1,9 +1,5 @@
 #pragma once
-// add by hxh 20160801
-#define POINTER_64 __ptr64
 
-typedef void *PVOID;
-typedef void * POINTER_64 PVOID64;
 //////////////////////////////////////////////////////////////////////////////////
 //MFC 文件
 
@@ -67,7 +63,7 @@ typedef void * POINTER_64 PVOID64;
 	#pragma comment (lib,"../../链接库/Ansi/ServiceCoreD.lib")
 	#pragma comment (lib,"../../链接库/Ansi/KernelEngineD.lib")
 #else
-	#pragma comment (lib,"../../链接库/Unicode/ServiceCore.lib")
+	#pragma comment (lib,"../../链接库/Unicode/ServiceCoreD.lib")
 	#pragma comment (lib,"../../链接库/Unicode/KernelEngineD.lib")
 #endif
 #endif

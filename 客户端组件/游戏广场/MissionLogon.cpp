@@ -4,6 +4,7 @@
 #include "PlatformEvent.h"
 #include "PlatformFrame.h"
 #include "Ping.h"
+#include "YanZhengMa.h"
 //////////////////////////////////////////////////////////////////////////////////
 
 //静态变量
@@ -14,7 +15,7 @@ CMissionLogon * CMissionLogon::m_pMissionLogon=NULL;					//对象指针
 
 BEGIN_MESSAGE_MAP(CMissionLogon, CDlgStatus)
 	ON_WM_TIMER()
-
+	ON_MESSAGE(IDM_SEND_RANDNUM,OnMessageSendRandNum)
 END_MESSAGE_MAP()
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -30,7 +31,7 @@ CMissionLogon::CMissionLogon()
 	m_pDlgLogon=NULL;
 	//m_pDlgRegister=NULL;
 	m_bKefu = false;
-
+	m_cbIsYanzheng = 0;
 	//设置组件
 	SetStatusViewSink(this);
 	m_nAutoLogon=0;
@@ -86,16 +87,7 @@ VOID CMissionLogon::OnStatusCancel()
 	_sntprintf(szKey,CountArray(szKey),_T("%d"),0);
 	WritePrivateProfileString(time.Format(L"%Y-%m-%d"),TEXT("TodayCanUse"),szKey,szFileName);
 
-	//重新登录
-	if (m_bRegister==false)
-	{
-		ShowLogon();
-	}
-	else
-	{
-		ShowRegister();
-	}
-
+	ShowLogon();
 	return;
 }
 
@@ -123,30 +115,22 @@ bool CMissionLogon::OnEventMissionLink(INT nErrorCode,INT nSocketID)
 		_sntprintf(szKey,CountArray(szKey),_T("%d"),0);
 		WritePrivateProfileString(time.Format(L"%Y-%m-%d"),TEXT("TodayCanUse"),szKey,szFileName);
 
-		//重新登录
-		if (m_bRegister==false)
+		if (m_nAutoLogon>5)
 		{
-			if (m_nAutoLogon>5)
-			{
-				//显示提示
-				CInformation Information(CPlatformFrame::GetInstance());
-				Information.ShowMessageBox(TEXT("尝试了所有的服务器都无法成功连接服务器，请留意网站维护公告！"),MB_ICONERROR);
-				m_nAutoLogon=0;
-				ShowLogon();
-			}
-			else
-			{
-				m_nAutoLogon++;
-				m_pDlgLogon->LoadLogonServerInfo();
-				PerformLogonMission(m_bRemPassword);
-
-			}
-			
+			//显示提示
+			CInformation Information(CPlatformFrame::GetInstance());
+			Information.ShowMessageBox(TEXT("尝试了所有的服务器都无法成功连接服务器，请留意网站维护公告！"),MB_ICONERROR);
+			m_nAutoLogon=0;
+			ShowLogon();
 		}
 		else
 		{
-			ShowRegister();
+			m_nAutoLogon++;
+			m_pDlgLogon->LoadLogonServerInfo();
+			PerformLogonMission(m_bRemPassword);
+
 		}
+		
 	}
 	else
 	{
@@ -305,7 +289,16 @@ bool CMissionLogon::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD w
 			}
 		}
 	}
-
+	else if(Command.wMainCmdID==MDM_GP_USER_SERVICE)
+	{
+		switch (Command.wSubCmdID)
+		{
+		case SUB_GP_SEND_CHECKYANZHENGMA_RET:	//验证码
+			{
+				return OnSocketSubCheckYzmRet(pData,wDataSize);
+			}
+		}
+	}
 	return false;
 }
 
@@ -343,41 +336,6 @@ VOID CMissionLogon::ShowLogon()
 // 	{
 // 		m_pDlgRegister->ShowWindow(SW_HIDE);
 // 	}
-
-	return;
-}
-
-//显示注册
-VOID CMissionLogon::ShowRegister()
-{
-	//效验状态
-	ASSERT(GetActiveStatus()==false);
-	if (GetActiveStatus()==true) return;
-
-	//设置变量
-	m_bRegister=true;
-
-// 	//创建窗口
-// 	if (m_pDlgRegister==NULL)
-// 	{
-// 		m_pDlgRegister=new CDlgRegister;
-// 	}
-// 	
-// 	//创建窗口
-// 	if (m_pDlgRegister->m_hWnd==NULL)
-// 	{
-// 		m_pDlgRegister->Create(IDD_DLG_REGISTER,GetDesktopWindow());
-// 	}
-// 
-// 	//显示窗口
-// 	m_pDlgRegister->ShowWindow(SW_SHOW);
-// 	m_pDlgRegister->SetForegroundWindow();
-
-	//隐藏窗口
-	if ((m_pDlgLogon!=NULL)&&(m_pDlgLogon->m_hWnd!=NULL))
-	{
-		m_pDlgLogon->ShowWindow(SW_HIDE);
-	}
 
 	return;
 }
@@ -443,6 +401,12 @@ bool CMissionLogon::CreatePlazaview()
 	return pPlatformFrame->CreatePlazaview();
 
 }
+
+CString		CMissionLogon::GetWebSiteURL()
+{
+	return m_strWebSiteURL;
+}
+
 //执行登录
 bool CMissionLogon::PerformKefu()
 {
@@ -471,6 +435,29 @@ bool CMissionLogon::PerformKefu()
 
 		return false;
 	}
+
+	return true;
+}
+//执行登录
+bool CMissionLogon::PerformSendYanZhengma(CString strYanzhengma)
+{
+	//效验状态
+	ASSERT(GetActiveStatus()==false);
+	if (GetActiveStatus()==true)
+	{
+		CMD_SendYanZhengma SendYanZhengma;
+		ZeroMemory(&SendYanZhengma,sizeof(SendYanZhengma));
+
+		SendYanZhengma.n_t_userid = theAccount.user_id;
+		_sntprintf(SendYanZhengma.s_t_code,CountArray(SendYanZhengma.s_t_code),TEXT("%s"),strYanzhengma);
+		SendYanZhengma.c_t_type = 2;
+		SendYanZhengma.c_t_stype = 1;
+		ASSERT(GetMissionManager()!=NULL);
+		GetMissionManager()->SendData(MDM_GP_USER_SERVICE,SUB_GP_SEND_YANZHENGMA,&SendYanZhengma,sizeof(SendYanZhengma));
+
+		return false;
+	}
+
 
 	return true;
 }
@@ -517,23 +504,21 @@ bool CMissionLogon::PerformLogonMission(bool bRemPassword)
 	CMissionManager * pMissionManager=GetMissionManager();
 	if (pMissionManager!=NULL) pMissionManager->SetCustomServer(szCustomServer);
 
+	CString strLog;
+
+	strLog.Format(L"PINGSECOND connect CurSel: %s ",szCustomServer);
+	OutputDebugString(strLog);
 
 	CPlatformFrame* pPlatformFrame = CPlatformFrame::GetInstance();
-	pPlatformFrame->AvtiveMainMissionItem();
+	if(pPlatformFrame!=NULL)
+		pPlatformFrame->AvtiveMainMissionItem();
 
-	SetTimer(IDI_LOGON_TIME,3*1000,NULL);
+	if(GetSafeHwnd())
+		SetTimer(IDI_LOGON_TIME,3*1000,NULL);
 	//发起连接
 	if (pMissionManager->AvtiveMissionItem(this,false)==false)
 	{
-		//重新登录
-		if (m_bRegister==false)
-		{
-			ShowLogon();
-		}
-		else
-		{
-			ShowRegister();
-		}
+		ShowLogon();
 
 		return false;
 	}
@@ -551,7 +536,51 @@ bool CMissionLogon::PerformLogonMission(bool bRemPassword)
 
 	return true;
 }
+//验证码
+bool CMissionLogon::OnSocketSubCheckYzmRet(VOID * pData, WORD wDataSize)
+{
+	//效验数据
+	ASSERT(wDataSize>=sizeof(CMD_GR_SendYanZhengmaRet));
+	if (wDataSize<sizeof(CMD_GR_SendYanZhengmaRet)) return false;
 
+	CMD_GR_SendYanZhengmaRet* pSendYanZheng = (CMD_GR_SendYanZhengmaRet*)pData;
+	if(pSendYanZheng->nResult == 0)
+	{
+		SafeDelete(m_pDlgLogon);
+
+		CMissionManager * pMissionManager=GetMissionManager();
+		if (pMissionManager!=NULL)
+		{
+			pMissionManager->ConcludeMissionItem(this,false);
+		}
+
+
+
+		//发送事件
+		CPlatformEvent * pPlatformEvent=CPlatformEvent::GetInstance();
+		if (pPlatformEvent!=NULL) pPlatformEvent->SendPlatformEvent(EVENT_USER_LOGON,0L);
+	}
+	else
+	{
+		CYanZhengMaDlg YanZhengMaDlg;
+		YanZhengMaDlg.SetYanZhengXinxi(m_strPhoneNum,1,2);
+
+		if(YanZhengMaDlg.DoModal()==IDOK)
+		{
+			CMD_SendYanZhengma SendYanZhengma;
+			ZeroMemory(&SendYanZhengma,sizeof(SendYanZhengma));
+			SendYanZhengma.n_t_userid = theAccount.user_id;
+			CString strTemp;
+			strTemp = YanZhengMaDlg.GetYanZhengma();
+			_sntprintf(SendYanZhengma.s_t_code,CountArray(SendYanZhengma.s_t_code),TEXT("%s"),strTemp);
+			SendYanZhengma.c_t_type = 3;
+			SendYanZhengma.c_t_stype = 1;
+			GetMissionManager()->SendData(MDM_GP_USER_SERVICE,SUB_GP_SEND_CHECKYANZHENGMA,&SendYanZhengma,sizeof(SendYanZhengma));
+		}	
+
+	}
+	return true;
+}
 //登录成功
 bool CMissionLogon::OnSocketSubLogonSuccess(VOID * pData, WORD wDataSize)
 {
@@ -585,12 +614,13 @@ bool CMissionLogon::OnSocketSubLogonSuccess(VOID * pData, WORD wDataSize)
 
 	//帐号信息
 	lstrcpyn(pGlobalUserData->szAccounts,pLogonSuccess->szAccounts,CountArray(pGlobalUserData->szAccounts));
-	lstrcpyn(pGlobalUserData->szNickName,pLogonSuccess->szNickName,CountArray(pGlobalUserData->szNickName));
+//	lstrcpyn(pGlobalUserData->szNickName,pLogonSuccess->szNickName,CountArray(pGlobalUserData->szNickName));
 
 	//扩展信息
 	lstrcpyn(pGlobalUserData->szAddrDescribe,pLogonSuccess->szAddrDescribe,CountArray(pGlobalUserData->szAddrDescribe));
 
-
+	m_cbIsYanzheng = pLogonSuccess->cIsYanZheng;
+	m_strPhoneNum.Format(L"%s",pLogonSuccess->szPhoneNum);
 	theAccount.Scoretype = MoShi_Yuan;
 	theAccount.fandian = pLogonSuccess->f_fandian;
  	theAccount.user_id = pLogonSuccess->dwUserID;
@@ -657,15 +687,7 @@ bool CMissionLogon::OnSocketSubLogonFailure(VOID * pData, WORD wDataSize)
 	LPCTSTR pszDescribeString(pLogonFailure->szDescribeString);
 	if (lstrlen(pszDescribeString)>0) ShowInformation(pszDescribeString,MB_ICONERROR,60);
 
-	//重新登录
-	if (m_bRegister==false)
-	{
-		ShowLogon();
-	}
-	else
-	{
-		ShowRegister();
-	}
+	ShowLogon();
 
 	return true;
 }
@@ -678,7 +700,18 @@ bool CMissionLogon::OnSocketSubLogonFinish(VOID * pData, WORD wDataSize)
 
 	//变量定义
 	CMD_GP_LogonFinish * pLogonFinish=(CMD_GP_LogonFinish *)pData;
-
+	if(wDataSize > 8)		//走的是新协议；
+	{
+		//生成二维码。
+		CString strURL;
+		strURL.Format(TEXT("https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=%s"), pLogonFinish->szReserved1);
+		HRESULT hr = URLDownloadToFile(NULL, strURL, TEXT("skin\\appdown.png"), 0, NULL);
+	}
+	if(wDataSize > 64)
+	{
+		//网页版URL
+		m_strWebSiteURL.Format(TEXT("%s"), pLogonFinish->szReserved2);				//
+	}
 	//变量定义
 	CParameterGlobal * pParameterGlobal=CParameterGlobal::GetInstance();
 
@@ -693,8 +726,53 @@ bool CMissionLogon::OnSocketSubLogonFinish(VOID * pData, WORD wDataSize)
 	HideStatusWindow();
 
 	//删除控件
-	SafeDelete(m_pDlgLogon);
-	//SafeDelete(m_pDlgRegister);
+	if(m_cbIsYanzheng == 1)
+	{
+		CYanZhengMaDlg YanZhengMaDlg;
+		YanZhengMaDlg.SetYanZhengXinxi(m_strPhoneNum,1,2);
+
+		if(YanZhengMaDlg.DoModal()==IDOK)
+		{
+			CMD_SendYanZhengma SendYanZhengma;
+			ZeroMemory(&SendYanZhengma,sizeof(SendYanZhengma));
+			SendYanZhengma.n_t_userid = theAccount.user_id;
+			CString strTemp;
+			strTemp = YanZhengMaDlg.GetYanZhengma();
+			_sntprintf(SendYanZhengma.s_t_code,CountArray(SendYanZhengma.s_t_code),TEXT("%s"),strTemp);
+			SendYanZhengma.c_t_type = 3;
+			SendYanZhengma.c_t_stype = 1;
+			GetMissionManager()->SendData(MDM_GP_USER_SERVICE,SUB_GP_SEND_CHECKYANZHENGMA,&SendYanZhengma,sizeof(SendYanZhengma));
+		}	
+		else
+		{
+			CGlobalUserInfo * pGlobalUserInfo=CGlobalUserInfo::GetInstance();
+			tagGlobalUserData * pGlobalUserData=pGlobalUserInfo->GetGlobalUserData();
+
+			//关闭提示
+			pGlobalUserData->dwUserID=0L;
+
+			//发送事件
+			CPlatformEvent * pPlatformEvent=CPlatformEvent::GetInstance();
+			if (pPlatformEvent!=NULL) pPlatformEvent->SendPlatformEvent(EVENT_USER_EXIT,0L);
+
+			CMD_GP_QuitGame QuitGame;
+			ZeroMemory(&QuitGame,sizeof(QuitGame));
+
+			QuitGame.dwUserID = theAccount.user_id;
+			GetMissionManager()->SendData(MDM_GP_USER_SERVICE,SUB_GP_QUIT_GAME,&QuitGame,sizeof(QuitGame));
+
+			CMissionManager * pMissionManager=GetMissionManager();
+			if (pMissionManager!=NULL)
+			{
+				pMissionManager->ConcludeMissionItem(this,false);
+			}
+			ShowLogon();
+		}
+
+	}
+	else
+	{
+		SafeDelete(m_pDlgLogon);
 
 	//终止任务
 	CMissionManager * pMissionManager=GetMissionManager();
@@ -707,6 +785,8 @@ bool CMissionLogon::OnSocketSubLogonFinish(VOID * pData, WORD wDataSize)
 	CPlatformEvent * pPlatformEvent=CPlatformEvent::GetInstance();
 	if (pPlatformEvent!=NULL) pPlatformEvent->SendPlatformEvent(EVENT_USER_LOGON,0L);
 
+	}
+	//SafeDelete(m_pDlgRegister);
 
 
 	return true;
@@ -719,36 +799,57 @@ bool CMissionLogon::OnSocketSubUpdateNotify(VOID * pData, WORD wDataSize)
 	ASSERT(wDataSize==sizeof(CMD_GP_UpdateNotify));
 	if (wDataSize!=sizeof(CMD_GP_UpdateNotify)) return false;
 
-	//设置变量
-	CMD_GP_UpdateNotify * pUpdateNotify=(CMD_GP_UpdateNotify *)pData;
 
-	//终止任务
-	CMissionManager * pMissionManager=GetMissionManager();
-	if (pMissionManager!=NULL) pMissionManager->ConcludeMissionItem(this,false);
+	//启动程序
+	CHAR szModuleName[MAX_PATH]={0};
+	GetModuleFileNameA(AfxGetInstanceHandle(), szModuleName, MAX_PATH);
+	PathRemoveFileSpecA(szModuleName);
+	strcat(szModuleName, "\\Update.exe");
+	UINT nRet = WinExec(szModuleName, SW_SHOWDEFAULT);
+	CString strLog;
+	strLog.Format(L"UPDATEFAILED WinExec nRet:%d",nRet);
+	OutputDebugString(strLog);
 
-	//隐藏窗口
-	HideStatusWindow();
-
-	//提示消息
-	if ((pUpdateNotify->cbMustUpdate==TRUE)||(pUpdateNotify->cbAdviceUpdate==TRUE))
-	{
-		//构造提示
-		if (pUpdateNotify->cbMustUpdate==FALSE)
-		{
-			//构造提示
-			LPCTSTR pszString=TEXT("游戏大厅已升级，您现在的版本还能继续使用，建议您立即下载更新！");
-
-			//退出判断
-			CInformation Information(CPlatformFrame::GetInstance());
-			if (Information.ShowMessageBox(pszString,MB_ICONINFORMATION|MB_YESNO,0)!=IDYES) return true;
-		}
-	}
-
-	//下载大厅
-	CGlobalUnits * pGlobalUnits=CGlobalUnits::GetInstance();
-	if (pGlobalUnits!=NULL) pGlobalUnits->DownLoadClient(TEXT("游戏大厅"),0,0);
-
+// 
+// 	//设置变量
+// 	CMD_GP_UpdateNotify * pUpdateNotify=(CMD_GP_UpdateNotify *)pData;
+// 
+// 	//终止任务
+// 	CMissionManager * pMissionManager=GetMissionManager();
+// 	if (pMissionManager!=NULL) pMissionManager->ConcludeMissionItem(this,false);
+// 
+// 	//隐藏窗口
+// 	HideStatusWindow();
+// 
+// 	//提示消息
+// 	if ((pUpdateNotify->cbMustUpdate==TRUE)||(pUpdateNotify->cbAdviceUpdate==TRUE))
+// 	{
+// 		//构造提示
+// 		if (pUpdateNotify->cbMustUpdate==FALSE)
+// 		{
+// 			//构造提示
+// 			LPCTSTR pszString=TEXT("游戏大厅已升级，您现在的版本还能继续使用，建议您立即下载更新！");
+// 
+// 			//退出判断
+// 			CInformation Information(CPlatformFrame::GetInstance());
+// 			if (Information.ShowMessageBox(pszString,MB_ICONINFORMATION|MB_YESNO,0)!=IDYES) return true;
+// 		}
+// 	}
+// 
+// 	//下载大厅
+// 	CGlobalUnits * pGlobalUnits=CGlobalUnits::GetInstance();
+// 	if (pGlobalUnits!=NULL) pGlobalUnits->DownLoadClient(TEXT("游戏大厅"),0,0);
+// 
 	return true;
 }
 
+
+LRESULT CMissionLogon::OnMessageSendRandNum(WPARAM wParam, LPARAM lParam)
+{
+	int nRandNum = (int)wParam;
+	CString strLog;
+	strLog.Format(L"RANDNUM %d",nRandNum);
+	OutputDebugString(strLog);
+	return 1;
+}
 //////////////////////////////////////////////////////////////////////////////////

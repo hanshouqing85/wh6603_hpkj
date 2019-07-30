@@ -149,7 +149,7 @@ void CDlgAddtional::OnPaint()
 
 	CFont * pOldFont = dc.SelectObject(&m_font);
 	CString strZongJine;
-	strZongJine.Format(L"所选金额:%.2lf元",m_ZongJine);
+	strZongJine.Format(L"所选金额:%.3lf元",m_ZongJine);
 	dc.DrawText(strZongJine,rcZongJine,SWP_NOZORDER);
 	dc.SelectObject(pOldFont);
 	dc.SetTextColor(oldTextColor);
@@ -162,10 +162,11 @@ void CDlgAddtional::OnPaint()
 
 HBRUSH CDlgAddtional::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
-	if (nCtlColor == CTLCOLOR_STATIC && pWnd->GetDlgCtrlID() == IDC_STATIC) {
+	//&& pWnd->GetDlgCtrlID() == IDC_STATIC
+	if (nCtlColor == CTLCOLOR_STATIC ) {
 		pDC->SetBkMode(TRANSPARENT); 
-		pDC->SetTextColor(RGB(95,82,81));
-		HBRUSH B = CreateSolidBrush(RGB(189,186,185)); 
+		pDC->SetTextColor(RGB(250,250,250));
+		HBRUSH B = CreateSolidBrush(RGB(63,78,130)); 
 		return (HBRUSH) B; 
 	}
 
@@ -179,14 +180,14 @@ HBRUSH CDlgAddtional::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	else if( pWnd->GetDlgCtrlID() == IDC_COMBO1)
 	{
 		pDC->SetBkMode(TRANSPARENT); 
-		pDC->SetTextColor(RGB(95,82,81));
+		pDC->SetTextColor(RGB(56,90,154));
 		HBRUSH B = CreateSolidBrush(RGB(200,200,200)); 
 		return (HBRUSH) B;
 	}
 	else if( (pWnd->GetDlgCtrlID() ==  IDC_CHECK1 || pWnd->GetDlgCtrlID() == IDC_CHECK2)|| pWnd->GetDlgCtrlID() == IDC_STATIC_BEITOU|| pWnd->GetDlgCtrlID() == IDC_STATIC_STOP)
 	{
 		pDC->SetBkMode(TRANSPARENT); 
-		pDC->SetTextColor(RGB(95,82,81));
+		pDC->SetTextColor(RGB(56,90,154));
 		
 		HBRUSH B = CreateSolidBrush(RGB(189,186,185)); 
 		return (HBRUSH) B;
@@ -245,6 +246,15 @@ CString CDlgAddtional::GetNextQiHao()
 			{
 				m_strQiHao.Format(L"000001");
 			}
+			else if(m_nGameType == CZ_JiaNaDaSSC)
+			{
+				int a = 0;
+				a = _ttoi(m_strQiHao);
+				a+=1;
+
+				m_strQiHao.Format(L"%d", a);
+
+			}
 			else
 			{
 				int a,b,c ;
@@ -297,12 +307,8 @@ void	CDlgAddtional::SetCurrentQihaoTime(CString strQihao, CString strTime,int nF
 	m_nFirst = nFirst;
 	m_nLast = nLast;
 	m_fJine=fJine;
-
 	m_nMostQishu = nMostQishu;
 	m_nGameType=nTypeID;
-	m_Grid.Invalidate();
-
-
 }
 
 void CDlgAddtional::GridCtrlInit()
@@ -317,8 +323,8 @@ void CDlgAddtional::GridCtrlInit()
 	m_Grid.SetBkColor(RGB(255,255,255));
     m_Grid.SetEditable(true);
     m_Grid.SetTextBkColor(RGB(200,200,200));			//背景色
-	m_Grid.SetTextColor(RGB(95,82,81));				//字体颜色
-    m_Grid.SetRowCount(50);								//初始为10行
+	m_Grid.SetTextColor(RGB(56,90,154));				//字体颜色
+    m_Grid.SetRowCount(101);								//初始为10行
     m_Grid.SetColumnCount(4);							//初始化为11列
     m_Grid.SetFixedRowCount(1);							//表头为一行
 //    m_Grid.SetFixedColumnCount(1);					//表头为一列
@@ -333,8 +339,13 @@ void CDlgAddtional::GridCtrlInit()
 	nGridWidth-=378;
 	m_Grid.SetColumnWidth(3,nGridWidth);						//设置各列宽
 	CString strTxtQiHao;
+	int nCanRow = m_Grid.GetRowCount();
+	if(m_nGameType == CZ_JiaNaDaSSC)
+		nCanRow = m_nMostQishu;
     for (int row = 0; row < m_Grid.GetRowCount(); row++)
 	{
+		if(row>nCanRow)
+			break;
 		if(row>0)
 			m_Grid.SetCellType(row,0, RUNTIME_CLASS(CGridCellCheck));
 		m_Grid.SetItemState(row,2, m_Grid.GetItemState(row,2) | GVIS_READONLY);			//只读属性
@@ -503,11 +514,26 @@ void CDlgAddtional::OnEnChangeEdit2()
 	CEdit* pEdit = (CEdit*) GetDlgItem(IDC_EDIT2);
 	pEdit->GetWindowText(strText);
 	nQi = _ttoi(strText);
-	if(nQi <= 0)
+
+	int nCanRow = 100;
+	if(m_nGameType == CZ_JiaNaDaSSC)
+		nCanRow = m_nMostQishu;
+
+	if(nQi < 0)
 	{
 		MyMessageBox(L"追期期数至少为1！");
 		strText = _T("1");
 		pEdit->SetWindowText(strText);
+		return;
+	}
+	else 	if(_ttoi(strText) > nCanRow)
+	{
+		CString strLog;
+		strLog.Format(L"最多追%d期！",nCanRow);
+		MyMessageBox(strLog);
+		strText.Format( _T("%d"),nCanRow);
+		pEdit->SetWindowText(strText);
+		return;
 	}
 
 	int nCount = 0;
@@ -564,6 +590,8 @@ void CDlgAddtional::OnEnChangeEdit1()
 
 	m_strTime = strText;
 	int nSelIndex=0;
+
+
 	for(int n=1; n<m_Grid.GetRowCount(); n++)
 	{
 		CGridCellCheck* pCellCheck = (CGridCellCheck*)m_Grid.GetCell(n, 0);
@@ -743,6 +771,11 @@ void CDlgAddtional::OnGridEndSelChange(NMHDR *pNotifyStruct, LRESULT* /*pResult*
 void CDlgAddtional::OnGridEndEdit(NMHDR *pNotifyStruct, LRESULT* /*pResult*/)
 {
 	NM_GRIDVIEW* pItem = (NM_GRIDVIEW*) pNotifyStruct;
+	int nCanRow = m_Grid.GetRowCount();
+	if(m_nGameType == CZ_JiaNaDaSSC)
+		nCanRow = m_nMostQishu;
+	if(pItem->iRow>nCanRow)
+		return;
 	//MessageBox(L"OnGridEndEdit");
 	if(pItem->iRow != -1 && pItem->iColumn == 1)
 	{

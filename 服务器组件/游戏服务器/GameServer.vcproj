@@ -238,8 +238,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Iphlpapi.lib ../../../开发库/Lib/unicode/HttpSocket.lib"
-				OutputFile="../../../运行/Debug/Unicode/GameServer.exe"
+				AdditionalDependencies="Iphlpapi.lib ../../游戏组件/开发库/Lib/unicode/HttpSocket.lib"
+				OutputFile="../../运行/Debug/Unicode/GameServer.exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -268,7 +268,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="mkdir ..\..\..\发布组件\服务器组件\Debug\Unicode&#x0D;&#x0A;copy /y ..\..\..\运行\Debug\Unicode\$(TargetFileName) ..\..\..\发布组件\服务器组件\Debug\Unicode\$(TargetFileName)&#x0D;&#x0A;"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
@@ -376,6 +376,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CollectDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\DataBaseEngineSink.cpp"
 				>
 			</File>
@@ -463,6 +467,10 @@
 			</File>
 			<File
 				RelativePath=".\AttemperEngineSink.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CollectDlg.h"
 				>
 			</File>
 			<File

@@ -4,16 +4,17 @@
 #include "MessageDlg.h"
 #include "PlatformFrame.h"
 
-const static int xiaofeie_x = 369;
-const static int xiaofeie_y = 297;
+const static int xiaofeie_x = 290;
+const static int xiaofeie_y = 328+30;
 const static int xiaofeie_width = 140;
 const static int xiaofeie_height = 20;
+//消费金额坐标
 CRect rc_xiaofeie(xiaofeie_x,
 				  xiaofeie_y,
 				  xiaofeie_x + xiaofeie_width,
 				  xiaofeie_y + xiaofeie_height);
 
-const static int zuidijiangli_x = 505;
+const static int zuidijiangli_x = 500;
 const static int zuidijiangli_y = 174;
 const static int zuidijiangli_width = 140;
 const static int zuidijiangli_height = 20;
@@ -41,7 +42,7 @@ CRect rc_jilu(jilu_x,
 			   jilu_x + jilu_width,
 			   jilu_y + jilu_height);
 
-const static int mubiao_x = 510;
+const static int mubiao_x = 500;
 const static int mubiao_y = 306;
 const static int mubiao_width = 46;
 const static int mubiao_height = 20;
@@ -51,8 +52,8 @@ CRect rc_mubiao(mubiao_x,
 			  mubiao_y + mubiao_height);
 
 //签到，领奖按钮
-const static int btn_lingjiang_x = 70;
-const static int btn_lingjiang_y = 251;
+const static int btn_lingjiang_x = 59+27;
+const static int btn_lingjiang_y = 316;
 
 #define IDC_QIANDAO_DAY	100
 // CHuoDongHuanLeSongDlg 对话框
@@ -115,23 +116,24 @@ BOOL CHuoDongHuanLeSongDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	// TODO:  在此添加额外的初始化
-	m_bmpBk = new Bitmap(CBmpUtil::GetExePath() + _T("skin\\hd\\hd_huanlesong.png"));
+	if(m_bmpBk == NULL)
+	{
+		m_bmpBk = new Bitmap(CBmpUtil::GetExePath() + _T("skin\\hd\\hd_huanlesong.png"));
 
-	m_font.CreateFont(22, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, 
-		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH|FF_DONTCARE, _T("Arial")); 
+		m_font.CreateFont(22, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, 
+			OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH|FF_DONTCARE, _T("Arial")); 
 
-	m_btnQiandao.SetImage(CBmpUtil::GetExePath() + _T("skin\\hd\\btn_lingjiang5.png"));
-	m_btnLingJiang.SetImage(CBmpUtil::GetExePath() + _T("skin\\hd\\btn_lingjiang.png"));
-
+	}
 	CRect rcCreate(0,0,0,0);
-
 	for(int i = 0;i < CountArray(m_btnQiandaoDay);i++)
 	{
 		m_btnQiandaoDay[i].Create(NULL,WS_CHILD|WS_VISIBLE,rcCreate,this,IDC_QIANDAO_DAY+i);
 		m_btnQiandaoDay[i].SetImage(CBmpUtil::GetExePath() + _T("skin\\hd\\btn_lingjiang4.png"));
 		m_btnQiandaoDay[i].EnableWindow(false);
 	}
+	m_btnQiandao.SetImage(CBmpUtil::GetExePath() + _T("skin\\hd\\btn_lingjiang5.png"));
+	m_btnLingJiang.SetImage(CBmpUtil::GetExePath() + _T("skin\\hd\\btn_lingjiang.png"));
+
 	AdjustLingjiang();
 	m_btnQiandao.EnableWindow(FALSE);
 	m_btnLingJiang.EnableWindow(FALSE);
@@ -143,7 +145,7 @@ void CHuoDongHuanLeSongDlg::AdjustLingjiang()
 	int n_space_x = 0;
 	int n_space_y = 0;
 
-	n_space_x =  130;
+	n_space_x =  129;
 	n_space_y =  0;
 	int nWidth = 83;
 	int nHeight = 20;
@@ -214,8 +216,8 @@ void CHuoDongHuanLeSongDlg::OnPaint()
 
 	rcZongQiandao.CopyRect(rc_xiaofeie);
 
-	rcZongQiandao.left += 291;
-	rcZongQiandao.right += 291;
+	rcZongQiandao.left += 341;
+	rcZongQiandao.right += 341;
 	strText.Format(L"%.2f", m_dWinPrize);
 	cacheDC.DrawText(strText, rcZongQiandao, DT_LEFT|DT_VCENTER|DT_SINGLELINE);
 
@@ -299,6 +301,11 @@ void CHuoDongHuanLeSongDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 {
 	CDialog::OnShowWindow(bShow, nStatus);
 
+	for(int i = 0;i < 7;i++)
+	{
+		m_btnQiandaoDay[i].SetImage(CBmpUtil::GetExePath() + _T("skin\\hd\\btn_lingjiang4.png"));
+		m_btnQiandaoDay[i].EnableWindow(FALSE);
+	}
 	if(bShow)
 	{
 		if(theAccount.user_id <=0)
@@ -446,6 +453,7 @@ bool CHuoDongHuanLeSongDlg::OnEventMissionRead(TCP_Command Command, VOID * pData
 		}
 	}
 	RedrawWindow(NULL,NULL,RDW_INVALIDATE|RDW_NOERASE|RDW_UPDATENOW);
+	return true;
 
 	//错误断言
 	ASSERT(FALSE);
@@ -467,7 +475,8 @@ VOID CHuoDongHuanLeSongDlg::SendToServer(int nSendType)
 
 			UserQiandao.dwUserID = theAccount.user_id;
 			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_USER_QIANDAO,&UserQiandao,sizeof(UserQiandao));
+			if(pPlatformFrame!=NULL)
+				pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_USER_QIANDAO,&UserQiandao,sizeof(UserQiandao));
 			return;
 		}
 
@@ -487,7 +496,8 @@ VOID CHuoDongHuanLeSongDlg::SendToServer(int nSendType)
 			GetHuanlesong.dwUserID = theAccount.user_id;
 
 			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_USER_HUANLESONG,&GetHuanlesong,sizeof(GetHuanlesong));
+			if(pPlatformFrame!=NULL)
+				pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_USER_HUANLESONG,&GetHuanlesong,sizeof(GetHuanlesong));
 			return;
 		}
 
@@ -505,7 +515,8 @@ VOID CHuoDongHuanLeSongDlg::SendToServer(int nSendType)
 			GetLingjiang.dwUserID = theAccount.user_id;
 
 			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_LING_JIANG,&GetLingjiang,sizeof(GetLingjiang));
+			if(pPlatformFrame!=NULL)
+				pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_LING_JIANG,&GetLingjiang,sizeof(GetLingjiang));
 			return;
 
 		}

@@ -1,6 +1,8 @@
 #include "Stdafx.h"
 #include "AndroidUserItemSink.h"
-#include "math.h"
+#include <math.h>
+#include <algorithm>
+using namespace std;
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -603,6 +605,20 @@ bool CAndroidUserItemSink::OnSubGameStart(const void * pBuffer, WORD wDataSize)
 		return true;
 
 	//设置时间
+#if 1
+	vector<int> vElapse(m_nChipTime);
+	for (int i = 0; i < m_nChipTime; i++)
+	{
+		nElapse = GetRand(2,pGameStart->cbTimeLeave-1);
+		vElapse[i]=nElapse;
+	}
+	std::sort(vElapse.begin(),vElapse.end());
+	for (int i = 0; i < m_nChipTime; i++)
+	{
+		m_pIAndroidUserItem->SetGameTimer(IDI_PLACE_JETTON+i+1, vElapse[i]);
+	}
+#else
+	// 当下注次数配置为1~2次时，机器人下注明显集中在前半段
 	int nTimeGrid = int(pGameStart->cbTimeLeave-2)*800/m_nChipTime;		//时间格,前2秒不下注,所以-2,800表示机器人下注时间范围千分比
 	for (int i = 0; i < m_nChipTime; i++)
 	{
@@ -618,6 +634,7 @@ bool CAndroidUserItemSink::OnSubGameStart(const void * pBuffer, WORD wDataSize)
 		
 		m_pIAndroidUserItem->SetGameTimer(IDI_PLACE_JETTON+i+1, nElapse);
 	}
+#endif
 
 	//ASSERT( MyDebug(_T("机器人 %d 下注次数 %d 范围 [%d %d] 总人数 %d 限制 [%I64d %I64d] 上庄 [%d %d]"), wMyID, m_nChipTime, m_nChipLimit[0], m_nChipLimit[1], 
 	//	pGameStart->nChipRobotCount, m_lMaxChipBanker, m_lMaxChipUser, m_stlApplyBanker, m_nRobotApplyBanker) );
@@ -912,6 +929,55 @@ void CAndroidUserItemSink::ReadConfigInfo()
 		m_pIAndroidUserItem->PerformSaveScore(m_pIAndroidUserItem->GetMeUserItem()->GetUserScore()/2);
 	}
 
+}
+
+//取[nMin,nMax]之间的随机整数
+int	CAndroidUserItemSink::GetRand(const int nMin,const int nMax)
+{
+	if ( nMin > nMax)
+		return nMin;
+	return rand()%(nMax-nMin+1)+nMin;
+}
+
+//根据概率选择，返回true的概率为p
+bool CAndroidUserItemSink::SelectBoolByProb(float p)
+{
+	if(p>=1)
+		return true;
+	if(p<=0)
+		return false;
+	int P=(int)(p*1000+0.5); 
+	int randNum = GetRand(0,1000);
+	if(randNum<P)
+		return true;
+	return false;
+}
+
+//根据概率选择
+int CAndroidUserItemSink::SelectByProb(int arr[],int arrProb[],int count,int total/*=0*/)
+{
+	if(total==0)
+	{
+		for(int i=0;i<count;i++)
+		{
+			total+=arrProb[i];
+		}
+	}
+	int kind=0;
+	int iRand =rand()%total;
+	for(int i=0;i<count;i++)
+	{
+		if (iRand < arrProb[i])
+		{
+			kind=arr[i];
+			break;
+		}
+		else
+		{
+			iRand -= arrProb[i];
+		}
+	}
+	return kind;
 }
 
 //组件创建函数

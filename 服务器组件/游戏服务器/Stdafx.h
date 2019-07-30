@@ -79,7 +79,7 @@ typedef void * POINTER_64 PVOID64;
 #else
 	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/ServiceCore.lib")
 	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/GameServiceD.lib")
-	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/KernelEngine.lib")
+	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/KernelEngineD.lib")
 	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/ModuleManagerD.lib")
 #endif
 #endif

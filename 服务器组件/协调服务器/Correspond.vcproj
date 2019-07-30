@@ -238,7 +238,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../../../运行/Debug/Unicode/Correspond.exe"
+				OutputFile="../../运行/Debug/Unicode/Correspond.exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -267,7 +267,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="mkdir ..\..\..\发布组件\服务器组件\Debug\Unicode&#x0D;&#x0A;copy /y ..\..\..\运行\Debug\Unicode\$(TargetFileName) ..\..\..\发布组件\服务器组件\Debug\Unicode\$(TargetFileName)&#x0D;&#x0A;"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
@@ -369,6 +369,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CollectDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\CorrespondServer.cpp"
 				>
 			</File>
@@ -432,6 +436,10 @@
 			>
 			<File
 				RelativePath=".\AttemperEngineSink.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CollectDlg.h"
 				>
 			</File>
 			<File

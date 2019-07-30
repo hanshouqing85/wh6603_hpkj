@@ -2,7 +2,6 @@
 #include "GamePlaza.h"
 #include "BeiJingPK10.h"
 #include "BmpUtil.h"
-/*#include "LuckMeDlg.h"*/
 #include "MessageDlg.h"
 #include "DlgAddtional.h"
 #include "DlgFandian.h"
@@ -64,10 +63,10 @@ extern vector<wstring> vecAllNums;
  static const int edit_haomao_danshi_height = 195;
 
  //添加号码按钮
- static const int btn_chq_add_x = 571;
+ static const int btn_chq_add_x = 588;
  static const int btn_chq_add_y = 415;
  //
- static const int btn_lock_x = 450;
+ static const int btn_lock_x = 378;
  static const int btn_lock_y = 417;
 
  //选号显示区域数据
@@ -75,40 +74,47 @@ extern vector<wstring> vecAllNums;
  static const int btn_del_sel_x = 470;
  static const int btn_del_sel_y = 543;
  //清空列表按钮
- static const int btn_cls_list_x = 645;
+ static const int btn_cls_list_x = 654;
  static const int btn_cls_list_y = 415;
  //号码列表
  static const int list_haomao_x = 43;
  static const int list_haomao_y = 469;
- static const int list_haomao_width = 592;
- static const int list_haomao_height = 72;
+ static const int list_haomao_width = 577;
+ static const int list_haomao_height = 58;
  //倍投编辑框
- static const int edit_beitou_x = 214;
- static const int edit_beitou_y = 423;
- static const int edit_beitou_width = 48;
- static const int edit_beitou_height = 21;
+ static const int edit_beitou_x = 182+9+10;
+ static const int edit_beitou_y = 426;
+ static const int edit_beitou_width = 35;
+ static const int edit_beitou_height = 27;
  //确认投注按钮
  static const int btn_touzhu_x = 638;
  static const int btn_touzhu_y = 490;
+ //一键投注按钮
+ static const int btn_touzhu_onekey_x = 496;
+ static const int btn_touzhu_onekey_y = 417;
  //追号按钮
- static const int btn_zhuihao_x = 719;
+ static const int btn_zhuihao_x = 721;
  static const int btn_zhuihao_y = 415;
  //更多记录
- static const int btn_more_x = 712;
- static const int btn_more_y = 92;
+ //static const int btn_more_x = 712+30;
+ //static const int btn_more_y = 92-90;
+
+ static const int btn_more_x = 712+50;
+ static const int btn_more_y = 92-90;
 
  //大开奖号
- static const int kj_big_haoma_x = 207;
- static const int kj_big_haoma_y = 54;
+ static const int kj_big_haoma_x = 207-21;
+ static const int kj_big_haoma_y = 54+14;
 
- static const int czh_rc_left = 243;
- static const int czh_rc_top = 4;
+
+ static const int czh_rc_left = 243-35;
+ static const int czh_rc_top = 4-5;
  static const int czh_rc_width = 85;
  static const int czh_rc_height = 30;
  static CRect rcCzh(czh_rc_left, czh_rc_top, czh_rc_left + czh_rc_width, czh_rc_top + czh_rc_height);
 
- static const int qihao_rc_left = 325;
- static const int qihao_rc_top = 4;
+ static const int qihao_rc_left = 335-45+20;
+ static const int qihao_rc_top = 4-5;
  static const int qihao_rc_width = 125;
  static const int qihao_rc_height = 30;
  static CRect rcQiHao(qihao_rc_left, qihao_rc_top, qihao_rc_left + qihao_rc_width, qihao_rc_top + qihao_rc_height);
@@ -120,30 +126,30 @@ extern vector<wstring> vecAllNums;
  static CRect rcYuGao(yugao_rc_left, yugao_rc_top, yugao_rc_left + yugao_rc_width, yugao_rc_top + yugao_rc_height);
 
  //小开奖号
- static const int kj_small_haoma_x = 590;
+ static const int kj_small_haoma_x = 590-15;
  static const int kj_small_haoma_y = 28;
  static const int kj_small_haoma_col_span = 0;
  static const int kj_small_haoma_row_span = 1;
 
  //总注数
- static const int zongzhushu_x = 71;
- static const int zongzhushu_y = 411;
+ static const int zongzhushu_x = 75;
+ static const int zongzhushu_y = 415;
  static const int zongzhushu_width = 150;
  static const int zongzhushu_height = 25;
  static CRect rcZongZhuShu(zongzhushu_x, zongzhushu_y, zongzhushu_x+zongzhushu_width, zongzhushu_y+zongzhushu_height);
+
+ //总金额
+ static const int zongjine_x = 261;
+ static const int zongjine_y = 433;
+ static const int zongjine_width = 150;
+ static const int zongjine_height = 25;
+ static CRect rcZongJinE(zongjine_x, zongjine_y, zongjine_x+zongjine_width, zongjine_y+zongjine_height);
  //总注数
- static const int allzongzhushu_x = 638;
+ static const int allzongzhushu_x = 638+10;
  static const int allzongzhushu_y = 444;
  static const int allzongzhushu_width = 150;
  static const int allzongzhushu_height = 25;
  static CRect rcAllZongzhushu(allzongzhushu_x, allzongzhushu_y, allzongzhushu_x+allzongzhushu_width, allzongzhushu_y+allzongzhushu_height);
-
- //总金额
- static const int zongjine_x = 295;
- static const int zongjine_y = 428;
- static const int zongjine_width = 150;
- static const int zongjine_height = 25;
- static CRect rcZongJinE(zongjine_x, zongjine_y, zongjine_x+zongjine_width, zongjine_y+zongjine_height);
 
  //鼠标输入
  static const int mouseinput_x = 597;
@@ -160,11 +166,11 @@ extern vector<wstring> vecAllNums;
 
  static const int btn_yuan_x = 10;
  static const int btn_yuan_y = 415;
- static const int btn_jiao_x = 45;
+ static const int btn_jiao_x = 37+10;
  static const int btn_jiao_y = 415;
- static const int btn_fen_x = 80;
+ static const int btn_fen_x = 64+20;
  static const int btn_fen_y = 415;
- static const int btn_li_x = 115;
+ static const int btn_li_x = 91+30;
  static const int btn_li_y = 415;
 static const int timer_id_get_luck_num = 1;
 static const int timer_id_kj_yugao = 2;
@@ -173,6 +179,7 @@ static const int timer_id_kaijiangzhong=3;
 //计时
 static const int TimerJiShi = 4;
 static const int TimerFandian = 5;
+static const int TimerLotteryStatus = 6;
 
 IMPLEMENT_DYNAMIC(CBeiJingPK10, CDialog)
 
@@ -193,13 +200,6 @@ CBeiJingPK10::CBeiJingPK10(CWnd* pParent /*=NULL*/)
 	//, m_zongJinE(0.0)
 	, m_beishu(1)
 	, m_kjXinxiCont(0)
-	/*, m_t1_start(0)
-	, m_t1_end(2)
-	, m_t2_start(10)
-	, m_t2_end(22)	
-	, m_t3_start(22)
-	, m_t3_end(24)*/
-	, m_pLuckMeDlg(NULL)
 {
 	m_nTzhSign = 1;
 	m_nTzhSign1 = 0;
@@ -246,43 +246,38 @@ CBeiJingPK10::~CBeiJingPK10()
 {
 	if (m_bmpBk != NULL) 
 	{
-		delete m_bmpBk;
+		SafeDelete(m_bmpBk);
 	}
 
 	if (m_numImageList != NULL) 
 	{
-		delete m_numImageList;
+		SafeDelete(m_numImageList);
 	}
 
 	if (m_kjNumBig != NULL) 
 	{
-		delete m_kjNumBig;
+		SafeDelete(m_kjNumBig);
 	}
 
 	if (m_kjNumSmall != NULL) 
 	{
-		delete m_kjNumSmall;
+		SafeDelete(m_kjNumSmall);
 	}
 
 	if (m_imgKaijiang != NULL) 
 	{
-		delete m_imgKaijiang;
+		//SafeDelete(m_imgKaijiang);
 	}
 
 	if (m_bmpDxdsh != NULL) 
 	{
-		delete m_bmpDxdsh;
+		SafeDelete(m_bmpDxdsh);
 	}
 
 	if (m_bmpNumTip != NULL) 
 	{
-		delete m_bmpNumTip;
+		SafeDelete(m_bmpNumTip);
 	}
-}
-
-void CBeiJingPK10::ConnectMainDlg(CPlazaViewItem* luckMeDlg)
-{
-	m_pLuckMeDlg = luckMeDlg;
 }
 
 void CBeiJingPK10::FlushZongjine()
@@ -482,6 +477,7 @@ void CBeiJingPK10::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BTN_DEL_SEL, m_btnDelSel);
 	DDX_Control(pDX, IDC_BTN_CLS_LIST, m_btnClsList);
 	DDX_Control(pDX, IDC_BTN_TOUZHU, m_btnTouZhu);
+	DDX_Control(pDX, IDC_BTN_TOUZHU_ONEKEY, m_btnTouZhuOnekey);
 	DDX_Control(pDX, IDC_BTN_ZHUIHAO, m_btnZhuiHao);
 	DDX_Control(pDX, IDC_EDIT_BEISHU, m_editBeiTou);
 	//DDX_Control(pDX, IDC_STATIC_DNASHI, m_staticDanShi);
@@ -539,6 +535,8 @@ void CBeiJingPK10::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BTN_SHUANG_SHI, m_btnShuangShi);
 
 	DDX_Control(pDX, IDC_BTN_MORE_RECORD, m_btnMoreRecord);
+	DDX_Control(pDX, IDC_BTN_QUSHI, m_btnQushi);
+
 	DDX_Control(pDX, IDC_BTN_YUAN,m_btnYuan);
 	DDX_Control(pDX, IDC_BTN_JIAO,m_btnJiao);
 	DDX_Control(pDX, IDC_BTN_FEN,m_btnFen);
@@ -628,6 +626,7 @@ BEGIN_MESSAGE_MAP(CBeiJingPK10, CDialog)
 	ON_WM_SIZE()
 	ON_BN_CLICKED(IDC_BTN_ZHUIHAO, &CBeiJingPK10::OnBnClickedBtnZhuihao)
 	ON_BN_CLICKED(IDC_BTN_TOUZHU, &CBeiJingPK10::OnBnClickedBtnTouzhu)
+	ON_BN_CLICKED(IDC_BTN_TOUZHU_ONEKEY, &CBeiJingPK10::OnBnClickedBtnTouzhuOneKey)
 	ON_WM_PAINT()
 	ON_WM_ERASEBKGND()
 	ON_WM_TIMER()
@@ -656,6 +655,7 @@ BEGIN_MESSAGE_MAP(CBeiJingPK10, CDialog)
 
 	ON_COMMAND(ID_RBTN_CPY, &CBeiJingPK10::OnRichEditCopy)
 	ON_BN_CLICKED(IDC_BTN_MORE_RECORD, &CBeiJingPK10::OnBnClickedBtnMoreRecord)
+	ON_BN_CLICKED(IDC_BTN_QUSHI, &CBeiJingPK10::OnBnClickedBtnQuShi)
 	ON_MESSAGE( WM_BN_CLICK, &CBeiJingPK10::onBnCLick)
 
 	ON_BN_CLICKED(IDC_BTN_WAN_QUAN, &CBeiJingPK10::OnBnClickedBtnWanQuan)
@@ -810,7 +810,7 @@ void CBeiJingPK10::OnPaint()
 	CBitmap *pOldCacheBmp = cacheDC.SelectObject(&cacheBmp);
 
 	Graphics graphics(cacheDC.m_hDC);
-	graphics.DrawImage(m_bmpBk, Rect(0, 0,m_bmpBk->GetWidth(), m_bmpBk->GetHeight()), 0, 0, m_bmpBk->GetWidth(), m_bmpBk->GetHeight(), UnitPixel);
+	graphics.DrawImage(m_bmpBk, Rect(0, 0,m_bmpBk->GetWidth(), m_bmpBk->GetHeight()), 0, 28, m_bmpBk->GetWidth(), m_bmpBk->GetHeight(), UnitPixel);
 
 	//绘制开奖号
 	DrawLastKjHaoma(&cacheDC, graphics);
@@ -861,6 +861,8 @@ void CBeiJingPK10::OnSize(UINT nType, int cx, int cy)
 void CBeiJingPK10::OnShowWindow(BOOL bShow, UINT nStatus)
 {
 	CDialog::OnShowWindow(bShow, nStatus);
+	OnBnClickedBtnClsList();
+	ResetAllNums();
 
 	if(bShow)
 	{
@@ -868,9 +870,14 @@ void CBeiJingPK10::OnShowWindow(BOOL bShow, UINT nStatus)
 			return;
 
 		m_bKaiJiangzhong = true;
+		m_cbIfTs=0;
+		SendToServer(11);
+		
 		SetTimer(timer_id_get_luck_num, 10000, NULL);
 		SetTimer(timer_id_kj_yugao, 1000, NULL);
 		SetTimer(timer_id_kaijiangzhong, 100, NULL);
+		KillTimer(TimerLotteryStatus);
+		SetTimer(TimerLotteryStatus,30000,NULL);
 		m_btnYuan.SetPushed(false);
 		m_btnJiao.SetPushed(false);
 		m_btnFen.SetPushed(false);
@@ -899,6 +906,7 @@ void CBeiJingPK10::OnShowWindow(BOOL bShow, UINT nStatus)
 	}
 	else
 	{
+		KillTimer(TimerLotteryStatus);
 		m_DlgOpenRecord.ShowWindow(SW_HIDE);
 		KillTimer(timer_id_get_luck_num);
 		KillTimer(timer_id_kj_yugao);
@@ -1025,6 +1033,10 @@ void CBeiJingPK10::OnTimer(UINT_PTR nIDEvent)
 		rcRect.bottom += 50;
 		InvalidateRect(&rcRect);
 	}
+	else if(TimerLotteryStatus == nIDEvent)
+	{
+		SendToServer(11);
+	}
 	else if(TimerJiShi == nIDEvent)
 	{
 		DWORD newCount = ::GetTickCount();
@@ -1050,10 +1062,10 @@ void CBeiJingPK10::OnTimer(UINT_PTR nIDEvent)
 				return;
 			//for(int n=0; n<m_nFrameCount; n++)
 			{
-				int nLeft=kj_big_haoma_x -11+7/*+ n *( m_bigNumWidth+8)*/;
-				CMemDC	mDC(pDC, CRect(nLeft, kj_big_haoma_y-18, nLeft+m_imgKaijiang->GetWidth(), kj_big_haoma_y-18+m_imgKaijiang->GetHeight()));
+				int nLeft=kj_big_haoma_x-3/*+ n *( m_bigNumWidth+8)*/;
+				CMemDC	mDC(pDC, CRect(nLeft, kj_big_haoma_y-16, nLeft+m_imgKaijiang->GetWidth()+184, kj_big_haoma_y+m_imgKaijiang->GetHeight()+36));
 				Graphics gh(mDC.m_hDC);
-				gh.DrawImage(m_imgKaijiang, nLeft, kj_big_haoma_y-18, m_imgKaijiang->GetWidth(), m_imgKaijiang->GetHeight());
+				gh.DrawImage(m_imgKaijiang, nLeft, kj_big_haoma_y-16, m_imgKaijiang->GetWidth(), m_imgKaijiang->GetHeight());
 			}
 			GUID Guid = FrameDimensionTime;
 			m_imgKaijiang->SelectActiveFrame(&Guid, m_nFrameIndex++);
@@ -1274,6 +1286,8 @@ BOOL CBeiJingPK10::OnInitDialog()
 	m_imgKaijiang->GetFrameDimensionsList(pGuids,nCount);			//获取图像帧的GUID
 	m_nFrameCount=m_imgKaijiang->GetFrameCount(pGuids);				//获取GIF帧数
 	m_btnMoreRecord.SetImage(CBmpUtil::GetExePath() + _T("skin\\game\\btn_more.png"));
+	
+	m_btnQushi.SetImage(CBmpUtil::GetExePath() + _T("skin\\game\\btn_hmzs.png"));
 
 	m_bigNumWidth = m_kjNumBig->GetWidth() / 10;
 	m_bigNumHeight = m_kjNumBig->GetHeight();
@@ -1298,10 +1312,9 @@ BOOL CBeiJingPK10::OnInitDialog()
 		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH|FF_DONTCARE, _T("微软雅黑")); 
 	m_KjInfoFont1.CreateFont(20, 0, 0, 0, FW_BOLD, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, 
 		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH|FF_DONTCARE, _T("微软雅黑")); 
-	m_KjInfoFont.CreateFont(30, 0, 0, 0, FW_BOLD, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, 
+	m_KjInfoFont.CreateFont(35, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, 
 		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH|FF_DONTCARE, _T("微软雅黑")); 
 
-	m_DlgOpenRecord.Create(COpenRecord::IDD,this);
 	m_btnDelSel.SetImage(CBmpUtil::GetExePath() + _T("skin\\game\\btn_delate.png"));
 	m_btnClsList.SetImage(CBmpUtil::GetExePath() + _T("skin\\game\\btn_clear.png"));
 	m_btnTouZhu.SetImage(CBmpUtil::GetExePath() + _T("skin\\game\\btn_bet.png"));
@@ -1312,6 +1325,7 @@ BOOL CBeiJingPK10::OnInitDialog()
 	m_btnBeiTouJia.SetImage(CBmpUtil::GetExePath() + _T("skin\\game\\btn_jia.png"));
 	m_btnBeiTouJian.SetImage(CBmpUtil::GetExePath() + _T("skin\\game\\btn_jian.png"));
 	m_btnLock.SetTextFont(&m_zongFont);
+	m_btnTouZhuOnekey.SetImage(CBmpUtil::GetExePath() + _T("skin\\game\\yjtz.png"));
 
 	m_richDanshiHaoma.LimitText(-1);
 	m_richDanshiHaoma.SetBackgroundColor(false,RGB(200,200,200));
@@ -1323,7 +1337,7 @@ BOOL CBeiJingPK10::OnInitDialog()
 	m_richDanshiHaoma.SetDefaultCharFormat(cf);
 	m_richDanshiHaoma.SetEventMask(ENM_CHANGE);
 
-	m_editBeiTou.SetEnableColor(RGB(0,0,0),RGB(250,243,227),RGB(250,243,227));
+	m_editBeiTou.SetEnableColor(RGB(0,0,0),RGB(214,223,254),RGB(214,223,254));
 	m_editBeiTou.SetFont(&m_zongFont);
 	m_ToolTipCtrl.Create(this);
 	m_ToolTipCtrl.Activate(TRUE);
@@ -2579,7 +2593,7 @@ void CBeiJingPK10::OnBnClickedBtnChqAdd()
 		DOUBLE fJine = 0.0f;
 		fJine = zhushu*m_beishu*danzhujine;
 		CString strZongzhu ;
-		strZongzhu.Format(L"￥%.3lf",fJine);
+		strZongzhu.Format(L"%.3lf",fJine);
 		m_listChqSSC.SetItemText(nCount, 2, strZongzhu);
 
 		m_listChqSSC.SetItemText(nCount, 3, GetWanDesc());
@@ -3720,9 +3734,23 @@ void CBeiJingPK10::OnBnClickedBtnZhuihao()
 
 	CDlgAddtional	dlgZhuiHao;
 	CString strBeishu ;
-	strBeishu.Format(L"%d",m_beishu);
+	strBeishu.Format(L"%d",1);
+	int nCount = 0 ;
+	nCount = m_listChqSSC.GetItemCount();
+	DOUBLE fJine = 0.00f;
+	for (int i = 0;i < nCount;i++)
+	{
+		CString strBeishu = m_listChqSSC.GetItemText(i,5);
+		int nBeishu = _ttoi(strBeishu);
+		CString strJine = m_listChqSSC.GetItemText(i,2);
+		DOUBLE fSjine = _wtof(strJine);
 
-	dlgZhuiHao.SetCurrentQihaoTime( m_chqRule.GetNextExpect(-1), strBeishu,0,8, m_zongJine,999999,CZ_PK10);
+		DOUBLE fSingle = fSjine/nBeishu;
+
+		fJine += fSingle;
+	}
+
+	dlgZhuiHao.SetCurrentQihaoTime( m_chqRule.GetNextExpect(-1), strBeishu,0,8, fJine,999999,CZ_PK10);
 	if(dlgZhuiHao.DoModal() == IDOK)
 	{
 		long kjing = m_chqRule.GetKjShjDiff(); 
@@ -3749,7 +3777,7 @@ void CBeiJingPK10::OnBnClickedBtnZhuihao()
 		for(int i = 0;i < m_nZhuihaoCount;i++)
 		{
 			int nBeishu = _ttoi(vecData1[i].c_str());
-			fZongJine += m_zongJine*nBeishu;
+			fZongJine += fJine*nBeishu;
 		}
 		if(fZongJine > theAccount.yue)
 		{
@@ -3777,15 +3805,8 @@ void CBeiJingPK10::OnBnClickedBtnZhuihao()
 	InvalidateRect(&rcInvali);
 	InvalidateRect(&rcZongJinE);
 OnBnClickedBtnClsList();
-	m_beishu = 1;
+	//m_beishu = 1;
 	UpdateData(FALSE);
-
-//	
-
-// 	if (m_pLuckMeDlg != NULL) 
-// 	{
-// 		m_pLuckMeDlg->UpdateYuE();
-// 	}
 }
 
 //校验输入
@@ -3830,6 +3851,44 @@ bool	CBeiJingPK10::CheckInput()
 
 	return true;
 }
+void CBeiJingPK10::OnBnClickedBtnTouzhuOneKey()
+{
+	if(vecAllNums.size()<=0)
+	{
+		OnBnClickedBtnChqAdd();
+	}
+	OnBnClickedBtnTouzhuQ();
+}
+//普通下注
+void CBeiJingPK10::OnBnClickedBtnTouzhuQ()
+{
+	CString strHao = m_listChqSSC.GetItemText(0,0);
+	if(strHao.IsEmpty())
+	{
+		OnBnClickedBtnChqAdd();
+	}
+
+	//校验输入
+	if(!CheckInput())
+		return;
+
+
+	SendToServer(1);
+	OnBnClickedBtnClsList();
+
+	//m_zongZhuShu = 0;
+	CRect rcInvali;
+	rcInvali.CopyRect(rcZongZhuShu);
+	rcInvali.right+=400;
+	InvalidateRect(&rcInvali);
+	InvalidateRect(&rcZongJinE);
+
+	//m_beishu = 1;
+	UpdateData(FALSE);
+
+
+}
+
 //普通下注
 void CBeiJingPK10::OnBnClickedBtnTouzhu()
 {
@@ -3870,7 +3929,7 @@ void CBeiJingPK10::OnBnClickedBtnTouzhu()
 	InvalidateRect(&rcInvali);
 	InvalidateRect(&rcZongJinE);
 
-	m_beishu = 1;
+	//m_beishu = 1;
 	UpdateData(FALSE);
 
 
@@ -4857,6 +4916,7 @@ void CBeiJingPK10::AdjustWanFa()
 	if (m_btnQianSanZhiXuan.GetSafeHwnd() != NULL) 
 	{
 		m_btnQianSanZhiXuan.SetWindowPos(NULL, wanfa_x+ wanfa_col_width*6+10, wanfa_y /*+ wanfa_row_height*/, m_btnQianSanZhiXuan.Width(), m_btnQianSanZhiXuan.Height(), SWP_NOZORDER);
+		m_btnQianSanZhiXuan.ShowWindow(SW_HIDE);
 	}
 
 	if (m_btnHouSanZuXuan.GetSafeHwnd() != NULL) 
@@ -4867,6 +4927,7 @@ void CBeiJingPK10::AdjustWanFa()
 	if (m_btnQianSanZuXuan.GetSafeHwnd() != NULL) 
 	{
 		m_btnQianSanZuXuan.SetWindowPos(NULL, wanfa_x + wanfa_col_width*7+10, wanfa_y , m_btnQianSanZuXuan.Width(), m_btnQianSanZuXuan.Height(), SWP_NOZORDER);
+		m_btnQianSanZuXuan.ShowWindow(SW_HIDE);
 	}
 
 	if (m_btnWuXingHouEr.GetSafeHwnd() != NULL) 
@@ -4877,6 +4938,7 @@ void CBeiJingPK10::AdjustWanFa()
 	if (m_btnWuXingQianEr.GetSafeHwnd() != NULL) 
 	{
 		m_btnWuXingQianEr.SetWindowPos(NULL, wanfa_x + wanfa_col_width*8+10, wanfa_y , m_btnWuXingQianEr.Width(), m_btnWuXingQianEr.Height(), SWP_NOZORDER);
+		m_btnWuXingQianEr.ShowWindow(SW_HIDE);
 	}
 
 	if (m_btnHouErZuXuan.GetSafeHwnd() != NULL) 
@@ -4887,6 +4949,8 @@ void CBeiJingPK10::AdjustWanFa()
 	if (m_btnQianErZuXuan.GetSafeHwnd() != NULL) 
 	{
 		m_btnQianErZuXuan.SetWindowPos(NULL, wanfa_x + wanfa_col_width*9+10, wanfa_y , m_btnQianErZuXuan.Width(), m_btnQianErZuXuan.Height(), SWP_NOZORDER);
+		m_btnQianErZuXuan.ShowWindow(SW_HIDE);
+
 	}
 
 	if (m_btnDaXiaoDanShuang.GetSafeHwnd() != NULL) 
@@ -4895,17 +4959,18 @@ void CBeiJingPK10::AdjustWanFa()
 	}
 	if (m_btnQSDaXiaoDanShuang.GetSafeHwnd() != NULL) 
 	{
-		m_btnQSDaXiaoDanShuang.SetWindowPos(NULL, wanfa_x+ wanfa_col_width*10+10 , wanfa_y, m_btnQSDaXiaoDanShuang.Width(), m_btnQSDaXiaoDanShuang.Height(), SWP_NOZORDER);
+		m_btnQSDaXiaoDanShuang.SetWindowPos(NULL, wanfa_x+ wanfa_col_width*5+10 , wanfa_y, m_btnQSDaXiaoDanShuang.Width(), m_btnQSDaXiaoDanShuang.Height(), SWP_NOZORDER);
 	}
 
 	if (m_btnBuDingWei.GetSafeHwnd() != NULL) 
 	{
 		m_btnBuDingWei.SetWindowPos(NULL, wanfa_x + wanfa_col_width*5+10, wanfa_y, m_btnBuDingWei.Width(), m_btnBuDingWei.Height(), SWP_NOZORDER);
+		m_btnBuDingWei.ShowWindow(SW_HIDE);
 	}
 
  	if (m_btnDingWeiDan.GetSafeHwnd() != NULL) 
  	{
- 		m_btnDingWeiDan.SetWindowPos(NULL, wanfa_x + wanfa_col_width*11+10*2, wanfa_y, m_btnDingWeiDan.Width(), m_btnDingWeiDan.Height(), SWP_NOZORDER);
+ 		m_btnDingWeiDan.SetWindowPos(NULL, wanfa_x + wanfa_col_width*6+10*2, wanfa_y, m_btnDingWeiDan.Width(), m_btnDingWeiDan.Height(), SWP_NOZORDER);
  	}
 }
 
@@ -6019,11 +6084,11 @@ void CBeiJingPK10::AdjustNumView()
 {
 	if(m_btnBeiTouJia.GetSafeHwnd() != NULL) 
 	{
-		m_btnBeiTouJia.SetWindowPos(NULL,edit_beitou_x+edit_beitou_width , edit_beitou_y-8, m_btnBeiTouJia.Width(), m_btnBeiTouJia.Height(), SWP_NOZORDER);
+		m_btnBeiTouJia.SetWindowPos(NULL,edit_beitou_x+edit_beitou_width , edit_beitou_y-3, m_btnBeiTouJia.Width(), m_btnBeiTouJia.Height(), SWP_NOZORDER);
 	}
 	if(m_btnBeiTouJian.GetSafeHwnd() != NULL) 
 	{
-		m_btnBeiTouJian.SetWindowPos(NULL,edit_beitou_x-m_btnBeiTouJian.Width() , edit_beitou_y-8, m_btnBeiTouJian.Width(), m_btnBeiTouJian.Height(), SWP_NOZORDER);
+		m_btnBeiTouJian.SetWindowPos(NULL,edit_beitou_x-m_btnBeiTouJian.Width() , edit_beitou_y-3, m_btnBeiTouJian.Width(), m_btnBeiTouJian.Height(), SWP_NOZORDER);
 	}
 
 	if(m_btnDelSel.GetSafeHwnd() != NULL) 
@@ -6051,6 +6116,11 @@ void CBeiJingPK10::AdjustNumView()
 	{
 		m_btnTouZhu.SetWindowPos(NULL, btn_touzhu_x, btn_touzhu_y, m_btnTouZhu.Width(), m_btnTouZhu.Height(), SWP_NOZORDER);
 	}
+	if(m_btnTouZhuOnekey.GetSafeHwnd() != NULL) 
+	{
+		m_btnTouZhuOnekey.SetWindowPos(NULL, btn_touzhu_onekey_x, btn_touzhu_onekey_y, m_btnTouZhuOnekey.Width(), m_btnTouZhuOnekey.Height(), SWP_NOZORDER);
+	}
+
 
 	if(m_btnZhuiHao.GetSafeHwnd() != NULL) 
 	{
@@ -6058,7 +6128,7 @@ void CBeiJingPK10::AdjustNumView()
 	}
 	if(m_btnMoreRecord.GetSafeHwnd() != NULL) 
 	{
-		m_btnMoreRecord.SetWindowPos(NULL, btn_more_x, btn_more_y, m_btnMoreRecord.Width(), m_btnMoreRecord.Height(), SWP_NOZORDER);
+		m_btnMoreRecord.SetWindowPos(NULL, btn_more_x, btn_more_y, m_btnMoreRecord.Width()/4, m_btnMoreRecord.Height(), SWP_NOZORDER);
 		m_btnMoreRecord.ShowWindow(SW_HIDE);
 	}
 // 	if(m_DlgOpenRecord.GetSafeHwnd() != NULL)
@@ -6120,7 +6190,11 @@ void CBeiJingPK10::AdjustAdd()
 	}
 	if(m_btWxzxTip.GetSafeHwnd() != NULL)
 	{
-		m_btWxzxTip.SetWindowPos(NULL,keyboardinput_x,mouseinput_y-32,m_btWxzxTip.Width(),m_btWxzxTip.Height(),SWP_NOZORDER);
+		m_btWxzxTip.SetWindowPos(NULL,keyboardinput_x,mouseinput_y-30,m_btWxzxTip.Width(),m_btWxzxTip.Height(),SWP_NOZORDER);
+	}
+	if(m_btnQushi.GetSafeHwnd() != NULL) 
+	{
+		m_btnQushi.SetWindowPos(NULL, btn_more_x-40, btn_more_y, m_btnMoreRecord.Width(), m_btnMoreRecord.Height(), SWP_NOZORDER);
 	}
 
 }
@@ -6654,14 +6728,21 @@ VOID CBeiJingPK10::SendToServer(int nSendType)
 		m_bTouzhu = true;
 		if(m_bTouzhu)
 		{
+			if(m_cbIfTs == 1)
+			{
+				MyMessageBox(L"此彩种暂停销售！");
+				return;
+			}
 
-			m_bTouzhu = false;
+			m_nTzhSign++;
+
+			m_bTouzhu = false;	
 			int itm_cnt = m_listChqSSC.GetItemCount();
 			int nNowKind = 10000;
 			int nNowBeishu = 100000;
 			int nNowMoshi = 10000;
 			CString strTouZhuhaoma;
-
+			int first = 0;
 			map<int,int> mapHaoma;
 			mapHaoma.clear();
 			for(int i = 0;i < itm_cnt;i++)
@@ -6738,6 +6819,13 @@ VOID CBeiJingPK10::SendToServer(int nSendType)
 				strQiHao = m_chqRule.GetNextExpect();
 
 
+				if(strTouZhuhaoma.GetLength()>8000)
+				{
+					if(first == 0)
+						m_DlgStatus.ShowStatusWindow(TEXT("正在提交数据，请稍候..."));
+					first++;
+
+				}
 				string	strAllHaoma;
 				ChangeStringToA(strTouZhuhaoma, strAllHaoma);
 
@@ -6784,7 +6872,8 @@ VOID CBeiJingPK10::SendToServer(int nSendType)
 					TouzhuCQSSC.nEnd = 0;
 
 				CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-				bool bSuccess = pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_TOUZHU_CQSSC_DAN,&TouzhuCQSSC,sizeof(CMD_GP_TouZhuCQSSC_Dan));
+				if(pPlatformFrame!=NULL)
+					pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_TOUZHU_CQSSC_DAN,&TouzhuCQSSC,sizeof(CMD_GP_TouZhuCQSSC_Dan));
 				m_bShowFail=true;
 
 				nSendSize += nHaoMaLen;
@@ -6793,7 +6882,6 @@ VOID CBeiJingPK10::SendToServer(int nSendType)
 				m_bCanSend = true;
 			}
 
-			m_nTzhSign++;
 			
 			OnBnClickedBtnClsList();
 		}
@@ -6928,8 +7016,8 @@ VOID CBeiJingPK10::SendToServer(int nSendType)
 		//
 		//OnBnClickedBtnClsList();
 		//m_zongZhuShu = 0;
-		m_editBeiTou.SetWindowText(L"1");
-		m_beishu=1;
+// 		m_editBeiTou.SetWindowText(L"1");
+// 		m_beishu=1;
 		CRect rcInvali;
 		rcInvali.CopyRect(rcZongZhuShu);
 		rcInvali.right+=400;
@@ -6943,8 +7031,15 @@ VOID CBeiJingPK10::SendToServer(int nSendType)
 		m_bZhuihao = true;
 		if(m_bZhuihao)
 		{
+			if(m_cbIfTs == 1)
+			{
+				MyMessageBox(L"此彩种暂停销售！");
+				return;
+			}
+
 			m_bZhuihao = false;
 			m_DlgStatus.ShowStatusWindow(TEXT("正在提交数据，请稍候..."));
+			m_nTzhSign++;
 
 			int nItemCount = m_listChqSSC.GetItemCount();
 			//	for(int i = 0;i < itm_cnt;i++)
@@ -7063,7 +7158,8 @@ VOID CBeiJingPK10::SendToServer(int nSendType)
 							TouzhuCQSSC.nEnd = 0;
 
 						CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-						bool bSuccess = pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_TOUZHU_CQSSC_ZHUIHAO,&TouzhuCQSSC,sizeof(CMD_GP_TouZhuCQSSC_Zhuihao));
+						if(pPlatformFrame!=NULL)
+							pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_TOUZHU_CQSSC_ZHUIHAO,&TouzhuCQSSC,sizeof(CMD_GP_TouZhuCQSSC_Zhuihao));
 						m_bShowFail=true;
 						nSendSize += nHaoMaLen;
 						m_bCanSend = false;
@@ -7072,7 +7168,7 @@ VOID CBeiJingPK10::SendToServer(int nSendType)
 
 				}
 			}
-			m_nTzhSign++;
+	//		m_nTzhSign++;
 			
 
 		}	
@@ -7096,7 +7192,8 @@ VOID CBeiJingPK10::SendToServer(int nSendType)
 
 			//发送数据
 			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_SET_USER_BONUS,&SetUserBonus,sizeof(SetUserBonus));
+			if(pPlatformFrame!=NULL)
+				pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_SET_USER_BONUS,&SetUserBonus,sizeof(SetUserBonus));
 		}
 		return;
 	}
@@ -7118,7 +7215,8 @@ VOID CBeiJingPK10::SendToServer(int nSendType)
 			//SetTimer(TimerFandian,5000,NULL);
 			//发送数据
 			CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_USER_FANDIAN,&GetUserFandian,sizeof(GetUserFandian));
+			if(pPlatformFrame!=NULL)
+				pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_USER_FANDIAN,&GetUserFandian,sizeof(GetUserFandian));
 
 
 			return;
@@ -7152,10 +7250,24 @@ VOID CBeiJingPK10::SendToServer(int nSendType)
 		GetMoreRecord.n_t_type = CZ_PK10;
 
 		CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
-		pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_MORE_RECORD,&GetMoreRecord,sizeof(GetMoreRecord));
+		if(pPlatformFrame!=NULL)
+			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_GET_MORE_RECORD,&GetMoreRecord,sizeof(GetMoreRecord));
 		return;
 
 	}
+
+	if(nSendType == 11)
+	{
+		CMD_GP_QueryStatusLottery QueryStatusLottery;
+		ZeroMemory(&QueryStatusLottery,sizeof(QueryStatusLottery));
+
+		QueryStatusLottery.n_t_kindid = CZ_PK10;
+
+		CPlatformFrame *pPlatformFrame = CPlatformFrame::GetInstance();
+		if(pPlatformFrame!=NULL)
+			pPlatformFrame->m_MissionManager.SendData(MDM_GP_USER_SERVICE,SUB_GP_QUERY_STATUS_LOTTERY,&QueryStatusLottery,sizeof(QueryStatusLottery));
+	}
+
 }
 VOID CBeiJingPK10::SendQueryLuckyNumCQSSC()
 {
@@ -7178,9 +7290,9 @@ bool CBeiJingPK10::GetTopLuckyNumber(CMD_GP_QueryLotResult* pResult, int	nIndex)
 	{
 		//第一次进入
 		if(m_lastExpect[0] == 0)
-			_tcscpy_s(m_lastExpect, KJ_HAOMA_LENGTH, m_kjXinxi[0].qihao);
+			_tcscpy_s(m_lastExpect, KJ_QIHAO_LENGTH, m_kjXinxi[0].qihao);
 
-		_tcscpy_s(CBJPK10Rule::m_lastExpect, KJ_HAOMA_LENGTH, m_kjXinxi[0].qihao);
+		_tcscpy_s(CBJPK10Rule::m_lastExpect, KJ_QIHAO_LENGTH, m_kjXinxi[0].qihao);
 		_tcscpy_s(CBJPK10Rule::m_lastKjShj, KJ_SHIJIAN_LENGTH, m_kjXinxi[0].shijian);
 
 		m_bKaiJiangzhong=false;											//开奖结束
@@ -7259,9 +7371,9 @@ bool CBeiJingPK10::LuckyNumCQSSC()
 	{
 		//第一次进入
 		if(m_lastExpect[0] == 0)
-			_tcscpy_s(m_lastExpect, KJ_HAOMA_LENGTH, m_kjXinxi[0].qihao);
+			_tcscpy_s(m_lastExpect, KJ_QIHAO_LENGTH, m_kjXinxi[0].qihao);
 
-		_tcscpy_s(CBJPK10Rule::m_lastExpect, KJ_HAOMA_LENGTH, m_kjXinxi[0].qihao);
+		_tcscpy_s(CBJPK10Rule::m_lastExpect, KJ_QIHAO_LENGTH, m_kjXinxi[0].qihao);
 		_tcscpy_s(CBJPK10Rule::m_lastKjShj, KJ_SHIJIAN_LENGTH, m_kjXinxi[0].shijian);
 
 		m_bKaiJiangzhong=false;											//开奖结束
@@ -7329,7 +7441,7 @@ void CBeiJingPK10::DrawLastKjHaoma(CDC* pDC, Graphics& graphics)
 	//更新上期的期号
 	if (_tcscmp(m_lastExpect, m_kjXinxi[0].qihao) != 0) 
 	{
-		_tcscpy_s(m_lastExpect, KJ_HAOMA_LENGTH, m_kjXinxi[0].qihao);
+		_tcscpy_s(m_lastExpect, KJ_QIHAO_LENGTH, m_kjXinxi[0].qihao);
 		m_bKaiJiangzhong=false;
 
 	}
@@ -7373,10 +7485,17 @@ void CBeiJingPK10::DrawLastKjHaoma(CDC* pDC, Graphics& graphics)
 	//pDC->DrawText(strYg, &rcYuGao, DT_CENTER|DT_VCENTER|DT_SINGLELINE);
 
 
-	if(secDiff < 30)
-		strYg.Format(_T("第%s	封单时间"), m_chqRule.GetNextExpect());
+	if(m_cbIfTs == 1)
+	{
+		strYg.Format(_T("暂停销售"));
+	}
 	else
-		strYg.Format(_T("第%s	下单时间"), m_chqRule.GetNextExpect());
+	{
+		if(secDiff < 30)
+			strYg.Format(_T("第%s	封单时间"), m_chqRule.GetNextExpect());
+		else
+			strYg.Format(_T("第%s	下单时间"), m_chqRule.GetNextExpect());
+	}
 	//pDC->SetTextColor(RGB(255, 125, 0));
 	rcYuGao1.left = rcYuGao.left+15;
 	rcYuGao1.top = rcYuGao.top+40;
@@ -7395,10 +7514,10 @@ void CBeiJingPK10::DrawLastKjHaoma(CDC* pDC, Graphics& graphics)
 	pDC->SelectObject(&m_KjInfoFont);
 	strYg.Format(_T("%s"), m_chqRule.GetKjShjDiffDesc(30));
 	pDC->SetTextColor(RGB(219, 219, 219));
-	rcYuGao1.left = rcYuGao1.left-30;
+	rcYuGao1.left = rcYuGao1.left-75;
 	rcYuGao1.top = rcYuGao1.top+12;
-	rcYuGao1.bottom = rcYuGao1.bottom+3;
-	rcYuGao1.right = rcYuGao1.right-30;
+	rcYuGao1.bottom = rcYuGao1.bottom+20;
+	rcYuGao1.right = rcYuGao1.right-20;
 	pDC->DrawText(strYg, &rcYuGao1,DT_CENTER|DT_SINGLELINE);
 
 
@@ -7547,7 +7666,7 @@ void CBeiJingPK10::DrawZongZhushuJinE(CDC* pDC)
 
 	CRect rcZhu;
 	rcZhu.CopyRect(rcZongZhuShu);
-	rcZhu.left += 225;
+	rcZhu.left += 188;
 	rcZhu.right += 475;
 	pDC->DrawText(strText, &rcZhu, DT_LEFT|DT_VCENTER|DT_SINGLELINE);
 	pDC->SetTextColor(RGB(160, 8, 8));
@@ -7564,12 +7683,21 @@ void CBeiJingPK10::DrawZongZhushuJinE(CDC* pDC)
 
 	CRect rcRect;
 
-	rcRect.left = rcZongZhuShu.left+27;
-	rcRect.right = rcZongZhuShu.right+27;
-	rcRect.top = rcZongZhuShu.top+15;
-	rcRect.bottom = rcZongZhuShu.bottom+15;
-	strText.Format(L"倍数：");
+	rcRect.left = rcZongZhuShu.left+39;
+	rcRect.right = rcZongZhuShu.right;
+	rcRect.top = rcZongZhuShu.top+6;
+	rcRect.bottom = rcZongZhuShu.bottom;
+	strText.Format(L"倍");
 	pDC->DrawText(strText, &rcRect, DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+
+	CRect rcRect_down;
+
+	rcRect_down.left = rcZongZhuShu.left+39;
+	rcRect_down.right = rcZongZhuShu.right;
+	rcRect_down.top = rcZongZhuShu.top+6;
+	rcRect_down.bottom = rcZongZhuShu.bottom+30;
+	strText.Format(L"数");
+	pDC->DrawText(strText, &rcRect_down, DT_CENTER|DT_VCENTER|DT_SINGLELINE);
 	double danzhujine = 2.0;
 
 	if(theAccount.Scoretype == MoShi_Yuan)
@@ -8431,7 +8559,7 @@ bool CBeiJingPK10::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wD
 	 
 	 				_tcscpy_s(m_kjXinxi[m_kjXinxiCont].qihao, KJ_QIHAO_LENGTH, QueryLotResult.wPeriod);
 	 				_tcscpy_s(m_kjXinxi[m_kjXinxiCont].haoma, KJ_HAOMA_LENGTH, QueryLotResult.szLotNum);
-	 				_tcscpy_s(m_kjXinxi[m_kjXinxiCont].shijian, KJ_HAOMA_LENGTH, QueryLotResult.szShijian);
+	 				_tcscpy_s(m_kjXinxi[m_kjXinxiCont].shijian, KJ_SHIJIAN_LENGTH, QueryLotResult.szShijian);
 					m_kjXinxiCont++;
 				}
 
@@ -8442,9 +8570,9 @@ bool CBeiJingPK10::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wD
 				{
 					//第一次进入
 					if(m_lastExpect[0] == 0)
-						_tcscpy_s(m_lastExpect, KJ_HAOMA_LENGTH, m_kjXinxi[0].qihao);
+						_tcscpy_s(m_lastExpect, KJ_QIHAO_LENGTH, m_kjXinxi[0].qihao);
 
-					_tcscpy_s(CBJPK10Rule::m_lastExpect, KJ_HAOMA_LENGTH, m_kjXinxi[0].qihao);
+					_tcscpy_s(CBJPK10Rule::m_lastExpect, KJ_QIHAO_LENGTH, m_kjXinxi[0].qihao);
 					_tcscpy_s(CBJPK10Rule::m_lastKjShj, KJ_SHIJIAN_LENGTH, m_kjXinxi[0].shijian);
 
 					m_bKaiJiangzhong=false;											//开奖结束
@@ -8498,7 +8626,7 @@ bool CBeiJingPK10::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wD
 				}
 				else if(lResult == 2)
 				{
-					MyMessageBox(_T("该期号已经开奖，投注失败！"));
+					MyMessageBox(_T("当前期已封单，停止销售！"));
 				}
 				else if(lResult == 3)
 				{
@@ -8540,7 +8668,11 @@ bool CBeiJingPK10::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wD
 				{
 					MyMessageBox(_T("对不起，该玩法维护中，请选择其他玩法进行投注！"));
 				}
-				else if(lResult>=20 && lResult <= 30)
+				else if(lResult == 13)
+				{
+					MyMessageBox(_T("该彩种暂停销售！"));
+				}
+				else if(lResult>=20 && lResult < 30)
 				{
 					MyMessageBox(_T("该账户没有投注权限！"));
 
@@ -8610,11 +8742,28 @@ bool CBeiJingPK10::OnEventMissionRead(TCP_Command Command, VOID * pData, WORD wD
 				theAccount.dongjie = pGetCpUser->f_t_dongjie;
 				return true;
 			}
+		case SUB_GP_QUERY_STATUS_LOTTERY_RET:
+			{
+				ASSERT(wDataSize == sizeof(CMD_GP_QueryStatusLotteryRet));
+				if(wDataSize!=sizeof(CMD_GP_QueryStatusLotteryRet)) return false;
+
+				CMD_GP_QueryStatusLotteryRet* pLogRet = (CMD_GP_QueryStatusLotteryRet*)pData;
+
+				if(pLogRet->n_t_kindid != CZ_PK10)
+					return true;
+
+				m_cbIfTs = pLogRet->c_t_ifts;
+				int nStartQihao = 0;
+				nStartQihao = _ttoi(pLogRet->s_t_expect);
+				CTime ctm(pLogRet->n_t_shijian);
+
+				m_chqRule.SetStartQihao(nStartQihao,ctm);
+
+				return true;
+			}
 		}
 	}
 
-	//错误断言
-	ASSERT(FALSE);
 
 	return true;
 }
@@ -8639,17 +8788,6 @@ extern CCriticalSection theTimeCS;
 extern CString theKeFuUrl;
 /////////////////////////////////游戏列表/////////////////////////////////////
 
-//对象索引
-WORD CBeiJingPK10::GetGameHoverIndex(CPoint MousePoint)
-{
-	if(!m_GameListRect.PtInRect(MousePoint))
-	{
-		return INVALID_WORD;
-	}
-	WORD wHoverItem = INVALID_WORD;
-
-	return wHoverItem;
-}
 
 //鼠标消息
 VOID CBeiJingPK10::OnMouseMove(UINT nFlags, CPoint Point)
@@ -8675,40 +8813,6 @@ VOID CBeiJingPK10::OnMouseMove(UINT nFlags, CPoint Point)
 		//注册事件
 		_TrackMouseEvent(&TrackMouseEvent);
 	}
-	//窗口位置
-	CRect rcClient;
-	GetClientRect(&rcClient);
-	//位置计算
-	WORD wViewItemHover=INVALID_WORD;
-	BYTE cbButtonHover=INVALID_CHAIR;
-
-// 	if(m_GameListRect.PtInRect(Point)/*&&!m_GameListRect.IsRectNull()*/)
-// 	{
-// 		m_wGameHoverItem = GetGameHoverIndex(Point);
-// 		CWnd* pParent = GetParent();
-// 		if(pParent!=NULL)
-// 		{
-// 			pParent->PostMessage(IDM_SHOW_MENU_SSC,1,m_cbMenuType);
-// 		}
-// 		m_bShowMenu = true;
-// 		wViewItemHover = m_wGameHoverItem;
-// 		//cbButtonHover=BT_ENTER_KIND;
-// 		//更新界面
-// 		RedrawWindow(&m_GameListRect,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ERASENOW);
-// 	}
-// 	else if(m_bShowMenu)
-// 	{
-// 		m_wGameHoverItem = GetGameHoverIndex(Point);
-// 		CWnd* pParent = GetParent();
-// 		if(pParent!=NULL)
-// 		{
-// 			pParent->PostMessage(IDM_SHOW_MENU_SSC,0,INVALID_WORD);
-// 		}
-// 		m_bShowMenu = false;
-//  		//更新界面
-//  		RedrawWindow(NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ERASENOW);
-// 	}
-
 }
 
 //鼠标消息
@@ -8719,33 +8823,12 @@ VOID CBeiJingPK10::OnLButtonDown(UINT nFlags, CPoint Point)
 	//设置焦点
 	SetFocus();
 
-
-	if(m_GameListRect.PtInRect(Point))
-	{
-		WORD wDownItem = GetGameHoverIndex(Point);
-		if(wDownItem == INVALID_WORD) return;
-
-		//m_cbButtonDown = wDownItem;
-		m_wViewItemDown = wDownItem;
-
-	}
-
 	return;
 }
 //鼠标消息
 VOID CBeiJingPK10::OnLButtonUp(UINT nFlags, CPoint Point)
 {
 	__super::OnLButtonUp(nFlags,Point);
-	WORD wButtonUp = GetGameHoverIndex(Point);
-	if((m_wViewItemDown!=INVALID_WORD)&&(m_wViewItemDown == wButtonUp))
-	{
-		ShowWindow(SW_HIDE);
-		CWnd* pParent = GetParent();
-		if(pParent!=NULL)
-		{
-			pParent->SendMessage(IDM_CLICKED_TYPE_SSC,m_wViewItemDown,m_cbMenuType);
-		}
-	}
 }
 
 //鼠标消息
@@ -8754,17 +8837,6 @@ LRESULT CBeiJingPK10::OnMouseLeave(WPARAM wParam, LPARAM lParam)
 
 	//设置状态
 	m_bHovering=false;
-// 
-// 	m_wGameHoverItem=INVALID_WORD;
-// 	CWnd* pParent = GetParent();
-// 	if(pParent!=NULL)
-// 	{
-// 		pParent->SendMessage(IDM_SHOW_MENU_SSC,0,INVALID_WORD);
-// 	}
-// 	m_bShowMenu = false;
-	//更新界面
-//	RedrawWindow(NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ERASENOW);
-
 	return 0;
 }
 
@@ -9033,6 +9105,28 @@ void CBeiJingPK10::OnBnClickedBtnLock()
 void CBeiJingPK10::OnBnClickedBtnMoreRecord()
 {
 	SendToServer(8);
+	return;
+}
+void CBeiJingPK10::OnBnClickedBtnQuShi()
+{
+	TCHAR szTodayURL[126]={0};
+	//工作目录
+	TCHAR szDirectory[MAX_PATH]=TEXT("");
+	CWHService::GetWorkDirectory(szDirectory,CountArray(szDirectory));
+
+	//构造路径
+	TCHAR szFileName[MAX_PATH]=TEXT("");
+	_sntprintf(szFileName,CountArray(szFileName),TEXT("%s\\GamePlaza.ini"),szDirectory);
+
+	//读取配置
+	CWHIniData IniData;
+	IniData.SetIniFilePath(szFileName);
+
+	IniData.ReadEncryptString(TEXT("PlazaUrl"),TEXT("PlazaQushi"),TEXT("http://192.168.0.104/"),szTodayURL,CountArray(szTodayURL));
+
+	TCHAR szUrl[126]=TEXT("");
+	_sntprintf(szUrl,CountArray(szUrl),TEXT("%s/TrendCharts/pk10/q5_basic.aspx?type=13"),szTodayURL);
+	ShellExecute(NULL, _T("open"), szUrl, NULL, NULL, SW_SHOWNORMAL);
 	return;
 }
 
@@ -10406,6 +10500,10 @@ int CBeiJingPK10::GetDanShiZhusu(int nKind)
 		else if(m_gameKind == WF_QianWu)
 			nSize = 5;
 		CString strHaoMa;
+		CString strLog;
+		strLog.Format(L"TICKCOUNT1 :%d",GetTickCount());
+		OutputDebugString(strLog);
+
 		if (!GetDanShiHaoma(strHaoMa,10240,nSize))
 		{
 			m_singlezhushu = 0;
@@ -10417,6 +10515,8 @@ int CBeiJingPK10::GetDanShiZhusu(int nKind)
 
 			return m_singlezhushu;
 		}
+		strLog.Format(L"TICKCOUNT2 :%d",GetTickCount());
+		OutputDebugString(strLog);
 
 		string sHaoma;
 		ChangeStringToA(strHaoMa,sHaoma);

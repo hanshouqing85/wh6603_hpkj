@@ -21,23 +21,9 @@ bool CD3DDirect::CreateD3DDirect()
 
 	if ( m_pIDirect3D == NULL ) 
 	{
-		TraceService->TraceString(TraceLevel_Game_Warning,TEXT("Direct3DCreate9 failed"));
+		ASSERT(FALSE);
 		return false;
 	}
-	
-	D3DADAPTER_IDENTIFIER9 ident;
-	m_pIDirect3D->GetAdapterIdentifier(D3DADAPTER_DEFAULT, 0, &ident);
-
-	TraceService->TraceString(TraceLevel_Game_Normal,TEXT("Device information"));
-
-	TraceService->TraceString(TraceLevel_Game_Normal,TEXT("Device:%s"),CA2T(ident.Description));
-	TraceService->TraceString(TraceLevel_Game_Normal,TEXT("DeviceName:%s"),CA2T(ident.DeviceName));
-	TraceService->TraceString(TraceLevel_Game_Normal,TEXT("Revision:%ld"),ident.Revision);
-	TraceService->TraceString(TraceLevel_Game_Normal,TEXT("Driver:%s"),CA2T(ident.Driver));
-	TraceService->TraceString(TraceLevel_Game_Normal,TEXT("Device ID:%ld\n"),ident.DeviceId);
-
-	TraceService->TraceString(TraceLevel_Game_Normal,TEXT("Device capabilities"));
-
 	return true;
 }
 
@@ -59,8 +45,7 @@ bool CD3DDirect::GetDisplayMode( D3DDISPLAYMODE & DisplayMode )
 	if( m_pIDirect3D == NULL ) return false;
 
 	HRESULT hResult = m_pIDirect3D->GetAdapterDisplayMode( D3DADAPTER_DEFAULT, &DisplayMode );
-
-	if(FAILED(hResult)) return false;
+	if(FAILED(hResult)) {MessageBox(NULL,TEXT("获得显示适配器模式失败!"),TEXT(""),MB_OK);return FALSE;}
 
 	return true;
 }

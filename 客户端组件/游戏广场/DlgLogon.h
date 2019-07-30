@@ -86,22 +86,27 @@ class CDlgLogon : public CDialog, public IStatusViewSink
 	//配置变量
 public:
 	BYTE							m_cbRemPassword;					//记住密码
-
+	static int						m_nLoadServer;
 	//登录信息
 public:
 	TCHAR							m_szAccounts[LEN_ACCOUNTS];			//游戏帐号
 	TCHAR							m_szPassword[LEN_PASSWORD];			//用户密码
 	TCHAR							m_szLogonServer[LEN_SERVER];		//登录地址
-	CPlatformPublicize			m_logo;			//LOGO IE控件
+//	CPlatformPublicize				m_logo;			//LOGO IE控件
 
 	//控件变量
 protected:
 	CSkinButton						m_btQuit;							//退出按钮
 	CSkinButton						m_btEnter;							//登录按钮
 	CSkinButton						m_btForgetPass;						//忘记密码
-	CSkinButton						m_btKeFu;						//忘记密码
-
+//	CSkinButton						m_btKeFu;							//忘记密码
 	CSkinButton						m_btDeleteRecord;					//删除按钮
+
+	//图片
+	CPngImage						m_png_Kefu;							//客服
+
+	//获取最优的URL，返回比较慢，经常在对话框已经销毁之后才返回。
+	static	UINT					GetBestUrl(LPVOID lpParam);
 
 	//特殊控件
 protected:
@@ -124,8 +129,9 @@ protected:
 	//变量定义
 protected:
 	CAccountsInfoArray				m_AccountsInfoArray;				//账号信息
-	CString					m_strCurrentDir;		//当前目录
-	CString						m_strSiteUrl;
+	CString							m_strCurrentDir;		//当前目录
+	CString							m_strSiteUrl;
+	bool							m_Destroyed;
 	//取消连接
 	virtual VOID OnStatusCancel();
 //状态窗口
@@ -135,6 +141,7 @@ public:
 	CDlgLogon();
 	//析构函数
 	virtual ~CDlgLogon();
+
 
 	//重载函数
 protected:
@@ -152,6 +159,7 @@ protected:
 	VOID OnPaint();
 	//选择改变
 	VOID OnSelchangeAccounts();
+	VOID OnSelchangeServer();
 	void Loadweb();
 	//功能函数
 public:
@@ -179,7 +187,7 @@ protected:
 	VOID OnBnClickedKeFu();
 	//删除记录
 	VOID OnBnClickedDelete();
-
+	void SetCurServer(int nLoad);
 	//系统消息
 protected:
 	//绘画背景

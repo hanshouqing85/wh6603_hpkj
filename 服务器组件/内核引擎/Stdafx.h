@@ -40,16 +40,3 @@
 
 //////////////////////////////////////////////////////////////////////////////////
 
-#ifndef _DEBUG
-#ifndef _UNICODE
-	#pragma comment (lib,"../../Á´½Ó¿â/Ansi/ServiceCore.lib")
-#else
-	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/ServiceCore.lib")
-#endif
-#else
-#ifndef _UNICODE
-	#pragma comment (lib,"../../Á´½Ó¿â/Ansi/ServiceCoreD.lib")
-#else
-	#pragma comment (lib,"../../Á´½Ó¿â/Unicode/ServiceCoreD.lib")
-#endif
-#endif

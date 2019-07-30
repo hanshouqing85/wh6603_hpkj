@@ -4,7 +4,7 @@
 #pragma once
 
 
-#define				SOCKET_TCP_VER		5
+#define				SOCKET_TCP_VER		0x01
 #include "WinSock2.h"
 #include "WHSocketHead.h"
 

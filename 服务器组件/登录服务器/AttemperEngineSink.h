@@ -7,6 +7,8 @@
 #include "InitParameter.h"
 #include "ServerListManager.h"
 #include "DataBaseEngineSink.h"
+#include <map>
+
 //////////////////////////////////////////////////////////////////////////////////
 //数据定义
 
@@ -29,7 +31,7 @@ struct tagLuckNumXinXi
 };
 struct tagLuckNum
 {
-	tagLuckNumXinXi LuckNum[5];
+	tagLuckNumXinXi LuckNum[50];
 };
 //绑定参数
 struct tagBindParameter
@@ -44,10 +46,13 @@ struct tagBindParameter
 	BYTE							cbClientKind;						//连接类型
 	DWORD							dwPlazaVersion;						//大厅版本
 };
+struct tagMapNotice 
+{
+	CMD_GP_GetNoticRet Notice;
+};
 
 
 //////////////////////////////////////////////////////////////////////////////////
-#include <map>
 
 
 //调度钩子
@@ -58,7 +63,16 @@ class CAttemperEngineSink : public IAttemperEngineSink
 private:
 	CTimeSpan						m_timespan ;						//数据库和服务器的时间差
 	map<int,DWORD>							m_dwLuckyNumTickCount;
+	map<int ,DWORD>			m_dwTickZnx;
+	map<int ,DWORD>			m_dwLotteryStatus;
+	map<int ,int>			m_dwTickZnxCount;
+	DWORD							m_dwQihaoTick;
+	int								m_nQihaocha;
 	int								m_nLuckNumID;
+	DWORD							m_dwCanadaQihaoTick;
+	DWORD						m_dwNoticeTick;
+	int								m_nCanadaQihao;
+	CTime							m_tCanadaStartTime;
 	//状态变量
 protected:
 	bool							m_bNeekCorrespond;					//协调标志
@@ -68,6 +82,7 @@ protected:
 	tagBindParameter *				m_pBindParameter;					//辅助数组
 //	AllLuckNum						m_AllLuckNum;
 	tagLuckNum						m_MyLuckNum[30] ;					//缓存
+	tagMapNotice					m_MyNotice[10];						//
 	CString							m_strNewsTime;						//新闻时间
 	//组件变量
 protected:
@@ -141,7 +156,7 @@ protected:
 	bool OnGetNews();
 	bool OnGetWinUserID();
 	bool OnGetMapBonusRet();
-
+	bool OnGetCanadaQihao();
 	//注册事件
 	bool OnTCPSocketMainRegister(WORD wSubCmdID, VOID * pData, WORD wDataSize);
 	//服务信息
@@ -211,6 +226,8 @@ protected:
 	bool OnGetUserFandianRet(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//设置彩票用户返点信息
 	bool OnSetUserBonusRet(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//查询彩种状态
+	bool OnQueryStatusLotteryRet(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//获取MAPBONUS信息
 	bool OnGetMapBonusRet(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//获取客服URL
@@ -219,6 +236,8 @@ protected:
 	bool OnGetSysTimeRet(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//获取中奖用户ID返回
 	bool OnGetWinUserIDRet(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//加拿大期号返回
+	bool OnGetCanadaQiHaoRet(DWORD dwContextID, VOID * pData, WORD wDataSize);
 
 	//手机事件
 protected:
@@ -229,6 +248,8 @@ protected:
 protected:
 	//查询游戏结果返回
 	bool OnDBQueryOpenResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//查询游戏结果返回
+	bool OnDBQueryMobileOpenResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//查询银行返回
 	bool OnDBQueryYinHangResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//下注返回
@@ -237,6 +258,10 @@ protected:
 	bool OnDBQueryTouzhuLogCountResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//注册链接返回
 	bool OnDBQueryRegUrlResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//查询转账短信验证返回
+	bool OnDBGetTransVerifyResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//获取上级返回
+	bool OnDBGetParentResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//获取配额返回
 	bool OnDBQueryPeieResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//获取下级配额返回
@@ -279,8 +304,22 @@ protected:
 	bool OnDBGetMoreRecordResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//代理回馈返回
 	bool OnDBGetDailiHuikuiResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//期号差返回
+	bool OnDBGetQihaochaResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//代理领奖返回
 	bool OnDBDailiLingjiangResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//获取站内信数量返回
+	bool OnDBGetZnxCountResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//发送信息返回
+	bool OnDBSendMessageResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//删除信息返回
+	bool OnDBDelMessageResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//获取站内信数量返回
+	bool OnDBGetZnxAllCountResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//获取平台公告返回
+	bool OnDBGetNoticeRet(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//获取上下级信息返回
+	bool OnDBGetAllUserInfoRet(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//退出游戏返回
 	bool OnDBQuitGameResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//签到返回
@@ -291,8 +330,12 @@ protected:
 	bool OnDBUserLingjiangResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//取款返回
 	bool OnDBDoQukuanResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//取款限制返回
+	bool OnDBDoQukuanLimitResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//下注日志返回
 	bool OnDBGetTouzhuLogResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//站内信返回
+	bool OnDBGetZnxInboxResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//获取新闻返回
 	bool OnDBGetNewsResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//转换返回
@@ -303,6 +346,8 @@ protected:
 	bool OnDBGetXJTxLogResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//下家盈亏日志返回
 	bool OnDBGetXJYKLogResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//获取棋牌游戏返回
+	bool OnDBGetQipaiKindResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//下家盈亏统计返回
 	bool OnDBGetXJYKTjResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//下家游戏盈亏统计返回
@@ -347,8 +392,18 @@ protected:
 	bool OnDBXGLoginPassResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//锁定机器返回
 	bool OnDBLockMachineResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//绑定手机号返回
+	bool OnDBBindPhoneResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//设置验证返回
+	bool OnDBSetPhoneInfoResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//解除绑定返回
+	bool OnDBSetUnBindPhoneResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//修改取款密码返回
 	bool OnDBXGQukuanPassResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//数据库对比验证码返回
+	bool OnDBCheckYzmResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
+	//数据库对比验证码返回
+	bool OnDBCheckYzmTransResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//设置取款保护返回
 	bool OnDBSetQukuanProtectResult(DWORD dwContextID, VOID * pData, WORD wDataSize);
 	//获取我的银行账户返回
@@ -407,7 +462,7 @@ protected:
 	//发送种类
 	VOID SendGameKindInfo(DWORD dwSocketID);
 	//发送房间
-	VOID SendGameServerInfo(DWORD dwSocketID);
+	VOID SendGameServerInfo(DWORD dwSocketID,WORD wServerID);
 
 	//手机列表
 protected:
