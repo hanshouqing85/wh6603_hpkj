@@ -25,6 +25,7 @@ typedef enum {
 	CZKUAILE8,				//北京快乐8
 	CZ_FENFEN_CAI,			//分分彩：5分钟开奖，24小时不停。每天288期
 	CZ_WUFEN_CAI,			//5分彩
+	CZ_BJKUAICHE,			//北京快车
 	CZ_PK10=13,		//PK10
 	CZ_LIUHECAI = 14,
 	CZ_QiXingCai = 15,			//七星彩--lly
@@ -1060,8 +1061,7 @@ bool CDataBaseEngineSink::OnRequestLogonAccounts(DWORD dwContextID, VOID * pData
 
 		//结果处理
 		CDBVarValue DBVarValue;
-		if(lResultCode > 0)			//added by david, 2019.2.17
-			m_AccountsDBModule->GetParameter(TEXT("@strErrorDescribe"),DBVarValue);
+		m_AccountsDBModule->GetParameter(TEXT("@strErrorDescribe"),DBVarValue);
 		OnLogonDisposeResult(dwContextID,lResultCode,CW2CT(DBVarValue.bstrVal),false);
 
 		return true;
@@ -1215,8 +1215,7 @@ bool CDataBaseEngineSink::OnMobileLogonAccounts(DWORD dwContextID, VOID * pData,
 
 		//结果处理
 		CDBVarValue DBVarValue;
-		if(lResultCode > 0)			//added by david, 2019.2.17
-			m_AccountsDBModule->GetParameter(TEXT("@strErrorDescribe"),DBVarValue);
+		m_AccountsDBModule->GetParameter(TEXT("@strErrorDescribe"),DBVarValue);
 		OnLogonDisposeResult(dwContextID,lResultCode,CW2CT(DBVarValue.bstrVal),true);
 
 		return true;
@@ -2774,7 +2773,6 @@ bool CDataBaseEngineSink::CheckDate(TCHAR szTime[30])
 
 	return true;
 }
-#include <algorithm>
 //获取会员数据
 bool CDataBaseEngineSink::OnGetHyShj(DWORD dwContextID, VOID * pData, WORD wDataSize)
 {

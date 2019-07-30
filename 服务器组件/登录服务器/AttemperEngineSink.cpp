@@ -19,6 +19,7 @@ typedef enum {
 	CZKUAILE8,				//北京快乐8
 	CZ_FENFEN_CAI,			//分分彩：5分钟开奖，24小时不停。每天288期
 	CZ_WUFEN_CAI,			//5分彩
+	CZ_BJKUAICHE,			//北京快车
 	CZ_PK10=13,		//PK10
 	CZ_LIUHECAI = 14,
 	CZ_QiXingCai = 15,			//七星彩--lly
@@ -98,7 +99,7 @@ CAttemperEngineSink::CAttemperEngineSink()
 	ZeroMemory(&m_MyLuckNum,sizeof(m_MyLuckNum));
 	ZeroMemory(&m_MyNotice,sizeof(m_MyNotice));
 
-	for(int i = 0;i < 20;i++)
+	for(int i = 0;i < 13;i++)
 		m_dwLuckyNumTickCount[i] = GetTickCount();
 	return;
 }
@@ -1840,7 +1841,6 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 			{
 				int nIndex = 0;
 				DBO_GP_QueryLotResult QuseryLotResult[70];
-				memset(&QuseryLotResult, 0, sizeof(QuseryLotResult));
 
 				int nSize = m_AllLuckNum.size();
 				for( map<int ,tagLuckNum*>::iterator pos = m_AllLuckNum.begin(); pos!=m_AllLuckNum.end(); ++pos)
@@ -4474,12 +4474,7 @@ bool CAttemperEngineSink::OnTCPNetworkMainPCUserService(WORD wSubCmdID, VOID * p
 			return m_pIDataBaseEngine->PostDataBaseRequest(DBR_MB_GET_TOUZHU_XX,dwSocketID,&GetTouzhu,sizeof(GetTouzhu));
 		}
 
-	default:
-		//虽然不支持，但是也不要断线啊
-		CString strLog;
-		strLog.Format(TEXT("遇到不认识的命令吗：SubCmd:%ld,长度:%ld, 直接返回true"), wSubCmdID, wDataSize);
-		OutputDebugString(strLog);
-		return true;
+
 
 	}
 
